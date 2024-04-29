@@ -18,26 +18,34 @@
     </div>
 
     <div class="b_contrast__details">
-      <component class="b_contrast__icon" :is="ratingIcon"></component>
-      <p>
-        {{ contrastRating }} <strong>{{ contrastRatio }}</strong>
-      </p>
+      <div class="b_contrast__result">
+        <component class="b_contrast__icon" :is="ratingIcon"></component>
+        <p>
+          {{ contrastRating }} <strong>{{ contrastRatio }}</strong>
+        </p>
+      </div>
+
+      <FormAction
+        @click.prevent="showSample"
+        :status="formMode"
+        buttonMode="utility"
+        buttonType="icon"
+        ><FieldIconPlus></FieldIconPlus>
+      </FormAction>
     </div>
   </div>
 </template>
 
 <script setup>
 // Imports
-import { reactive, computed, ref } from "vue";
+import { computed } from "vue";
 import IconResultPass from "@/components/icons/IconResultPass.vue";
 import IconResultPassLarge from "@/components/icons/IconResultPassLarge.vue";
 import IconResultFail from "@/components/icons/IconResultFail.vue";
+import FormAction from "@/components/FormAction.vue";
+import FieldIconPlus from "@/components/icons/FieldIconPlus.vue";
 import { useColourStore } from "@/stores/colourStore";
 const colourStore = useColourStore();
-// Data
-const state = reactive({
-  stateItem: [],
-});
 
 const props = defineProps({
   primaryColour: {
@@ -80,64 +88,91 @@ const ratingIcon = computed(() => {
   }
 });
 
+function showSample() {
+  const sampleColourArray = [];
+  sampleColourArray.push(props.primaryColour);
+  sampleColourArray.push(props.contrastColour);
+
+  colourStore.sampleColoursGetSet = sampleColourArray;
+}
+
 // Functions
 // function functionName(){}
 </script>
 
 <style lang="scss" scoped>
 .b_contrast {
-  $self: &;
-
   display: grid;
   justify-items: center;
   gap: 0;
-  //padding: 4px;
-  background: var(--dt-ref-clr-grey-1000);
-  //border: 3px solid #ccc;
-  border-radius: var(--dt-sys-border-rad-small);
-  box-shadow: var(--dt-sys-shadow-card);
+  /* padding: 4px; */
+  background: var(--clr-grey-1000);
+  /* border: 3px solid #ccc; */
+  border-radius: var(--border-rad-small);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
+
+  $self: &;
 
   &__pair {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    //border-radius: 8px;
+    /* border-radius: 8px; */
     overflow: hidden;
+    position: relative;
   }
 
   &__colour {
     display: grid;
     grid-gap: 6px;
     justify-items: center;
+    grid-row: 1;
   }
 
   &__colourHex {
-    font: var(--dt-sys-text-code-400);
+    font: var(--text-code-400);
   }
 
   &__sample {
     height: 60px;
     width: 100%;
-    //box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
   }
 
   &__icon {
     width: 24px;
     height: 24px;
-    border: 1px solid var(--dt-ref-clr-grey-900);
+    border: 1px solid var(--clr-grey-900);
     border-radius: 50px;
   }
 
   &__details {
     display: flex;
+    gap: var(--size-s);
+    margin: 20px 0 10px;
+  }
+
+  &__result {
+    display: flex;
     gap: 8px;
     align-items: center;
     padding: 4px 12px 4px 4px;
     background: rgba(0, 0, 0, 0.1);
-    margin: 20px 0 10px;
     border-radius: 45px;
     border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+
+  &__sampleAction {
+    border: none;
+    background: var(--clr-grey-1000);
+    grid-row: 1;
+    grid-column: 1 / -1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    left: 50%;
+    transform: translateX(-50%);
   }
 }
 </style>

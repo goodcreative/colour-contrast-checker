@@ -46,15 +46,15 @@ const paletteIsNotEmpty = computed(() => {
 
 <style lang="scss" scoped>
 .b_controls {
-  padding: calc(var(--dt-sys-main-spacing) / 2) var(--dt-sys-main-spacing);
+  padding: calc(var(--main-spacing) / 2) var(--main-spacing);
 
   &__clear {
     --form-button-width: auto;
     --form-button-height: auto;
-    --formAction-background: var(--dt-ref-clr-red-400);
-    --formAction-background-hov: var(--dt-ref-clr-red-300);
+    --formAction-background: var(--clr-red-400);
+    --formAction-background-hov: var(--clr-red-300);
     --formAction-padding: 0.4em 0.65em;
-    --formAction-font: var(--dt-sys-body-300);
+    --formAction-font: var(--body-300);
   }
 }
 </style>

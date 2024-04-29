@@ -118,12 +118,12 @@ const failList = computed(() => {
 
 <style lang="scss" scoped>
 .b_combinations {
-  padding: calc(var(--dt-sys-main-spacing) * 1);
+  padding: calc(var(--main-spacing) * 1);
 
   &__intro {
     display: flex;
     gap: 15px;
-    --flow-space: calc(var(--dt-ref-size-l-xl) * 2);
+    --flow-space: calc(var(--size-l-xl) * 2);
   }
 
   &__introIcon {
@@ -137,7 +137,7 @@ const failList = computed(() => {
     gap: 25px;
     align-items: flex-start;
     padding-inline-start: 55px;
-    --flow-space: var(--dt-ref-size-l-xl);
+    --flow-space: var(--size-l-xl);
   }
 }
 </style>

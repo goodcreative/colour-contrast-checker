@@ -37,9 +37,9 @@ const isOpen = computed(() => {
   position: relative;
 
   &__toggle {
-    --formAction-background: var(--dt-ref-clr-grey-1000);
-    --formAction-background-hov: var(--dt-ref-clr-grey-900);
-    --b-iconActionToggle-fill: var(--dt-ref-clr-grey-600);
+    --formAction-background: var(--clr-grey-1000);
+    --formAction-background-hov: var(--clr-grey-900);
+    --b-iconActionToggle-fill: var(--clr-grey-600);
   }
 
   &__menu {

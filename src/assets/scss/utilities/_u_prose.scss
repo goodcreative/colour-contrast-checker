@@ -11,7 +11,7 @@
   }
 
   h1 {
-    font:var(--dt-sys-heading-1200);
+    font:var(--heading-1200);
 
     em {
       font-style: normal;
@@ -29,7 +29,7 @@
   }
 
   ul,ol {
-    padding-inline-start: var(--dt-sys-size-l);
+    padding-inline-start: var(--size-l);
   }
 
   table {

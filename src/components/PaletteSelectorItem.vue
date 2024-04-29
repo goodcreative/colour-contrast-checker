@@ -84,9 +84,9 @@ const deletePalette = async () => {
   grid-template-columns: 1fr auto;
   grid-gap: 10px;
   padding: 15px;
-  background: var(--dt-ref-clr-grey-1000);
-  border-radius: var(--dt-sys-border-rad-small);
-  box-shadow: var(--dt-sys-shadow-card);
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-small);
+  box-shadow: var(--shadow-card);
   cursor: move;
 
   &__title {

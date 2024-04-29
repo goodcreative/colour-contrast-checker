@@ -5,40 +5,40 @@ $size-l: 40px;
 $size-xl: 56px;
 
 :root {
-  --dt-ref-size-xsmall:0.25em;
-  --dt-ref-size-small:0.5rem;
-  --dt-ref-size-medium: #{$size-m};
-  --dt-ref-size-large: 2rem;
-  --dt-ref-size-xl: #{$size-xl};
-  --dt-ref-size-xs-l: #{clamped($size-xs,$size-l)};
-  --dt-ref-size-s-l:#{clamped($size-s,$size-l)};
-  --dt-ref-size-m-l:#{clamped($size-m,$size-l)};
-  --dt-ref-size-l-xl:#{clamped($size-m,$size-l)};
+  --size-xsmall:0.25em;
+  --size-small:0.5rem;
+  --size-medium: #{$size-m};
+  --size-large: 2rem;
+  --size-xl: #{$size-xl};
+  --size-xs-l: #{clamped($size-xs,$size-l)};
+  --size-s-l:#{clamped($size-s,$size-l)};
+  --size-m-l:#{clamped($size-m,$size-l)};
+  --size-l-xl:#{clamped($size-m,$size-l)};
 
-  --dt-ref-size-unit:8px;
+  --size-unit:8px;
 
-  --dt-sys-border-rad-large:var(--dt-ref-size-medium); 
-  --dt-sys-border-rad-normal: var(--dt-ref-size-small);
-  --dt-sys-border-rad-small: calc(var(--dt-ref-size-unit)/2);
+  --border-rad-large:var(--size-medium);
+  --border-rad-normal: var(--size-small);
+  --border-rad-small: calc(var(--size-unit)/2);
 
-  --dt-sys-border-rad-outer:5px;
-  --dt-sys-border-rad-inner:3px;
+  --border-rad-outer:5px;
+  --border-rad-inner:3px;
 
-  --dt-sys-size-xs:calc(var(--dt-ref-size-unit)*0.75);
-  --dt-sys-size-s:var(--dt-ref-size-unit); 
-  --dt-sys-size-m:calc(var(--dt-ref-size-unit) * 3);
-  --dt-sys-size-l:calc(var(--dt-ref-size-unit) * 5);
+  --size-xs:calc(var(--size-unit)*0.75);
+  --size-s:var(--size-unit);
+  --size-m:calc(var(--size-unit) * 3);
+  --size-l:calc(var(--size-unit) * 5);
 
-  --dt-sys-main-spacing:var(--dt-sys-size-l);
+  --main-spacing:var(--size-l);
 
-  --dt-sys-size-icon-large:calc(var(--dt-ref-size-medium)* 2);
+  --size-icon-large:calc(var(--size-medium)* 2);
 
-  --dt-sys-shadow-double-light:0px 0px 0px 2px var(--dt-ref-clr-grey-1000), 0px 0px 0px 4px var(--dt-ref-clr-grey-800);
-  --dt-sys-shadow-subtle:0px 2px 10px rgba(0,0,0,0.15), 0px 1px 5px rgba(0,0,0,0.15);
-  --dt-sys-shadow-default: 1px 2px 6px rgba(0,0,0,0.18),0 0 1px 1px rgba(0,0,0,0.05);
-  
-  --dt-sys-shadow-card:0px 0px 3px rgba(0, 0, 0, 0.15), 0px 6px 15px rgba(0, 0, 0, 0.1);
-  --dt-sys-shadow-card:0px 2px 2px rgba(0, 0, 0, 0.16), 0 0 10px rgba(0, 0, 0, 0.1);
+  --shadow-double-light:0px 0px 0px 2px var(--clr-grey-1000), 0px 0px 0px 4px var(--clr-grey-800);
+  --shadow-subtle:0px 2px 10px rgba(0,0,0,0.15), 0px 1px 5px rgba(0,0,0,0.15);
+  --shadow-default: 1px 2px 6px rgba(0,0,0,0.18),0 0 1px 1px rgba(0,0,0,0.05);
 
-  
+  --shadow-card:0px 0px 3px rgba(0, 0, 0, 0.15), 0px 6px 15px rgba(0, 0, 0, 0.1);
+  --shadow-card:0px 2px 2px rgba(0, 0, 0, 0.16), 0 0 10px rgba(0, 0, 0, 0.1);
+
+
 }

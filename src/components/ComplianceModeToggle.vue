@@ -1,6 +1,15 @@
 <template>
   <div class="b_modeToggle">
-    <h3 class="b_modeToggle__title">Select WCAG Compliance Level</h3>
+    <h3 class="b_modeToggle__title">
+      Select
+      <a
+        class="b_modeToggle__infoLink"
+        href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/Understanding_WCAG/Perceivable/Color_contrast"
+        target="_blank"
+        >WCAG Compliance</a
+      >
+      Level
+    </h3>
     <button
       class="b_modeToggle__control"
       :class="[modeClass]"
@@ -22,10 +31,6 @@ const colourStore = useColourStore();
 // Data
 const state = reactive({
   mode: "AA",
-});
-
-const props = defineProps({
-  propName: null,
 });
 
 const modeClass = computed(() => {
@@ -52,18 +57,28 @@ const toggleMode = function () {
 
 <style lang="scss" scoped>
 .b_modeToggle {
-  padding: calc(var(--dt-sys-main-spacing) * 0.4) var(--dt-sys-main-spacing);
+  padding: calc(var(--main-spacing) * 0.4) var(--main-spacing);
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 15px;
-  background: var(--dt-ref-clr-grey-800);
-  border-radius: var(--dt-sys-size-s) 0 0 0;
+  background: var(--clr-grey-800);
+  border-radius: var(--size-s) 0 0 0;
 
   &__title {
     //order: 1;
-    font: var(--dt-sys-heading-700);
-    color: var(--dt-ref-clr-grey-100);
+    font: var(--heading-700);
+    color: var(--clr-grey-100);
+  }
+
+  &__infoLink {
+    color: inherit;
+    cursor: help;
+    transition: all var(--trans-short);
+
+    &:is(:hover, :focus, :active) {
+      color: var(--clr-blue-100);
+    }
   }
 
   &__control {
@@ -75,33 +90,33 @@ const toggleMode = function () {
     gap: 10px;
     cursor: pointer;
     padding: 10px 20px;
-    background: var(--dt-ref-clr-grey-1000);
-    border-radius: var(--dt-sys-border-rad-large);
+    background: var(--clr-grey-1000);
+    border-radius: var(--border-rad-large);
     //border-radius: 40px;
-    box-shadow: var(--dt-sys-shadow-card);
+    box-shadow: var(--shadow-card);
   }
 
   &__label {
-    font: var(--dt-sys-heading-700);
-    color: var(--dt-ref-clr-blue-200);
+    font: var(--heading-700);
+    color: var(--clr-blue-200);
   }
 
   &__switch {
     width: 50px;
     height: 30px;
     border-radius: 20px;
-    background: var(--dt-ref-clr-grey-900);
+    background: var(--clr-grey-900);
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
 
     &:after {
       width: 22px;
       height: 22px;
-      background: var(--dt-ref-clr-blue-200);
+      background: var(--clr-blue-200);
       border-radius: 15px;
       top: 50%;
       transform: translateY(-50%);
       left: var(--switch-pill-left, 4px);
-      transition: all var(--dt-sys-trans-short);
+      transition: all var(--trans-short);
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
     }
   }

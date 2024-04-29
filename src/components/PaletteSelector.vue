@@ -115,7 +115,7 @@ const palettesOrderUpdated = function () {
   position: relative;
   display: grid;
   align-self: end;
-  padding: var(--dt-ref-size-small) 0;
+  padding: var(--size-small) 0;
   z-index: 100;
 
   &__toggle {
@@ -130,21 +130,21 @@ const palettesOrderUpdated = function () {
     position: absolute;
     bottom: -5px;
     right: 0;
-    background: var(--dt-ref-clr-grey-1000);
+    background: var(--clr-grey-1000);
     transform: translateY(100%);
-    border: 1px solid var(--dt-ref-clr-grey-800);
-    box-shadow: var(--dt-sys-shadow-card);
-    border-radius: var(--dt-sys-border-rad-outer);
+    border: 1px solid var(--clr-grey-800);
+    box-shadow: var(--shadow-card);
+    border-radius: var(--border-rad-outer);
   }
 
   &__list {
     width: 100%;
     display: grid;
     grid-gap: 10px;
-    background: var(--dt-ref-clr-grey-900);
-    border-top: 1px solid var(--dt-ref-clr-grey-800);
-    border-radius: 0 0 var(--dt-sys-border-rad-outer)
-      var(--dt-sys-border-rad-outer);
+    background: var(--clr-grey-900);
+    border-top: 1px solid var(--clr-grey-800);
+    border-radius: 0 0 var(--border-rad-outer)
+      var(--border-rad-outer);
 
     &:not(:empty) {
       padding: 15px;
@@ -154,17 +154,17 @@ const palettesOrderUpdated = function () {
   &__add {
     --form-button-width: auto;
     --form-button-height: auto;
-    --formAction-background: var(--dt-ref-clr-red-400);
-    --formAction-background-hov: var(--dt-ref-clr-red-300);
+    --formAction-background: var(--clr-red-400);
+    --formAction-background-hov: var(--clr-red-300);
     //--formAction-padding: 0.4em 0.65em;
-    //--formAction-font: var(--dt-sys-body-300);
+    //--formAction-font: var(--body-300);
     padding: 15px;
     justify-self: center;
   }
 
   &--open {
-    --formAction-background: var(--dt-ref-clr-red-400);
-    --formAction-background-hov: var(--dt-ref-clr-red-400);
+    --formAction-background: var(--clr-red-400);
+    --formAction-background-hov: var(--clr-red-400);
   }
 
   .v-enter-active,

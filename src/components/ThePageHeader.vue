@@ -20,38 +20,38 @@ import GoodLogo from "@/components/icons/IconGoodLogo.vue";
 .b_pageHeader {
   grid-column: 1/-1;
   grid-row: 1;
-  background: var(--dt-ref-clr-grey-000);
-  gap: var(--dt-ref-size-small);
+  background: var(--clr-grey-000);
+  gap: var(--size-small);
   position: relative;
   z-index: 110;
-  border-right: 1px solid var(--dt-sys-clr-border);
+  border-right: 1px solid var(--clr-border);
 
   &__inner {
     display: grid;
     grid-template-columns: 1fr;
-    grid-gap: var(--dt-ref-size-large);
+    grid-gap: var(--size-large);
   }
 
   &__title {
     align-items: center;
-    padding: calc(var(--dt-sys-main-spacing) / 1.5) var(--dt-sys-main-spacing)
-      calc(var(--dt-sys-main-spacing) / 1.5);
+    padding: calc(var(--main-spacing) / 1.5) var(--main-spacing)
+      calc(var(--main-spacing) / 1.5);
   }
 
   &__logo {
-    padding-inline-end: var(--dt-ref-size-medium);
+    padding-inline-end: var(--size-medium);
     align-items: center;
     max-width: 80px;
   }
 
   &__titleName {
-    color: var(--dt-ref-clr-grey-1000);
+    color: var(--clr-grey-1000);
     font-weight: 500;
     font-size: 24px;
   }
 
   :deep([fill]) {
-    fill: var(--dt-ref-clr-grey-1000);
+    fill: var(--clr-grey-1000);
   }
 }
 </style>

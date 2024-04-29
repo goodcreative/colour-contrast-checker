@@ -16,6 +16,7 @@
       <ComplianceModeToggle></ComplianceModeToggle>
       <CombinationsList></CombinationsList>
     </main>
+    <SampleModal></SampleModal>
   </div>
 </template>
 
@@ -29,6 +30,7 @@ import CombinationsList from "@/components/CombinationsList.vue";
 import PaletteTitle from "@/components/PaletteTitle.vue";
 import PaletteControls from "@/components/PaletteControls.vue";
 import ComplianceModeToggle from "@/components/ComplianceModeToggle.vue";
+import SampleModal from "@/components/SampleModal.vue";
 import { useColourStore } from "@/stores/colourStore";
 
 const colourStore = useColourStore();
@@ -41,38 +43,38 @@ onMounted(() => {
 
 <style lang="scss">
 body {
-  font-family: var(--dt-ref-fontFamily-base);
+  font-family: var(--fontFamily-base);
   font-weight: 400;
   padding: 0;
   margin: 0;
-  color: var(--dt-sys-clr-text-body);
-  background: var(--dt-sys-clr-theme-background-light);
+  color: var(--clr-text-body);
+  background: var(--clr-theme-background-light);
 }
 
 .b_page {
   display: grid;
   grid-template-columns: 340px 1fr;
   grid-template-rows: auto auto 1fr;
-  gap: var(--dt-sys-size-m);
+  gap: var(--size-m);
   min-height: 100vh;
-  padding-block-end: var(--dt-sys-size-m);
+  padding-block-end: var(--size-m);
 
   &__title {
-    //background: var(--dt-ref-clr-grey-900);
+    //background: var(--clr-grey-900);
     grid-column: 1 / -1;
     grid-row: 2;
     display: flex;
     justify-content: space-between;
-    gap: var(--dt-ref-size-large);
+    gap: var(--size-large);
     align-items: center;
-    padding: calc(var(--dt-sys-main-spacing) / 2) var(--dt-sys-main-spacing);
+    padding: calc(var(--main-spacing) / 2) var(--main-spacing);
   }
 
   &__list {
-    background: var(--dt-ref-clr-grey-900);
+    background: var(--clr-grey-900);
     grid-column: 1;
     grid-row: 3;
-    border-radius: 0 var(--dt-sys-size-s) var(--dt-sys-size-s) 0;
+    border-radius: 0 var(--size-s) var(--size-s) 0;
     position: relative;
     z-index: 1000;
   }
@@ -85,10 +87,10 @@ body {
   }
 
   &__content {
-    background: var(--dt-ref-clr-grey-900);
+    background: var(--clr-grey-900);
     grid-column: 2;
     grid-row: 3;
-    border-radius: var(--dt-sys-size-s) 0 0 var(--dt-sys-size-s);
+    border-radius: var(--size-s) 0 0 var(--size-s);
   }
 }
 </style>

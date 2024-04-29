@@ -94,22 +94,22 @@ const hasVisibleLabel = computed(() => {
     font: var(--formAction-font);
     padding: var(--formAction-padding, 0.6em 1em);
     border: none;
-    background: var(--formAction-background, var(--dt-ref-clr-blue-200));
-    color: var(--formAction-text, var(--dt-ref-clr-grey-1000));
+    background: var(--formAction-background, var(--clr-blue-200));
+    color: var(--formAction-text, var(--clr-grey-1000));
     cursor: pointer;
     line-height: var(--formAction-lineheight, 1);
-    transition: background-color var(--dt-sys-trans-short);
-    border-radius: var(--formAction-bordrad, var(--dt-sys-border-rad-inner));
+    transition: background-color var(--trans-short);
+    border-radius: var(--formAction-bordrad, var(--border-rad-inner));
     width: var(--formAction-width, auto);
     height: var(--formAction-height, auto);
     white-space: nowrap;
-    transition: all var(--dt-sys-trans-short);
+    transition: all var(--trans-short);
     display: flex;
     align-items: center;
     gap: 12px;
 
     &:is(:hover) {
-      background: var(--formAction-background-hov, var(--dt-ref-clr-blue-100));
+      background: var(--formAction-background-hov, var(--clr-blue-100));
     }
 
     ::deep(svg) {
@@ -127,6 +127,7 @@ const hasVisibleLabel = computed(() => {
     --formAction-width: 34px;
     --formAction-height: 34px;
     --formAction-padding: 4px;
+    --formAction-bordrad: 50%;
 
     #{ $self }__button {
       display: flex;
@@ -136,14 +137,19 @@ const hasVisibleLabel = computed(() => {
   }
 
   &--negative {
-    --formAction-background: var(--dt-ref-clr-red-400);
-    --formAction-background-hov: var(--dt-ref-clr-red-300);
+    --formAction-background: var(--clr-red-400);
+    --formAction-background-hov: var(--clr-red-300);
   }
 
   &--positive,
   &--submit {
-    --formAction-background: var(--dt-ref-clr-blue-200);
-    --formAction-background-hov: var(--dt-ref-clr-blue-100);
+    --formAction-background: var(--clr-blue-200);
+    --formAction-background-hov: var(--clr-blue-100);
+  }
+
+  &--utility {
+    --formAction-background: var(--clr-grey-200);
+    --formAction-background-hov: var(--clr-grey-100);
   }
 
   &--actionToggle {
@@ -154,8 +160,8 @@ const hasVisibleLabel = computed(() => {
     #{ $self }__button {
       opacity: 0.5;
       cursor: not-allowed;
-      --formAction-background: var(--dt-ref-clr-grey-800);
-      --formAction-background-hov: var(--dt-ref-clr-grey-800);
+      --formAction-background: var(--clr-grey-800);
+      --formAction-background-hov: var(--clr-grey-800);
     }
   }
 

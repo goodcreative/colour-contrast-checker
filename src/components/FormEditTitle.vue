@@ -53,11 +53,11 @@ const submitForm = async () => {
 <style lang="scss" scoped>
 .b_titleForm {
   --text-field-back: transparent;
-  --text-field-size: var(--dt-sys-heading-1000);
+  --text-field-size: var(--heading-1000);
   --text-field-pd: 0;
   --form-field-border-clr: transparent;
   --form-field-min-width: 400px;
-  --formAction-font: var(--dt-sys-body-300);
+  --formAction-font: var(--body-300);
   --formAction-padding: 0.4em 0.65em;
 
   display: flex;

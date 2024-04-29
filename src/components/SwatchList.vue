@@ -34,6 +34,6 @@ const listOrderUpdated = function () {
 <style lang="scss" scoped>
 .b_swatchList {
   --flow-space: 10px;
-  padding: calc(var(--dt-sys-main-spacing) / 2) var(--dt-sys-main-spacing);
+  padding: calc(var(--main-spacing) / 2) var(--main-spacing);
 }
 </style>

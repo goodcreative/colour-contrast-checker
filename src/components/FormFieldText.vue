@@ -102,7 +102,7 @@ const IconComponent = computed(() => {
 .b_textfield {
   $self: &;
   display: grid;
-  grid-gap: var(--dt-ref-size-xsmall);
+  grid-gap: var(--size-xsmall);
 
   ::placeholder {
     color: #999;
@@ -114,9 +114,9 @@ const IconComponent = computed(() => {
   }
 
   &__label {
-    font: var(--text-label-size, var(--dt-sys-heading-700));
+    font: var(--text-label-size, var(--heading-700));
     font-weight: 500;
-    color: var(--dt-ref-clr-grey-700);
+    color: var(--clr-grey-700);
     display: var(--form-field-label-display, block);
 
     &:empty {
@@ -126,8 +126,8 @@ const IconComponent = computed(() => {
 
   &__field {
     border: 1px solid
-      var(--form-field-border-clr, var(--dt-sys-clr-form-field-border));
-    border-radius: var(--dt-sys-border-rad-outer);
+      var(--form-field-border-clr, var(--clr-form-field-border));
+    border-radius: var(--border-rad-outer);
     overflow: hidden;
     display: flex;
     min-width: var(--form-field-min-width, auto);
@@ -137,7 +137,7 @@ const IconComponent = computed(() => {
   &__input {
     background-color: var(
       --form-field-background-clr,
-      var(--dt-ref-clr-grey-1000)
+      var(--clr-grey-1000)
     );
   }
 
@@ -150,7 +150,7 @@ const IconComponent = computed(() => {
 
   &__input {
     background: var(--text-field-back);
-    font: var(--text-field-size, var(--dt-sys-text-code-400));
+    font: var(--text-field-size, var(--text-code-400));
     padding: var(--text-field-pd, 0.3em 0.85em);
     width: 100%;
     border: none;
@@ -159,14 +159,14 @@ const IconComponent = computed(() => {
 
   &--error {
     #{ $self }__field {
-      border-color: var(--form-field-error-clr, var(--dt-ref-clr-red-400));
+      border-color: var(--form-field-error-clr, var(--clr-red-400));
     }
   }
 
   &--icon {
     #{ $self }__fieldIcon {
       :deep([fill]) {
-        fill: var(--form-field-icon-clr, var(--dt-ref-clr-grey-100));
+        fill: var(--form-field-icon-clr, var(--clr-grey-100));
       }
     }
     #{ $self }__input {

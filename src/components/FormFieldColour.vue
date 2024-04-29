@@ -95,7 +95,7 @@ const fieldStatus = computed(() => {
 .b_colourPicker {
   $self: &;
   display: grid;
-  grid-gap: var(--dt-ref-size-xsmall);
+  grid-gap: var(--size-xsmall);
 
   ::placeholder {
     color: #999;
@@ -106,9 +106,9 @@ const fieldStatus = computed(() => {
   }
 
   &__label {
-    font: var(--text-label-font, var(--dt-sys-heading-700));
+    font: var(--text-label-font, var(--heading-700));
     font-weight: 500;
-    color: var(--dt-ref-clr-grey-100);
+    color: var(--clr-grey-100);
     display: var(--form-field-label-display, block);
     text-transform: uppercase;
 
@@ -119,8 +119,8 @@ const fieldStatus = computed(() => {
 
   &__field {
     border: 1px solid
-      var(--form-field-border-clr, var(--dt-sys-clr-form-field-border));
-    border-radius: var(--dt-sys-border-rad-outer);
+      var(--form-field-border-clr, var(--clr-form-field-border));
+    border-radius: var(--border-rad-outer);
     overflow: hidden;
     display: flex;
     gap: 12px;
@@ -132,7 +132,7 @@ const fieldStatus = computed(() => {
   &__input {
     background-color: var(
       --form-field-background-clr,
-      var(--dt-ref-clr-grey-1000)
+      var(--clr-grey-1000)
     );
   }
 
@@ -149,7 +149,7 @@ const fieldStatus = computed(() => {
     appearance: none;
     width: 48px;
     height: 48px;
-    font: var(--text-field-size, var(--dt-sys-text-code-400));
+    font: var(--text-field-size, var(--text-code-400));
     outline: none;
     padding: 0;
     border: none;
@@ -185,14 +185,14 @@ const fieldStatus = computed(() => {
 
   &--error {
     #{ $self }__field {
-      border-color: var(--form-field-error-clr, var(--dt-ref-clr-red-400));
+      border-color: var(--form-field-error-clr, var(--clr-red-400));
     }
   }
 
   &--icon {
     #{ $self }__fieldIcon {
       :deep([fill]) {
-        fill: var(--form-field-icon-clr, var(--dt-ref-clr-grey-100));
+        fill: var(--form-field-icon-clr, var(--clr-grey-100));
       }
     }
   }

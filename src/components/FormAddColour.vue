@@ -55,14 +55,14 @@ const submitForm = async () => {
 
 <style lang="scss" scoped>
 .b_addColour {
-  padding: calc(var(--dt-sys-main-spacing) * 1) var(--dt-sys-main-spacing)
-    calc(var(--dt-sys-main-spacing) / 2);
+  padding: calc(var(--main-spacing) * 1) var(--main-spacing)
+    calc(var(--main-spacing) / 2);
 
   &__form {
     --form-field-border-clr: transparent;
-    --text-label-font: var(--dt-sys-text-code-400);
+    --text-label-font: var(--text-code-400);
     --form-field-error-clr: transparent;
-    --form-field-icon-clr: var(--dt-ref-clr-grey-100);
+    --form-field-icon-clr: var(--clr-grey-100);
   }
 
   &__title {
@@ -78,11 +78,11 @@ const submitForm = async () => {
     max-width: 400px;
     margin: 0;
     border: none;
-    border-radius: 28px var(--dt-sys-border-rad-outer)
-      var(--dt-sys-border-rad-outer) 28px;
-    background-color: var(--dt-ref-clr-grey-1000);
+    border-radius: 28px var(--border-rad-outer)
+      var(--border-rad-outer) 28px;
+    background-color: var(--clr-grey-1000);
     padding: 4px 12px 4px 4px;
-    box-shadow: var(--dt-sys-shadow-card);
+    box-shadow: var(--shadow-card);
   }
 
   &__preview {

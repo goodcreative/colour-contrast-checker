@@ -27,7 +27,7 @@ const props = defineProps({
   width: 20px;
   height: 20px;
   border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: var(--dt-sys-border-rad-inner);
+  border-radius: var(--border-rad-inner);
   border-radius: 50%;
 }
 </style>

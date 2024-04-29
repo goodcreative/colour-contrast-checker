@@ -6,10 +6,10 @@ import getTitleFromURL from "@/composables/getTitleFromURL";
 import getFocusColourFromURL from "@/composables/getFocusColourFromURL";
 import contrastRatio from "@/composables/calculateColourContrast";
 import SearchArrayByItemPropertyValue from "@/composables/SearchArrayByItemPropertyValue";
-import hexToRGB from "@/composables/hexToRGB.js";
-import { APCAcontrast, sRGBtoY, alphaBlend } from "apca-w3";
+// import hexToRGB from "@/composables/hexToRGB.js";
+// import { APCAcontrast, sRGBtoY, alphaBlend } from "apca-w3";
 
-import { colorParsley } from "colorparsley";
+// import { colorParsley } from "colorparsley";
 
 const aaPassRatio = 4.5;
 const aaPartialRatio = 3;
@@ -17,16 +17,6 @@ const aaaPassRatio = 7;
 const aaaPartialRatio = 4.5;
 
 export const useColourStore = defineStore("colourStore", () => {
-  /*
-  Local Storage Set of Palettes
-
-  These are written to the localStorage as:
-
-  "palettes"
-  "paletteIDCounter"
-
-  */
-
   const complianceMode = ref("AA");
 
   const complianceModeGetSet = computed({
@@ -37,6 +27,33 @@ export const useColourStore = defineStore("colourStore", () => {
       complianceMode.value = value;
     },
   });
+
+  const complianceRatios = computed(() => {
+    if (complianceMode.value === "AA") {
+      return {
+        min: aaPartialRatio,
+        max: aaPassRatio,
+      };
+    } else if (complianceMode.value === "AAA") {
+      return {
+        min: aaaPartialRatio,
+        max: aaaPassRatio,
+      };
+    } else {
+      return false;
+    }
+  });
+
+  /*
+  Local Storage Set of Palettes
+  =============================
+
+  These are written to the localStorage as:
+
+  "palettes"
+  "paletteIDCounter"
+
+  */
 
   const palettes = ref([]);
 
@@ -60,23 +77,31 @@ export const useColourStore = defineStore("colourStore", () => {
     },
   });
 
-  const complianceRatios = computed(() => {
-    if (complianceMode.value === "AA") {
-      return {
-        min: aaPartialRatio,
-        max: aaPassRatio,
-      };
-    } else if (complianceMode.value === "AAA") {
-      return {
-        min: aaaPartialRatio,
-        max: aaaPassRatio,
-      };
-    } else {
-      return false;
-    }
+  /*
+  Example Mode
+  ============
+  */
+
+  const sampleColours = ref([]);
+
+  const sampleColoursGetSet = computed({
+    get() {
+      return sampleColours.value;
+    },
+    set(value) {
+      sampleColours.value = value;
+    },
   });
 
-  /* 
+  const isSampleMode = computed(() => {
+    if (sampleColours.value.length) {
+      return true;
+    }
+
+    return false;
+  });
+
+  /*
   Colour Swatches
   ===============
   */
@@ -133,12 +158,12 @@ export const useColourStore = defineStore("colourStore", () => {
             Math.round(contrastRatio(firstColour, secondColour) * 100) / 100
           );
 
-          let apacContrast = APCAcontrast(
-            sRGBtoY(
-              alphaBlend(colorParsley(firstColour), colorParsley(secondColour))
-            ),
-            sRGBtoY(colorParsley(secondColour))
-          );
+          // let apacContrast = APCAcontrast(
+          //   sRGBtoY(
+          //     alphaBlend(colorParsley(firstColour), colorParsley(secondColour))
+          //   ),
+          //   sRGBtoY(colorParsley(secondColour))
+          // );
 
           //colourPair.push(apacContrast);
 
@@ -190,7 +215,7 @@ export const useColourStore = defineStore("colourStore", () => {
     return combos.sort(compare);
   });
 
-  /* 
+  /*
   Palette Title
   ===============
   */
@@ -403,6 +428,8 @@ export const useColourStore = defineStore("colourStore", () => {
     colours: coloursGetSet,
     listTitle: paletteTitleGetSet,
     focusColourGetSet,
+    sampleColoursGetSet,
+    isSampleMode,
     paletteTitle,
     uniqueColourCombinations,
     passColourCombinations,

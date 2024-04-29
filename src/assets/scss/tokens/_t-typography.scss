@@ -1,31 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&family=Inter:wght@200..700&display=swap');
 
 :root {
-  --dt-ref-fontFamily-base:'Inter', sans-serif; 
-  --dt-ref-fontFamily-base:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
-  --dt-ref-fontFamily-code: 'Fira Code', monospace; 
+  --fontFamily-base:'Inter', sans-serif; 
+  --fontFamily-base:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+  --fontFamily-code: 'Fira Code', monospace; 
 
-  --dt-ref-font-size-1200: #{clamped(40px,54px)};
-  --dt-ref-font-size-1000: #{clamped(24px,32px)};
-  --dt-ref-font-size-800: #{clamped(20px,24px)};
-  --dt-ref-font-size-700: #{rem(18)};
-  --dt-ref-font-size-400: #{rem(16)};
-  --dt-ref-font-size-300: #{rem(14)};
-  --dt-ref-font-size-200: #{rem(12)};
+  --font-size-1200: #{clamped(40px,54px)};
+  --font-size-1000: #{clamped(24px,32px)};
+  --font-size-800: #{clamped(20px,24px)};
+  --font-size-700: #{rem(18)};
+  --font-size-400: #{rem(16)};
+  --font-size-300: #{rem(14)};
+  --font-size-200: #{rem(12)};
 
 
-  --dt-sys-heading-1200: 300 var(--dt-ref-font-size-1200)/1 var(--dt-ref-fontFamily-base);
-  --dt-sys-heading-1000: 700 var(--dt-ref-font-size-1000)/1 var(--dt-ref-fontFamily-base);
-  --dt-sys-heading-800: 700 var(--dt-ref-font-size-800)/1 var(--dt-ref-fontFamily-base);
-  --dt-sys-heading-700: 700 var(--dt-ref-font-size-700)/1 var(--dt-ref-fontFamily-base);
+  --heading-1200: 300 var(--font-size-1200)/1 var(--fontFamily-base);
+  --heading-1000: 700 var(--font-size-1000)/1 var(--fontFamily-base);
+  --heading-800: 700 var(--font-size-800)/1 var(--fontFamily-base);
+  --heading-700: 700 var(--font-size-700)/1 var(--fontFamily-base);
   
-  --dt-sys-body-400: 400 var(--dt-ref-font-size-400)/1 var(--dt-ref-fontFamily-base);
-  --dt-sys-body-300: 400 var(--dt-ref-font-size-300)/1 var(--dt-ref-fontFamily-base);
-  --dt-sys-body-200: 400 var(--dt-ref-font-size-200)/1 var(--dt-ref-fontFamily-base);
+  --body-400: 400 var(--font-size-400)/1 var(--fontFamily-base);
+  --body-300: 400 var(--font-size-300)/1 var(--fontFamily-base);
+  --body-200: 400 var(--font-size-200)/1 var(--fontFamily-base);
   
-  --dt-sys-text-code-400: 500 var(--dt-ref-font-size-400)/1 var(--dt-ref-fontFamily-code);
-  --dt-sys-text-code-300: 500 var(--dt-ref-font-size-300)/1 var(--dt-ref-fontFamily-code);
-  --dt-sys-text-code-200: 500 var(--dt-ref-font-size-200)/1 var(--dt-ref-fontFamily-code);
+  --text-code-400: 500 var(--font-size-400)/1 var(--fontFamily-code);
+  --text-code-300: 500 var(--font-size-300)/1 var(--fontFamily-code);
+  --text-code-200: 500 var(--font-size-200)/1 var(--fontFamily-code);
 
-  --dt-sys-text-token-value:var(--dt-sys-text-code-400); 
+  --text-token-value:var(--text-code-400); 
 }

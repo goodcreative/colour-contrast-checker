@@ -1,47 +1,47 @@
 :root {
-  --dt-ref-clr-grey-000: #000;
-  //--dt-ref-clr-grey-100: #3c3c44;
-  --dt-ref-clr-grey-100: #1a1a1a;
-  --dt-ref-clr-grey-200: #45454b;
-  --dt-ref-clr-grey-300: #5a5a61;
-  --dt-ref-clr-grey-600: #808080;
-  --dt-ref-clr-grey-700: #a7a7a7;
-  --dt-ref-clr-grey-800: #e4e4e4;
-  --dt-ref-clr-grey-900: #F2F2F2;
-  --dt-ref-clr-grey-1000: #ffffff;
+  --clr-grey-000: #000;
+  //--clr-grey-100: #3c3c44;
+  --clr-grey-100: #1a1a1a;
+  --clr-grey-200: #45454b;
+  --clr-grey-300: #5a5a61;
+  --clr-grey-600: #808080;
+  --clr-grey-700: #a7a7a7;
+  --clr-grey-800: #e4e4e4;
+  --clr-grey-900: #F2F2F2;
+  --clr-grey-1000: #ffffff;
 
-  --dt-ref-clr-blue-100:#005687;
-  --dt-ref-clr-blue-200:#007ac1;
-  --dt-ref-clr-blue-300:#00A3FF;
-  --dt-ref-clr-blue-400:#7CD0FF;
-  --dt-ref-clr-blue-500:#8ed4fd;
-  --dt-ref-clr-blue-700:#D0EEFF;
-  --dt-ref-clr-blue-900:#f0f9fe;
+  --clr-blue-100:#005687;
+  --clr-blue-200:#007ac1;
+  --clr-blue-300:#00A3FF;
+  --clr-blue-400:#7CD0FF;
+  --clr-blue-500:#8ed4fd;
+  --clr-blue-700:#D0EEFF;
+  --clr-blue-900:#f0f9fe;
 
-  --dt-ref-clr-red-300: #b02435;
-  --dt-ref-clr-red-400: #ee495b;
-  --dt-ref-clr-red-900: #fff0f4;
+  --clr-red-300: #b02435;
+  --clr-red-400: #ee495b;
+  --clr-red-900: #fff0f4;
 
-  --dt-ref-clr-green-100:#1e6806;
-  --dt-ref-clr-green-400:#33a50d;
+  --clr-green-100:#1e6806;
+  --clr-green-400:#33a50d;
 
-  --dt-ref-clr-purple-900:#DDCDFE;
+  --clr-purple-900:#DDCDFE;
 
-  --dt-sys-clr-accent: var(--dt-ref-clr-blue-300);
+  --clr-accent: var(--clr-blue-300);
 
-  --dt-sys-clr-border:var(--dt-ref-clr-grey-800);
+  --clr-border:var(--clr-grey-800);
 
-  --dt-sys-clr-alt-back: var(--dt-ref-clr-grey-1000); 
+  --clr-alt-back: var(--clr-grey-1000); 
 
-  --dt-sys-clr-body: var(--dt-ref-clr-blue-700); 
-  --dt-sys-clr-text-heading: var(--dt-ref-clr-grey-100); 
-  --dt-sys-clr-text-body: var(--dt-ref-clr-grey-100); 
+  --clr-body: var(--clr-blue-700); 
+  --clr-text-heading: var(--clr-grey-100); 
+  --clr-text-body: var(--clr-grey-100); 
 
-  --dt-sys-clr-theme-background-light: var(--dt-ref-clr-grey-1000);
-  --dt-sys-clr-theme-foreground-light: var(--dt-ref-clr-grey-100);
+  --clr-theme-background-light: var(--clr-grey-1000);
+  --clr-theme-foreground-light: var(--clr-grey-100);
 
-  --dt-sys-clr-theme-background-dark: var(--dt-ref-clr-grey-200);
-  --dt-sys-clr-theme-foreground-dark: var(--dt-ref-clr-grey-900);
+  --clr-theme-background-dark: var(--clr-grey-200);
+  --clr-theme-foreground-dark: var(--clr-grey-900);
 
-  --dt-sys-clr-form-field-border:var(--dt-ref-clr-grey-800);
+  --clr-form-field-border:var(--clr-grey-800);
 }

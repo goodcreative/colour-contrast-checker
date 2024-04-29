@@ -4,7 +4,7 @@
       <div
         class="b_swatch__sample u_pseudo"
         :style="{ backgroundColor: colourHex }"
-        :onClick.prevent="setFocus"
+        @click.prevent="setFocus"
       >
         <Transition>
           <div v-if="state.isCopying" class="b_swatch__copyMessage">
@@ -17,7 +17,7 @@
       <p>{{ colourHex }}</p>
       <div class="b_swatch__toolbar">
         <FormAction
-          :onClick.prevent="copyToClipboard"
+          @click.prevent="copyToClipboard"
           buttonLabel="Copy"
           buttonMode="positive"
           buttonType="icon"
@@ -25,7 +25,7 @@
         ></FormAction>
 
         <FormAction
-          :onClick.prevent="deleteColour"
+          @click.prevent="deleteColour"
           buttonLabel="Delete"
           buttonMode="negative"
           buttonType="icon"
@@ -38,7 +38,7 @@
 
 <script setup>
 // Imports
-import { reactive, computed, ref } from "vue";
+import { reactive, computed } from "vue";
 import FormAction from "@/components/FormAction.vue";
 import IconDustbin from "@/components/icons/IconDustbin.vue";
 import IconCopy from "@/components/icons/IconCopy.vue";
@@ -102,16 +102,16 @@ const setFocus = async () => {
 .b_swatch {
   $self: &;
 
-  --formAction-background: var(--dt-ref-clr-grey-800);
+  --formAction-background: var(--clr-grey-800);
 
   display: grid;
   grid-template-columns: 40px 1fr;
   gap: 12px;
   padding: 8px 12px 8px 8px;
-  background: var(--swatch-back, var(--dt-ref-clr-grey-1000));
-  box-shadow: var(--dt-sys-shadow-card);
-  border-radius: 40px var(--dt-sys-border-rad-small)
-    var(--dt-sys-border-rad-small) 40px;
+  background: var(--swatch-back, var(--clr-grey-1000));
+  box-shadow: var(--shadow-card);
+  border-radius: 40px var(--border-rad-small)
+    var(--border-rad-small) 40px;
   cursor: move;
 
   &__colour {
@@ -152,10 +152,10 @@ const setFocus = async () => {
     right: 0;
     top: 50%;
     transform: translate(calc(100% + 8px), -50%);
-    color: var(--dt-ref-clr-grey-100);
-    background: var(--dt-ref-clr-grey-900);
+    color: var(--clr-grey-100);
+    background: var(--clr-grey-900);
     padding: 5px 10px;
-    font: var(--dt-sys-text-code-400);
+    font: var(--text-code-400);
     border-radius: 3px;
   }
 
@@ -177,7 +177,7 @@ const setFocus = async () => {
 
     p {
       color: var(--swatch-text);
-      font: var(--dt-sys-text-code-400);
+      font: var(--text-code-400);
     }
   }
 
@@ -185,7 +185,7 @@ const setFocus = async () => {
     display: flex;
     grid-gap: 5px;
     opacity: 0;
-    transition: opacity var(--dt-sys-trans-short);
+    transition: opacity var(--trans-short);
 
     --b-icon-max-height: 24px;
   }
@@ -197,13 +197,13 @@ const setFocus = async () => {
   }
 
   &.focus {
-    --swatch-text: var(--dt-ref-clr-grey-1000);
-    --swatch-back: var(--dt-ref-clr-grey-200);
-    --swatch-sample-border-clr: var(--dt-ref-clr-grey-1000);
+    --swatch-text: var(--clr-grey-1000);
+    --swatch-back: var(--clr-grey-200);
+    --swatch-sample-border-clr: var(--clr-grey-1000);
     //--swatch-sample-translate: -3px, -3px;
     //--swatch-sample-scale: 0.9;
     --swatch-sample-border-width: 3px;
-    --formAction-background: var(--dt-ref-clr-grey-300);
+    --formAction-background: var(--clr-grey-300);
     --swatch-sample-shadow: inset 0 0 0 var(--swatch-shadow-thickness, 3px)
       var(--swatch-back);
     --swatch-sample-cursor: zoom-out;
