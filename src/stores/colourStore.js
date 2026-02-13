@@ -119,15 +119,12 @@ export const useColourStore = defineStore("colourStore", () => {
 
   const focusColour = ref("");
 
-  const focusColourGetSet = computed({
-    get() {
-      return focusColour.value;
-    },
-    set(value) {
-      focusColour.value = value;
-      updateURLData();
-    },
-  });
+  const focusColourGet = computed(() => focusColour.value);
+
+  function setFocusColour(colour) {
+    focusColour.value = colour;
+    this.updateURLData();
+  }
 
   const uniqueColourCombinations = computed(() => {
     let uniqueCombinations = [];
@@ -281,7 +278,7 @@ export const useColourStore = defineStore("colourStore", () => {
     const focusColourInURL = getFocusColourFromURL();
 
     if (focusColourInURL) {
-      focusColourGetSet.value = focusColourInURL;
+      focusColour.value = focusColourInURL;
     }
   }
 
@@ -296,7 +293,7 @@ export const useColourStore = defineStore("colourStore", () => {
     savedTitle.value = newTitle;
     focusColour.value = "";
 
-    updateURLData();
+    this.updateURLData();
   }
 
   function deleteLocalPalette(id) {
@@ -304,10 +301,8 @@ export const useColourStore = defineStore("colourStore", () => {
 
     let indexOfPaletteToDelete = palettes.value.indexOf(localPalette);
 
-    if (indexOfPaletteToDelete === 0) {
-      palettes.value.shift();
-    } else {
-      palettes.value.splice(indexOfPaletteToDelete, indexOfPaletteToDelete);
+    if (indexOfPaletteToDelete > -1) {
+      palettes.value.splice(indexOfPaletteToDelete, 1);
     }
 
     updateLocalStorage();
@@ -321,7 +316,6 @@ export const useColourStore = defineStore("colourStore", () => {
   }
 
   function addPaletteToLocalStorage() {
-    window.console.log(palettes);
     // Needs a title
     if (paletteTitle.value !== "") {
       let savedPalette = {};
@@ -360,8 +354,8 @@ export const useColourStore = defineStore("colourStore", () => {
       const indexOfColour = colourArray.value.indexOf(colourHexToRemove);
       colourArray.value.splice(indexOfColour, 1);
       this.colourSwatches = colourArray;
-      if (colourHexToRemove === focusColourGetSet.value) {
-        focusColourGetSet.value = "";
+      if (colourHexToRemove === focusColourGet.value) {
+        focusColour.value = "";
       }
       this.updateURLData();
     }
@@ -392,7 +386,7 @@ export const useColourStore = defineStore("colourStore", () => {
   function updateURLData() {
     const coloursForURL = formatPaletteQueryString();
     const paletteTitle = paletteTitleGetSet.value;
-    const focusColour = focusColourGetSet.value.replace("#", "");
+    const focusColour = focusColourGet.value.replace("#", "");
     const currState = history.state;
 
     const url = new URL(window.location);
@@ -405,7 +399,7 @@ export const useColourStore = defineStore("colourStore", () => {
   function clearPalette() {
     this.colourSwatches = [];
     this.listTitle = "";
-    this.focusColourGetSet = "";
+    this.setFocusColour("");
     this.updateURLData();
   }
 
@@ -427,7 +421,8 @@ export const useColourStore = defineStore("colourStore", () => {
     colourSwatches,
     colours: coloursGetSet,
     listTitle: paletteTitleGetSet,
-    focusColourGetSet,
+    focusColour: focusColourGet,
+    setFocusColour,
     sampleColoursGetSet,
     isSampleMode,
     paletteTitle,

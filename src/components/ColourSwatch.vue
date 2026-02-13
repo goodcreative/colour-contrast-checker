@@ -79,7 +79,7 @@ const copyToClipboard = async () => {
 };
 
 const isFocus = computed(() => {
-  const FOCUS_COLOUR = colourStore.focusColourGetSet;
+  const FOCUS_COLOUR = colourStore.focusColour;
 
   if (FOCUS_COLOUR === props.colourHex) {
     return true;
@@ -90,10 +90,10 @@ const isFocus = computed(() => {
 
 const setFocus = async () => {
   if (isFocus.value) {
-    colourStore.focusColourGetSet = "";
+    colourStore.setFocusColour("");
   } else {
     window.console.log(hexToRGB(props.colourHex));
-    colourStore.focusColourGetSet = props.colourHex;
+    colourStore.setFocusColour(props.colourHex);
   }
 };
 </script>
