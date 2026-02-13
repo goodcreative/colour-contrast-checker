@@ -6,10 +6,10 @@ import getTitleFromURL from "@/composables/getTitleFromURL";
 import getFocusColourFromURL from "@/composables/getFocusColourFromURL";
 import contrastRatio from "@/composables/calculateColourContrast";
 import SearchArrayByItemPropertyValue from "@/composables/SearchArrayByItemPropertyValue";
-// import hexToRGB from "@/composables/hexToRGB.js";
-// import { APCAcontrast, sRGBtoY, alphaBlend } from "apca-w3";
+import hexToRGB from "@/composables/hexToRGB.js";
+import { APCAcontrast, sRGBtoY, alphaBlend } from "apca-w3";
 
-// import { colorParsley } from "colorparsley";
+import { colorParsley } from "colorparsley";
 
 const aaPassRatio = 4.5;
 const aaPartialRatio = 3;
