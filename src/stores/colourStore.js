@@ -16,9 +16,40 @@ const aaPartialRatio = 3;
 const aaaPassRatio = 7;
 const aaaPartialRatio = 4.5;
 
+/**
+ * @typedef {Object} Palette
+ * @property {string[]} colours - An array of hex color strings.
+ * @property {number} id - Unique ID for the palette.
+ * @property {string} title - The title of the palette.
+ */
+
+/**
+ * @typedef {Object} ComplianceRatios
+ * @property {number} min - The minimum contrast ratio for compliance.
+ * @property {number} max - The maximum contrast ratio for compliance.
+ */
+
+/**
+ * Pinia store for managing colour palettes, compliance modes, and contrast calculations.
+ *
+ * This store handles:
+ * - Setting and getting WCAG compliance modes (AA, AAA).
+ * - Storing and managing user-defined colour palettes.
+ * - Calculating contrast ratios for colour combinations.
+ * - Managing sample colours for testing.
+ * - Interacting with local storage for persistence.
+ */
 export const useColourStore = defineStore("colourStore", () => {
+  /**
+   * The currently selected WCAG compliance mode ('AA' or 'AAA').
+   * @type {import('vue').Ref<string>}
+   */
   const complianceMode = ref("AA");
 
+  /**
+   * Getter/Setter for the compliance mode.
+   * @type {import('vue').ComputedRef<string>}
+   */
   const complianceModeGetSet = computed({
     get() {
       return complianceMode.value;
@@ -28,6 +59,10 @@ export const useColourStore = defineStore("colourStore", () => {
     },
   });
 
+  /**
+   * Computed property that returns the min/max contrast ratios based on the current compliance mode.
+   * @type {import('vue').ComputedRef<ComplianceRatios|false>}
+   */
   const complianceRatios = computed(() => {
     if (complianceMode.value === "AA") {
       return {
@@ -44,19 +79,16 @@ export const useColourStore = defineStore("colourStore", () => {
     }
   });
 
-  /*
-  Local Storage Set of Palettes
-  =============================
-
-  These are written to the localStorage as:
-
-  "palettes"
-  "paletteIDCounter"
-
-  */
-
+  /**
+   * Array of saved colour palettes.
+   * @type {import('vue').Ref<Palette[]>}
+   */
   const palettes = ref([]);
 
+  /**
+   * Getter/Setter for the palettes array.
+   * @type {import('vue').ComputedRef<Palette[]>}
+   */
   const palettesGetSet = computed({
     get() {
       return palettes.value;
@@ -66,8 +98,16 @@ export const useColourStore = defineStore("colourStore", () => {
     },
   });
 
+  /**
+   * Counter for generating unique palette IDs.
+   * @type {import('vue').Ref<number>}
+   */
   const paletteIDCounter = ref(0);
 
+  /**
+   * Getter/Setter for the palette ID counter.
+   * @type {import('vue').ComputedRef<number>}
+   */
   const paletteIDCounterGetSet = computed({
     get() {
       return paletteIDCounter.value;
@@ -77,13 +117,16 @@ export const useColourStore = defineStore("colourStore", () => {
     },
   });
 
-  /*
-  Example Mode
-  ============
-  */
-
+  /**
+   * Colours used in "sample mode" for temporary testing or demonstration.
+   * @type {import('vue').Ref<string[]>}
+   */
   const sampleColours = ref([]);
 
+  /**
+   * Getter/Setter for sample colours.
+   * @type {import('vue').ComputedRef<string[]>}
+   */
   const sampleColoursGetSet = computed({
     get() {
       return sampleColours.value;
@@ -93,6 +136,10 @@ export const useColourStore = defineStore("colourStore", () => {
     },
   });
 
+  /**
+   * Indicates if the app is currently in sample mode (i.e., `sampleColours` has items).
+   * @type {import('vue').ComputedRef<boolean>}
+   */
   const isSampleMode = computed(() => {
     if (sampleColours.value.length) {
       return true;
@@ -101,13 +148,16 @@ export const useColourStore = defineStore("colourStore", () => {
     return false;
   });
 
-  /*
-  Colour Swatches
-  ===============
-  */
-
+  /**
+   * The main array of colour swatches currently being displayed/analyzed.
+   * @type {import('vue').Ref<string[]>}
+   */
   const colourSwatches = ref([]);
 
+  /**
+   * Getter/Setter for the main colour swatches array.
+   * @type {import('vue').ComputedRef<string[]>}
+   */
   const coloursGetSet = computed({
     get() {
       return colourSwatches.value;
@@ -117,8 +167,16 @@ export const useColourStore = defineStore("colourStore", () => {
     },
   });
 
+  /**
+   * The currently focused colour, used for filtering combinations.
+   * @type {import('vue').Ref<string>}
+   */
   const focusColour = ref("");
 
+  /**
+   * Getter/Setter for the focus colour. Updates the URL when set.
+   * @type {import('vue').ComputedRef<string>}
+   */
   const focusColourGetSet = computed({
     get() {
       return focusColour.value;
@@ -129,6 +187,12 @@ export const useColourStore = defineStore("colourStore", () => {
     },
   });
 
+  /**
+   * Computes all unique colour combinations from `colourSwatches` and their WCAG contrast ratios.
+   * If `focusColour` is set, only combinations involving the focus colour are returned.
+   * Each combination is an array: `[colour1, colour2, wcagContrastRatio]`.
+   * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
+   */
   const uniqueColourCombinations = computed(() => {
     let uniqueCombinations = [];
     const colours = [...colourSwatches.value].sort();
@@ -179,6 +243,11 @@ export const useColourStore = defineStore("colourStore", () => {
     return uniqueCombinations;
   });
 
+  /**
+   * Computed property returning colour combinations that fully pass the current compliance mode.
+   * Each item is `[colour1, colour2, wcagContrastRatio]`.
+   * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
+   */
   const passColourCombinations = computed(() => {
     const combos = [];
     uniqueColourCombinations.value.forEach((item) => {
@@ -190,6 +259,12 @@ export const useColourStore = defineStore("colourStore", () => {
     return combos.sort(compare);
   });
 
+  /**
+   * Computed property returning colour combinations that partially pass (large text)
+   * the current compliance mode.
+   * Each item is `[colour1, colour2, wcagContrastRatio]`.
+   * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
+   */
   const largePassColourCombinations = computed(() => {
     const combos = [];
     uniqueColourCombinations.value.forEach((item) => {
@@ -204,6 +279,11 @@ export const useColourStore = defineStore("colourStore", () => {
     return combos.sort(compare);
   });
 
+  /**
+   * Computed property returning colour combinations that fail the current compliance mode.
+   * Each item is `[colour1, colour2, wcagContrastRatio]`.
+   * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
+   */
   const failColourCombinations = computed(() => {
     const combos = [];
     uniqueColourCombinations.value.forEach((item) => {
@@ -215,13 +295,16 @@ export const useColourStore = defineStore("colourStore", () => {
     return combos.sort(compare);
   });
 
-  /*
-  Palette Title
-  ===============
-  */
-
+  /**
+   * The current title for the active colour palette.
+   * @type {import('vue').Ref<string>}
+   */
   const paletteTitle = ref("");
 
+  /**
+   * Getter/Setter for the palette title.
+   * @type {import('vue').ComputedRef<string>}
+   */
   const paletteTitleGetSet = computed({
     get() {
       return paletteTitle.value;
@@ -231,8 +314,16 @@ export const useColourStore = defineStore("colourStore", () => {
     },
   });
 
+  /**
+   * Stores the last saved title of the palette, used for comparison.
+   * @type {import('vue').Ref<string>}
+   */
   const savedTitle = ref("");
 
+  /**
+   * Indicates if the current palette title has been updated compared to the last saved title.
+   * @type {import('vue').ComputedRef<boolean>}
+   */
   const isTitleUpdated = computed(() => {
     if (savedTitle.value === paletteTitle.value) {
       return true;
@@ -241,6 +332,10 @@ export const useColourStore = defineStore("colourStore", () => {
     return false;
   });
 
+  /**
+   * Indicates if the current palette can be archived (has a title and colours).
+   * @type {import('vue').ComputedRef<boolean>}
+   */
   const paletteCanBeArchived = computed(() => {
     if (paletteTitle.value !== "" && colourSwatches.value.length > 0) {
       return true;
@@ -249,8 +344,10 @@ export const useColourStore = defineStore("colourStore", () => {
     return false;
   });
 
-  // Functions (Actions)
-
+  /**
+   * Loads colour palette data from the URL query string.
+   * Parses colours, title, and focus colour from the URL and updates the store's state.
+   */
   function loadPaletteFromQueryString() {
     this.colourSwatches = [];
 
@@ -285,6 +382,10 @@ export const useColourStore = defineStore("colourStore", () => {
     }
   }
 
+  /**
+   * Loads a saved palette from the local store into the active palette.
+   * @param {number} id - The ID of the palette to load.
+   */
   function loadLocalPalette(id) {
     let localPalette = SearchArrayByItemPropertyValue(id, "id", palettes.value);
 
@@ -299,6 +400,10 @@ export const useColourStore = defineStore("colourStore", () => {
     updateURLData();
   }
 
+  /**
+   * Deletes a saved palette from the local store.
+   * @param {number} id - The ID of the palette to delete.
+   */
   function deleteLocalPalette(id) {
     let localPalette = SearchArrayByItemPropertyValue(id, "id", palettes.value);
 
@@ -313,6 +418,9 @@ export const useColourStore = defineStore("colourStore", () => {
     updateLocalStorage();
   }
 
+  /**
+   * Loads all saved palettes and the ID counter from browser local storage.
+   */
   function loadPalettesFromLocalStorage() {
     if (localStorage.getItem("palettes") && localStorage.getItem("idCounter")) {
       palettes.value = JSON.parse(localStorage.getItem("palettes"));
@@ -320,6 +428,9 @@ export const useColourStore = defineStore("colourStore", () => {
     }
   }
 
+  /**
+   * Adds the current active palette to the local storage, if it has a title.
+   */
   function addPaletteToLocalStorage() {
     window.console.log(palettes);
     // Needs a title
@@ -340,11 +451,19 @@ export const useColourStore = defineStore("colourStore", () => {
     }
   }
 
+  /**
+   * Updates the 'palettes' and 'idCounter' items in browser local storage.
+   */
   function updateLocalStorage() {
     localStorage.setItem("palettes", JSON.stringify(palettes.value));
     localStorage.setItem("idCounter", paletteIDCounter.value);
   }
 
+  /**
+   * Adds a new colour (hex string) to the beginning of the `colourSwatches` array,
+   * if it's not already present. Updates the URL data.
+   * @param {string} colourHexToAdd - The hex colour string to add (e.g., "#RRGGBB").
+   */
   function addColour(colourHexToAdd) {
     const formattedHex = colourHexToAdd;
     if (!colourSwatches.value.includes(formattedHex)) {
@@ -353,6 +472,12 @@ export const useColourStore = defineStore("colourStore", () => {
     }
   }
 
+  /**
+   * Removes a specified colour (hex string) from the `colourSwatches` array.
+   * If the removed colour was the focus colour, resets the focus colour.
+   * Updates the URL data.
+   * @param {string} colourHexToRemove - The hex colour string to remove.
+   */
   function removeColour(colourHexToRemove) {
     const colourArray = colourSwatches;
 
@@ -367,11 +492,19 @@ export const useColourStore = defineStore("colourStore", () => {
     }
   }
 
+  /**
+   * Updates the `savedTitle` with the current `paletteTitle` and updates the URL data.
+   */
   function updatePaletteTitle() {
     this.savedTitle = paletteTitle.value;
     this.updateURLData();
   }
 
+  /**
+   * Formats the current `colourSwatches` into a URL-friendly query string.
+   * Example: "#FF0000", "#000000" becomes "FF0000-000000".
+   * @returns {string} The formatted colour string for URL.
+   */
   function formatPaletteQueryString() {
     const colourArray = colourSwatches;
     let colourStringForURL = "";
@@ -389,6 +522,10 @@ export const useColourStore = defineStore("colourStore", () => {
     return colourStringForURL;
   }
 
+  /**
+   * Updates the browser's URL query parameters based on the current active palette's
+   * colours, title, and focus colour.
+   */
   function updateURLData() {
     const coloursForURL = formatPaletteQueryString();
     const paletteTitle = paletteTitleGetSet.value;
@@ -402,6 +539,10 @@ export const useColourStore = defineStore("colourStore", () => {
     window.history.pushState(currState, "", url);
   }
 
+  /**
+   * Clears the current active colour palette, title, and focus colour.
+   * Updates the URL data.
+   */
   function clearPalette() {
     this.colourSwatches = [];
     this.listTitle = "";
@@ -409,6 +550,13 @@ export const useColourStore = defineStore("colourStore", () => {
     this.updateURLData();
   }
 
+  /**
+   * Comparison function for sorting colour combinations based on their WCAG contrast ratio (descending).
+   * Used by `passColourCombinations`, `largePassColourCombinations`, and `failColourCombinations`.
+   * @param {Array} a - The first colour combination array.
+   * @param {Array} b - The second colour combination array.
+   * @returns {number} -1 if a > b, 1 if a < b, 0 if equal.
+   */
   function compare(a, b) {
     if (a[2] > b[2]) {
       return -1;
@@ -419,14 +567,14 @@ export const useColourStore = defineStore("colourStore", () => {
     return 0;
   }
 
-  // Store API
+  // Expose the store's state, getters, and actions
   return {
     complianceModeGetSet,
     palettesGetSet,
     paletteIDCounterGetSet,
     colourSwatches,
-    colours: coloursGetSet,
-    listTitle: paletteTitleGetSet,
+    colours: coloursGetSet, // Alias for colourSwatches
+    listTitle: paletteTitleGetSet, // Alias for paletteTitle
     focusColourGetSet,
     sampleColoursGetSet,
     isSampleMode,
