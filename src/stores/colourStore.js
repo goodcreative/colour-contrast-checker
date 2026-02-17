@@ -31,33 +31,59 @@ const aaaPartialRatio = 4.5;
 
 /**
  * Pinia store for managing colour palettes, compliance modes, and contrast calculations.
- *
- * This store handles:
- * - Setting and getting WCAG compliance modes (AA, AAA).
- * - Storing and managing user-defined colour palettes.
- * - Calculating contrast ratios for colour combinations.
- * - Managing sample colours for testing.
- * - Interacting with local storage for persistence.
  */
 export const useColourStore = defineStore("colourStore", () => {
+  // --- STATE ---
+
   /**
    * The currently selected WCAG compliance mode ('AA' or 'AAA').
    * @type {import('vue').Ref<string>}
    */
   const complianceMode = ref("AA");
+  
+  /**
+   * Array of saved colour palettes.
+   * @type {import('vue').Ref<Palette[]>}
+   */
+  const palettes = ref([]);
 
   /**
-   * Getter/Setter for the compliance mode.
-   * @type {import('vue').ComputedRef<string>}
+   * Counter for generating unique palette IDs.
+   * @type {import('vue').Ref<number>}
    */
-  const complianceModeGetSet = computed({
-    get() {
-      return complianceMode.value;
-    },
-    set(value) {
-      complianceMode.value = value;
-    },
-  });
+  const paletteIDCounter = ref(0);
+
+  /**
+   * Colours used in "sample mode" for temporary testing or demonstration.
+   * @type {import('vue').Ref<string[]>}
+   */
+  const sampleColours = ref([]);
+
+  /**
+   * The main array of colour swatches currently being displayed/analyzed.
+   * @type {import('vue').Ref<string[]>}
+   */
+  const colourSwatches = ref([]);
+
+  /**
+   * The currently focused colour, used for filtering combinations.
+   * @type {import('vue').Ref<string>}
+   */
+  const focusColour = ref("");
+
+  /**
+   * The current title for the active colour palette.
+   * @type {import('vue').Ref<string>}
+   */
+  const paletteTitle = ref("");
+
+  /**
+   * Stores the last saved title of the palette, used for comparison.
+   * @type {import('vue').Ref<string>}
+   */
+  const savedTitle = ref("");
+
+  // --- GETTERS (Computed Properties) ---
 
   /**
    * Computed property that returns the min/max contrast ratios based on the current compliance mode.
@@ -80,112 +106,10 @@ export const useColourStore = defineStore("colourStore", () => {
   });
 
   /**
-   * Array of saved colour palettes.
-   * @type {import('vue').Ref<Palette[]>}
-   */
-  const palettes = ref([]);
-
-  /**
-   * Getter/Setter for the palettes array.
-   * @type {import('vue').ComputedRef<Palette[]>}
-   */
-  const palettesGetSet = computed({
-    get() {
-      return palettes.value;
-    },
-    set(value) {
-      palettes.value = value;
-    },
-  });
-
-  /**
-   * Counter for generating unique palette IDs.
-   * @type {import('vue').Ref<number>}
-   */
-  const paletteIDCounter = ref(0);
-
-  /**
-   * Getter/Setter for the palette ID counter.
-   * @type {import('vue').ComputedRef<number>}
-   */
-  const paletteIDCounterGetSet = computed({
-    get() {
-      return paletteIDCounter.value;
-    },
-    set(value) {
-      paletteIDCounter.value = value;
-    },
-  });
-
-  /**
-   * Colours used in "sample mode" for temporary testing or demonstration.
-   * @type {import('vue').Ref<string[]>}
-   */
-  const sampleColours = ref([]);
-
-  /**
-   * Getter/Setter for sample colours.
-   * @type {import('vue').ComputedRef<string[]>}
-   */
-  const sampleColoursGetSet = computed({
-    get() {
-      return sampleColours.value;
-    },
-    set(value) {
-      sampleColours.value = value;
-    },
-  });
-
-  /**
    * Indicates if the app is currently in sample mode (i.e., `sampleColours` has items).
    * @type {import('vue').ComputedRef<boolean>}
    */
-  const isSampleMode = computed(() => {
-    if (sampleColours.value.length) {
-      return true;
-    }
-
-    return false;
-  });
-
-  /**
-   * The main array of colour swatches currently being displayed/analyzed.
-   * @type {import('vue').Ref<string[]>}
-   */
-  const colourSwatches = ref([]);
-
-  /**
-   * Getter/Setter for the main colour swatches array.
-   * @type {import('vue').ComputedRef<string[]>}
-   */
-  const coloursGetSet = computed({
-    get() {
-      return colourSwatches.value;
-    },
-    set(value) {
-      colourSwatches.value = value;
-    },
-  });
-
-  /**
-   * The currently focused colour, used for filtering combinations.
-   * @type {import('vue').Ref<string>}
-   */
-  const focusColour = ref("");
-
-  /**
-   * Getter/Setter for the focus colour. Updates the URL when set.
-   * @type {import('vue').ComputedRef<string>}
-   */
-  const focusColourGetSet = computed({
-    get() {
-      return focusColour.value;
-    },
-    set(value) {
-      focusColour.value = value;
-      updateURLData();
-    },
-  });
+  const isSampleMode = computed(() => sampleColours.value.length > 0);
 
   /**
    * Computes all unique colour combinations from `colourSwatches` and their WCAG contrast ratios.
@@ -194,173 +118,115 @@ export const useColourStore = defineStore("colourStore", () => {
    * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
    */
   const uniqueColourCombinations = computed(() => {
-    let uniqueCombinations = [];
-    const colours = [...colourSwatches.value].sort();
+    const combinations = [];
+    const seenPairs = new Map();
+    const colours = [...colourSwatches.value];
 
-    let primaryColourSet = [];
-
-    if (focusColour.value !== "") {
-      primaryColourSet.push(focusColour.value);
-    } else {
-      primaryColourSet = colours;
-    }
-
-    let a;
+    let primaryColourSet = focusColour.value ? [focusColour.value] : colours;
 
     primaryColourSet.forEach((firstColour) => {
       colours.forEach((secondColour) => {
-        if (firstColour !== secondColour) {
-          const colourPair = [];
-          colourPair.push(firstColour);
-          colourPair.push(secondColour);
+        if (firstColour === secondColour) return;
 
-          if (focusColour.value === "") {
-            colourPair.sort();
-          }
+        const sortedPair = [firstColour, secondColour].sort();
+        const key = sortedPair.join('-');
 
-          colourPair.push(
-            Math.round(contrastRatio(firstColour, secondColour) * 100) / 100
-          );
-
-          // let apacContrast = APCAcontrast(
-          //   sRGBtoY(
-          //     alphaBlend(colorParsley(firstColour), colorParsley(secondColour))
-          //   ),
-          //   sRGBtoY(colorParsley(secondColour))
-          // );
-
-          //colourPair.push(apacContrast);
-
-          uniqueCombinations.push(colourPair);
+        if (!seenPairs.has(key)) {
+          const pairToPush = focusColour.value ? [firstColour, secondColour] : sortedPair;
+          const ratio = Math.round(contrastRatio(firstColour, secondColour) * 100) / 100;
+          
+          combinations.push([...pairToPush, ratio]);
+          seenPairs.set(key, true);
         }
       });
     });
 
-    uniqueCombinations = uniqueCombinations.filter(
-      ((a = {}), (b) => !(a[b] = b in a))
-    );
+    return combinations;
+  });
 
-    return uniqueCombinations;
+  /**
+   * Categorizes all unique colour combinations into 'pass', 'largePass', and 'fail'
+   * based on the current compliance mode. This avoids re-iterating over the combinations.
+   * @type {import('vue').ComputedRef<{pass: Array, largePass: Array, fail: Array}>}
+   */
+  const categorizedCombinations = computed(() => {
+    const categories = {
+      pass: [],
+      largePass: [],
+      fail: [],
+    };
+
+    uniqueColourCombinations.value.forEach((item) => {
+      const ratio = item[2];
+      if (ratio >= complianceRatios.value.max) {
+        categories.pass.push(item);
+      } else if (ratio >= complianceRatios.value.min) {
+        categories.largePass.push(item);
+      } else {
+        categories.fail.push(item);
+      }
+    });
+
+    // Sort each category
+    categories.pass.sort(compare);
+    categories.largePass.sort(compare);
+    categories.fail.sort(compare);
+
+    return categories;
   });
 
   /**
    * Computed property returning colour combinations that fully pass the current compliance mode.
-   * Each item is `[colour1, colour2, wcagContrastRatio]`.
    * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
    */
-  const passColourCombinations = computed(() => {
-    const combos = [];
-    uniqueColourCombinations.value.forEach((item) => {
-      if (item[2] >= complianceRatios.value.max) {
-        combos.push(item);
-      }
-    });
-
-    return combos.sort(compare);
-  });
+  const passColourCombinations = computed(() => categorizedCombinations.value.pass);
 
   /**
-   * Computed property returning colour combinations that partially pass (large text)
-   * the current compliance mode.
-   * Each item is `[colour1, colour2, wcagContrastRatio]`.
+   * Computed property returning colour combinations that partially pass (large text).
    * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
    */
-  const largePassColourCombinations = computed(() => {
-    const combos = [];
-    uniqueColourCombinations.value.forEach((item) => {
-      if (
-        item[2] >= complianceRatios.value.min &&
-        item[2] < complianceRatios.value.max
-      ) {
-        combos.push(item);
-      }
-    });
-
-    return combos.sort(compare);
-  });
+  const largePassColourCombinations = computed(() => categorizedCombinations.value.largePass);
 
   /**
    * Computed property returning colour combinations that fail the current compliance mode.
-   * Each item is `[colour1, colour2, wcagContrastRatio]`.
    * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
    */
-  const failColourCombinations = computed(() => {
-    const combos = [];
-    uniqueColourCombinations.value.forEach((item) => {
-      if (item[2] < complianceRatios.value.min) {
-        combos.push(item);
-      }
-    });
-
-    return combos.sort(compare);
-  });
-
-  /**
-   * The current title for the active colour palette.
-   * @type {import('vue').Ref<string>}
-   */
-  const paletteTitle = ref("");
-
-  /**
-   * Getter/Setter for the palette title.
-   * @type {import('vue').ComputedRef<string>}
-   */
-  const paletteTitleGetSet = computed({
-    get() {
-      return paletteTitle.value;
-    },
-    set(value) {
-      paletteTitle.value = value;
-    },
-  });
-
-  /**
-   * Stores the last saved title of the palette, used for comparison.
-   * @type {import('vue').Ref<string>}
-   */
-  const savedTitle = ref("");
+  const failColourCombinations = computed(() => categorizedCombinations.value.fail);
 
   /**
    * Indicates if the current palette title has been updated compared to the last saved title.
    * @type {import('vue').ComputedRef<boolean>}
    */
-  const isTitleUpdated = computed(() => {
-    if (savedTitle.value === paletteTitle.value) {
-      return true;
-    }
-
-    return false;
-  });
+  const isTitleUpdated = computed(() => savedTitle.value === paletteTitle.value);
 
   /**
    * Indicates if the current palette can be archived (has a title and colours).
    * @type {import('vue').ComputedRef<boolean>}
    */
-  const paletteCanBeArchived = computed(() => {
-    if (paletteTitle.value !== "" && colourSwatches.value.length > 0) {
-      return true;
-    }
+  const paletteCanBeArchived = computed(() => paletteTitle.value !== "" && colourSwatches.value.length > 0);
+  
+  // --- ACTIONS ---
 
-    return false;
-  });
+  /**
+   * Sets the focus colour and updates the URL.
+   * @param {string} colour - The hex colour to set as focus, or an empty string to clear.
+   */
+  function setFocusColour(colour) {
+    focusColour.value = colour;
+    updateURLData();
+  }
 
   /**
    * Loads colour palette data from the URL query string.
-   * Parses colours, title, and focus colour from the URL and updates the store's state.
    */
   function loadPaletteFromQueryString() {
-    this.colourSwatches = [];
-
+    colourSwatches.value = [];
     const coloursInURL = getColoursFromURL();
 
     if (coloursInURL) {
-      // Separate values by comma
       const coloursToAdd = coloursInURL.split("-");
-      // Format each value to a hex colour, check that it matches hex regex
-      // and push to state
       coloursToAdd.forEach((element) => {
         const formattedHex = "#" + element;
-
         if (checkHexColourIsValid(formattedHex)) {
           colourSwatches.value.push(formattedHex);
         }
@@ -376,9 +242,8 @@ export const useColourStore = defineStore("colourStore", () => {
     }
 
     const focusColourInURL = getFocusColourFromURL();
-
     if (focusColourInURL) {
-      focusColourGetSet.value = focusColourInURL;
+      setFocusColour(focusColourInURL);
     }
   }
 
@@ -388,15 +253,10 @@ export const useColourStore = defineStore("colourStore", () => {
    */
   function loadLocalPalette(id) {
     let localPalette = SearchArrayByItemPropertyValue(id, "id", palettes.value);
-
-    let newColours = Object.assign([], localPalette.colours);
-    let newTitle = localPalette.title;
-
-    colourSwatches.value = newColours;
-    paletteTitle.value = newTitle;
-    savedTitle.value = newTitle;
-    focusColour.value = "";
-
+    colourSwatches.value = Object.assign([], localPalette.colours);
+    paletteTitle.value = localPalette.title;
+    savedTitle.value = localPalette.title;
+    setFocusColour("");
     updateURLData();
   }
 
@@ -406,7 +266,6 @@ export const useColourStore = defineStore("colourStore", () => {
    */
   function deleteLocalPalette(id) {
     let localPalette = SearchArrayByItemPropertyValue(id, "id", palettes.value);
-
     let indexOfPaletteToDelete = palettes.value.indexOf(localPalette);
 
     if (indexOfPaletteToDelete === 0) {
@@ -432,21 +291,15 @@ export const useColourStore = defineStore("colourStore", () => {
    * Adds the current active palette to the local storage, if it has a title.
    */
   function addPaletteToLocalStorage() {
-    window.console.log(palettes);
-    // Needs a title
     if (paletteTitle.value !== "") {
-      let savedPalette = {};
-
-      let newColours = Object.assign([], colourSwatches.value);
-
-      savedPalette.colours = newColours;
-      savedPalette.id = paletteIDCounter.value;
-      savedPalette.title = paletteTitle.value;
+      let savedPalette = {
+        colours: Object.assign([], colourSwatches.value),
+        id: paletteIDCounter.value,
+        title: paletteTitle.value,
+      };
 
       palettes.value.unshift(savedPalette);
-
       paletteIDCounter.value++;
-
       updateLocalStorage();
     }
   }
@@ -460,35 +313,28 @@ export const useColourStore = defineStore("colourStore", () => {
   }
 
   /**
-   * Adds a new colour (hex string) to the beginning of the `colourSwatches` array,
-   * if it's not already present. Updates the URL data.
-   * @param {string} colourHexToAdd - The hex colour string to add (e.g., "#RRGGBB").
+   * Adds a new colour to the `colourSwatches` array if it's not already present.
+   * @param {string} colourHexToAdd - The hex colour string to add.
    */
   function addColour(colourHexToAdd) {
-    const formattedHex = colourHexToAdd;
-    if (!colourSwatches.value.includes(formattedHex)) {
-      colourSwatches.value.unshift(formattedHex);
-      this.updateURLData();
+    if (!colourSwatches.value.includes(colourHexToAdd)) {
+      colourSwatches.value.unshift(colourHexToAdd);
+      updateURLData();
     }
   }
 
   /**
-   * Removes a specified colour (hex string) from the `colourSwatches` array.
-   * If the removed colour was the focus colour, resets the focus colour.
-   * Updates the URL data.
+   * Removes a specified colour from the `colourSwatches` array.
    * @param {string} colourHexToRemove - The hex colour string to remove.
    */
   function removeColour(colourHexToRemove) {
-    const colourArray = colourSwatches;
-
-    if (colourArray.value.indexOf(colourHexToRemove) > -1) {
-      const indexOfColour = colourArray.value.indexOf(colourHexToRemove);
-      colourArray.value.splice(indexOfColour, 1);
-      this.colourSwatches = colourArray;
-      if (colourHexToRemove === focusColourGetSet.value) {
-        focusColourGetSet.value = "";
+    const index = colourSwatches.value.indexOf(colourHexToRemove);
+    if (index > -1) {
+      colourSwatches.value.splice(index, 1);
+      if (colourHexToRemove === focusColour.value) {
+        setFocusColour("");
       }
-      this.updateURLData();
+      updateURLData();
     }
   }
 
@@ -496,93 +342,74 @@ export const useColourStore = defineStore("colourStore", () => {
    * Updates the `savedTitle` with the current `paletteTitle` and updates the URL data.
    */
   function updatePaletteTitle() {
-    this.savedTitle = paletteTitle.value;
-    this.updateURLData();
+    savedTitle.value = paletteTitle.value;
+    updateURLData();
   }
 
   /**
    * Formats the current `colourSwatches` into a URL-friendly query string.
-   * Example: "#FF0000", "#000000" becomes "FF0000-000000".
    * @returns {string} The formatted colour string for URL.
    */
   function formatPaletteQueryString() {
-    const colourArray = colourSwatches;
-    let colourStringForURL = "";
-
-    colourArray.value.forEach((element) => {
-      const formattedColour = element.replace("#", "");
-
-      colourStringForURL = colourStringForURL + "-" + formattedColour;
-    });
-
-    if (colourStringForURL.charAt(0) === "-") {
-      colourStringForURL = colourStringForURL.slice(1);
-    }
-
-    return colourStringForURL;
+    return colourSwatches.value.map(c => c.replace("#", "")).join("-");
   }
 
   /**
-   * Updates the browser's URL query parameters based on the current active palette's
-   * colours, title, and focus colour.
+   * Updates the browser's URL query parameters based on the current active palette.
    */
   function updateURLData() {
     const coloursForURL = formatPaletteQueryString();
-    const paletteTitle = paletteTitleGetSet.value;
-    const focusColour = focusColourGetSet.value.replace("#", "");
-    const currState = history.state;
-
     const url = new URL(window.location);
     url.searchParams.set("colours", coloursForURL);
-    url.searchParams.set("title", paletteTitle);
-    url.searchParams.set("focus", focusColour);
-    window.history.pushState(currState, "", url);
+    url.searchParams.set("title", paletteTitle.value);
+    url.searchParams.set("focus", focusColour.value.replace("#", ""));
+    window.history.pushState(history.state, "", url);
   }
 
   /**
    * Clears the current active colour palette, title, and focus colour.
-   * Updates the URL data.
    */
   function clearPalette() {
-    this.colourSwatches = [];
-    this.listTitle = "";
-    this.focusColourGetSet = "";
-    this.updateURLData();
+    colourSwatches.value = [];
+    paletteTitle.value = "";
+    setFocusColour("");
+    updateURLData();
   }
 
   /**
    * Comparison function for sorting colour combinations based on their WCAG contrast ratio (descending).
-   * Used by `passColourCombinations`, `largePassColourCombinations`, and `failColourCombinations`.
    * @param {Array} a - The first colour combination array.
    * @param {Array} b - The second colour combination array.
-   * @returns {number} -1 if a > b, 1 if a < b, 0 if equal.
+   * @returns {number}
    */
   function compare(a, b) {
-    if (a[2] > b[2]) {
-      return -1;
-    }
-    if (a[2] < b[2]) {
-      return 1;
-    }
-    return 0;
+    return b[2] - a[2];
   }
 
   // Expose the store's state, getters, and actions
   return {
-    complianceModeGetSet,
-    palettesGetSet,
-    paletteIDCounterGetSet,
+    // State
+    complianceMode,
+    palettes,
+    paletteIDCounter,
     colourSwatches,
-    colours: coloursGetSet, // Alias for colourSwatches
-    listTitle: paletteTitleGetSet, // Alias for paletteTitle
-    focusColourGetSet,
-    sampleColoursGetSet,
-    isSampleMode,
+    focusColour,
+    sampleColours,
     paletteTitle,
+    savedTitle,
+    
+    // Getters
+    isSampleMode,
+    isTitleUpdated,
+    paletteCanBeArchived,
+    complianceRatios,
     uniqueColourCombinations,
     passColourCombinations,
     largePassColourCombinations,
     failColourCombinations,
+
+    // Actions
+    setFocusColour,
     loadPaletteFromQueryString,
     addPaletteToLocalStorage,
     addColour,
@@ -591,12 +418,8 @@ export const useColourStore = defineStore("colourStore", () => {
     updateLocalStorage,
     clearPalette,
     updatePaletteTitle,
-    isTitleUpdated,
-    savedTitle,
     loadPalettesFromLocalStorage,
     loadLocalPalette,
     deleteLocalPalette,
-    paletteCanBeArchived,
-    complianceRatios,
   };
 });

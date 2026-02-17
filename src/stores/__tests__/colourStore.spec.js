@@ -10,9 +10,9 @@ describe('Colour Store', () => {
   it('initializes with correct default values', () => {
     const store = useColourStore();
     expect(store.colourSwatches).toEqual([]);
-    expect(store.complianceModeGetSet).toBe('AA');
+    expect(store.complianceMode).toBe('AA');
     expect(store.paletteTitle).toBe('');
-    expect(store.focusColourGetSet).toBe('');
+    expect(store.focusColour).toBe('');
   });
 
   describe('addColour Action', () => {
@@ -35,7 +35,6 @@ describe('Colour Store', () => {
       store.addColour('#FFFFFF');
       store.addColour('#000000');
       expect(store.uniqueColourCombinations).toHaveLength(1);
-      // The combination should be [ '#000000', '#FFFFFF', 21 ]
       const combination = store.uniqueColourCombinations[0];
       expect(combination[0]).toBe('#000000');
       expect(combination[1]).toBe('#FFFFFF');
@@ -56,9 +55,9 @@ describe('Colour Store', () => {
     it('resets focus colour if the focused colour is removed', () => {
       const store = useColourStore();
       store.addColour('#FFFFFF');
-      store.focusColourGetSet = '#FFFFFF';
+      store.setFocusColour('#FFFFFF');
       store.removeColour('#FFFFFF');
-      expect(store.focusColourGetSet).toBe('');
+      expect(store.focusColour).toBe('');
     });
 
     it('updates colour combinations when a colour is removed', () => {
@@ -74,14 +73,14 @@ describe('Colour Store', () => {
   describe('complianceRatios Computed Property', () => {
     it("returns correct ratios for 'AA' mode", () => {
       const store = useColourStore();
-      store.complianceModeGetSet = 'AA';
+      store.complianceMode = 'AA';
       expect(store.complianceRatios.min).toBe(3);
       expect(store.complianceRatios.max).toBe(4.5);
     });
 
     it("returns correct ratios for 'AAA' mode", () => {
       const store = useColourStore();
-      store.complianceModeGetSet = 'AAA';
+      store.complianceMode = 'AAA';
       expect(store.complianceRatios.min).toBe(4.5);
       expect(store.complianceRatios.max).toBe(7);
     });
@@ -93,7 +92,7 @@ describe('Colour Store', () => {
       store.addColour('#FFFFFF');
       store.addColour('#000000');
       store.addColour('#FF0000');
-      store.focusColourGetSet = '#FFFFFF';
+      store.setFocusColour('#FFFFFF');
       expect(store.uniqueColourCombinations).toHaveLength(2);
       expect(store.uniqueColourCombinations.every(combo => combo.includes('#FFFFFF'))).toBe(true);
     });
@@ -110,22 +109,19 @@ describe('Colour Store', () => {
     });
 
     it('correctly categorizes passing combinations for AAA', () => {
-      store.complianceModeGetSet = 'AAA';
-      // Only black on white should pass AAA
+      store.complianceMode = 'AAA';
       const passing = store.passColourCombinations.filter(c => c.includes('#FFFFFF') && c.includes('#000000'));
       expect(passing).toHaveLength(1);
     });
 
     it('correctly categorizes large text pass combinations for AAA', () => {
-      store.complianceModeGetSet = 'AAA';
-      // Gray on white should pass for large text
+      store.complianceMode = 'AAA';
       const largePass = store.largePassColourCombinations.filter(c => c.includes('#FFFFFF') && c.includes('#757575'));
       expect(largePass).toHaveLength(1);
     });
     
     it('correctly categorizes failing combinations for AA', () => {
-      store.complianceModeGetSet = 'AA';
-      // Light gray on white should fail
+      store.complianceMode = 'AA';
       const failing = store.failColourCombinations.filter(c => c.includes('#FFFFFF') && c.includes('#AAAAAA'));
       expect(failing).toHaveLength(1);
     });
