@@ -83,6 +83,7 @@ const toggleMode = function () {
 
   &__control {
     -webkit-appearance: none;
+    appearance: none;
     border: none;
     background: none;
     display: flex;
@@ -92,7 +93,6 @@ const toggleMode = function () {
     padding: 10px 20px;
     background: var(--clr-grey-1000);
     border-radius: var(--border-rad-large);
-    //border-radius: 40px;
     box-shadow: var(--shadow-card);
   }
 

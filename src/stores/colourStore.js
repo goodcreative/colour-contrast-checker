@@ -17,19 +17,6 @@ const aaaPassRatio = 7;
 const aaaPartialRatio = 4.5;
 
 /**
- * @typedef {Object} Palette
- * @property {string[]} colours - An array of hex color strings.
- * @property {number} id - Unique ID for the palette.
- * @property {string} title - The title of the palette.
- */
-
-/**
- * @typedef {Object} ComplianceRatios
- * @property {number} min - The minimum contrast ratio for compliance.
- * @property {number} max - The maximum contrast ratio for compliance.
- */
-
-/**
  * Pinia store for managing colour palettes, compliance modes, and contrast calculations.
  */
 export const useColourStore = defineStore("colourStore", () => {
@@ -40,7 +27,7 @@ export const useColourStore = defineStore("colourStore", () => {
    * @type {import('vue').Ref<string>}
    */
   const complianceMode = ref("AA");
-  
+
   /**
    * Array of saved colour palettes.
    * @type {import('vue').Ref<Palette[]>}
@@ -134,7 +121,7 @@ export const useColourStore = defineStore("colourStore", () => {
         if (!seenPairs.has(key)) {
           const pairToPush = focusColour.value ? [firstColour, secondColour] : sortedPair;
           const ratio = Math.round(contrastRatio(firstColour, secondColour) * 100) / 100;
-          
+
           combinations.push([...pairToPush, ratio]);
           seenPairs.set(key, true);
         }
@@ -204,7 +191,7 @@ export const useColourStore = defineStore("colourStore", () => {
    * @type {import('vue').ComputedRef<boolean>}
    */
   const paletteCanBeArchived = computed(() => paletteTitle.value !== "" && colourSwatches.value.length > 0);
-  
+
   // --- ACTIONS ---
 
   /**
@@ -397,7 +384,7 @@ export const useColourStore = defineStore("colourStore", () => {
     sampleColours,
     paletteTitle,
     savedTitle,
-    
+
     // Getters
     isSampleMode,
     isTitleUpdated,

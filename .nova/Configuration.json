@@ -1,3 +1,14 @@
 {
+  "eablokker.tabsSidebar.config.collapsedFolders" : [
 
+  ],
+  "eablokker.tabsSidebar.config.customKindGroupsOrder" : [
+    "vue",
+    "javascript"
+  ],
+  "eablokker.tabsSidebar.config.customTabOrder" : [
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/components\/ActionMenu.vue",
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/stores\/__tests__\/colourStore.spec.js",
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/stores\/colourStore.js"
+  ]
 }
