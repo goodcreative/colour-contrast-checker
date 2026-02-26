@@ -39,7 +39,7 @@
       </div>
       <div class="b_contrast__panelMeta">
         <span class="b_contrast__panelLc">Lc {{ contrastRatio }}</span>
-        <span class="b_contrast__panelUseCase">{{ primaryUseCase }}</span>
+        <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${primaryUseCase.toLowerCase()}`">{{ primaryUseCase }}</span>
       </div>
       <div class="b_contrast__panelHexes">
         <span class="b_contrast__panelHex">{{ primaryColour }}</span>
@@ -58,7 +58,7 @@
       </div>
       <div class="b_contrast__panelMeta">
         <span class="b_contrast__panelLc">Lc {{ reverseRatio }}</span>
-        <span class="b_contrast__panelUseCase">{{ reverseUseCase }}</span>
+        <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${reverseUseCase.toLowerCase()}`">{{ reverseUseCase }}</span>
       </div>
       <div class="b_contrast__panelHexes">
         <span class="b_contrast__panelHex">{{ contrastColour }}</span>
@@ -246,10 +246,23 @@ function showSample() {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--clr-grey-400);
-    background: rgba(0, 0, 0, 0.12);
     border-radius: var(--border-rad-inner);
     padding: 2px 6px;
+
+    &--body {
+      color: #fff;
+      background: #3D930F;
+    }
+
+    &--large {
+      color: #fff;
+      background: #3392E9;
+    }
+
+    &--decorative {
+      color: #fff;
+      background: #EE495B;
+    }
   }
 
   &__panelHexes {
