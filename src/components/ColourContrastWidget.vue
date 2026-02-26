@@ -1,16 +1,17 @@
 <template>
-  <div class="b_contrast">
+  <!-- WCAG card -->
+  <div v-if="!isAPCA" class="b_contrast">
     <div class="b_contrast__pair">
       <div class="b_contrast__colour">
         <div
-          class="b_contrast__sample--primary b_contrast__sample"
+          class="b_contrast__sample b_contrast__sample--primary"
           :style="{ backgroundColor: primaryColour }"
         ></div>
         <h3 class="b_contrast__colourHex">{{ primaryColour }}</h3>
       </div>
       <div class="b_contrast__colour">
         <div
-          class="b_contrast__sample--secondary b_contrast__sample"
+          class="b_contrast__sample b_contrast__sample--secondary"
           :style="{ backgroundColor: contrastColour }"
         ></div>
         <h3 class="b_contrast__colourHex">{{ contrastColour }}</h3>
@@ -21,29 +22,60 @@
       <div class="b_contrast__result">
         <component class="b_contrast__icon" :is="ratingIcon"></component>
         <p>
-          {{ contrastRating }} <strong>{{ contrastRatio }}</strong>
+          {{ contrastRating }} <strong>{{ contrastLabel }}</strong>
         </p>
       </div>
+    </div>
+  </div>
 
-      <FormAction
-        @click.prevent="showSample"
-        :status="formMode"
-        buttonMode="utility"
-        buttonType="icon"
-        ><FieldIconPlus></FieldIconPlus>
-      </FormAction>
+  <!-- APCA card -->
+  <div v-else class="b_contrast b_contrast--apca">
+    <div class="b_contrast__panel">
+      <div
+        class="b_contrast__panelSample"
+        :style="{ backgroundColor: contrastColour, color: primaryColour }"
+      >
+        <span class="b_contrast__panelText">AaBbCcDdEeFfGg</span>
+      </div>
+      <div class="b_contrast__panelMeta">
+        <span class="b_contrast__panelLc">Lc {{ contrastRatio }}</span>
+        <span class="b_contrast__panelUseCase">{{ primaryUseCase }}</span>
+      </div>
+      <div class="b_contrast__panelHexes">
+        <span class="b_contrast__panelHex">{{ primaryColour }}</span>
+        <span class="b_contrast__panelOn">on {{ contrastColour }}</span>
+      </div>
+    </div>
+
+    <div class="b_contrast__panelDivider"></div>
+
+    <div class="b_contrast__panel">
+      <div
+        class="b_contrast__panelSample"
+        :style="{ backgroundColor: primaryColour, color: contrastColour }"
+      >
+        <span class="b_contrast__panelText">AaBbCcDdEeFfGg</span>
+      </div>
+      <div class="b_contrast__panelMeta">
+        <span class="b_contrast__panelLc">Lc {{ reverseRatio }}</span>
+        <span class="b_contrast__panelUseCase">{{ reverseUseCase }}</span>
+      </div>
+      <div class="b_contrast__panelHexes">
+        <span class="b_contrast__panelHex">{{ contrastColour }}</span>
+        <span class="b_contrast__panelOn">on {{ primaryColour }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-// Imports
 import { computed } from "vue";
 import IconResultPass from "@/components/icons/IconResultPass.vue";
 import IconResultPassLarge from "@/components/icons/IconResultPassLarge.vue";
 import IconResultFail from "@/components/icons/IconResultFail.vue";
 import FormAction from "@/components/FormAction.vue";
 import FieldIconPlus from "@/components/icons/FieldIconPlus.vue";
+import apcaContrast from "@/composables/calculateAPCAContrast.js";
 import { useColourStore } from "@/stores/colourStore";
 const colourStore = useColourStore();
 
@@ -62,13 +94,33 @@ const props = defineProps({
   },
 });
 
+const isAPCA = computed(() => colourStore.contrastMode === 'apca');
+
+const reverseRatio = computed(() =>
+  isAPCA.value ? apcaContrast(props.contrastColour, props.primaryColour) : null
+);
+
+function getUseCaseLabel(ratio) {
+  if (ratio >= colourStore.complianceRatios.max) return 'Body';
+  if (ratio >= colourStore.complianceRatios.min) return 'Large';
+  return 'Decorative';
+}
+
+const primaryUseCase = computed(() => getUseCaseLabel(props.contrastRatio));
+const reverseUseCase = computed(() =>
+  reverseRatio.value !== null ? getUseCaseLabel(reverseRatio.value) : ''
+);
+
+const contrastLabel = computed(() =>
+  colourStore.contrastMode === 'apca'
+    ? `Lc ${props.contrastRatio}`
+    : `${props.contrastRatio}:1`
+);
+
 const contrastRating = computed(() => {
-  if (props.contrastRatio < 3) {
+  if (props.contrastRatio < colourStore.complianceRatios.min) {
     return "Fail";
-  } else if (
-    props.contrastRatio >= colourStore.complianceRatios.min &&
-    props.contrastRatio < colourStore.complianceRatios.max
-  ) {
+  } else if (props.contrastRatio < colourStore.complianceRatios.max) {
     return "Partial";
   } else {
     return "Pass";
@@ -76,12 +128,9 @@ const contrastRating = computed(() => {
 });
 
 const ratingIcon = computed(() => {
-  if (props.contrastRatio < 3) {
+  if (props.contrastRatio < colourStore.complianceRatios.min) {
     return IconResultFail;
-  } else if (
-    props.contrastRatio >= colourStore.complianceRatios.min &&
-    props.contrastRatio < colourStore.complianceRatios.max
-  ) {
+  } else if (props.contrastRatio < colourStore.complianceRatios.max) {
     return IconResultPassLarge;
   } else {
     return IconResultPass;
@@ -89,15 +138,8 @@ const ratingIcon = computed(() => {
 });
 
 function showSample() {
-  const sampleColourArray = [];
-  sampleColourArray.push(props.primaryColour);
-  sampleColourArray.push(props.contrastColour);
-
-  colourStore.sampleColoursGetSet = sampleColourArray;
+  colourStore.sampleColours = [props.primaryColour, props.contrastColour];
 }
-
-// Functions
-// function functionName(){}
 </script>
 
 <style lang="scss" scoped>
@@ -105,20 +147,15 @@ function showSample() {
   display: grid;
   justify-items: center;
   gap: 0;
-  /* padding: 4px; */
   background: var(--clr-grey-1000);
-  /* border: 3px solid #ccc; */
-  border-radius: var(--border-rad-small);
+  border-radius: var(--border-rad-outer);
   box-shadow: var(--shadow-card);
   overflow: hidden;
-
-  $self: &;
 
   &__pair {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    /* border-radius: 8px; */
     overflow: hidden;
     position: relative;
   }
@@ -135,7 +172,7 @@ function showSample() {
   }
 
   &__sample {
-    height: 60px;
+    height: 48px;
     width: 100%;
   }
 
@@ -149,7 +186,7 @@ function showSample() {
   &__details {
     display: flex;
     gap: var(--size-s);
-    margin: 20px 0 10px;
+    margin: 14px 0 8px;
   }
 
   &__result {
@@ -162,17 +199,87 @@ function showSample() {
     border: 1px solid rgba(0, 0, 0, 0.2);
   }
 
-  &__sampleAction {
-    border: none;
-    background: var(--clr-grey-1000);
-    grid-row: 1;
-    grid-column: 1 / -1;
+  // APCA dual-direction card
+  &--apca {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-items: unset;
+    position: relative;
+  }
+
+  &__panel {
+    flex: 1;
+    display: grid;
+    grid-template-rows: auto auto auto;
+    overflow: hidden;
+  }
+
+  &__panelSample {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__panelText {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__panelMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px 4px;
+  }
+
+  &__panelLc {
+    font: var(--heading-700);
+    font-size: 13px;
+    color: var(--clr-grey-200);
+  }
+
+  &__panelUseCase {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--clr-grey-400);
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: var(--border-rad-inner);
+    padding: 2px 6px;
+  }
+
+  &__panelHexes {
+    display: flex;
+    gap: 6px;
+    padding: 2px 12px 10px;
+    align-items: baseline;
+  }
+
+  &__panelHex {
+    font: var(--text-code-400);
+    font-size: 11px;
+    color: var(--clr-grey-300);
+  }
+
+  &__panelOn {
+    font-size: 10px;
+    color: var(--clr-grey-500);
+  }
+
+  &__panelDivider {
+    width: 1px;
+    background: var(--clr-grey-900);
+    flex-shrink: 0;
+  }
+
+  &__panelActions {
     position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 8px;
+    right: 8px;
   }
 }
 </style>

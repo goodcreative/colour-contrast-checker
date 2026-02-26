@@ -4,17 +4,18 @@ import checkHexColourIsValid from "@/composables/checkHexColourIsValid";
 import getColoursFromURL from "@/composables/getColoursFromURL";
 import getTitleFromURL from "@/composables/getTitleFromURL";
 import getFocusColourFromURL from "@/composables/getFocusColourFromURL";
+import getContrastModeFromURL from "@/composables/getContrastModeFromURL";
 import contrastRatio from "@/composables/calculateColourContrast";
 import SearchArrayByItemPropertyValue from "@/composables/SearchArrayByItemPropertyValue";
 import hexToRGB from "@/composables/hexToRGB.js";
-import { APCAcontrast, sRGBtoY, alphaBlend } from "apca-w3";
-
-import { colorParsley } from "colorparsley";
+import apcaContrast from "@/composables/calculateAPCAContrast.js";
 
 const aaPassRatio = 4.5;
 const aaPartialRatio = 3;
 const aaaPassRatio = 7;
 const aaaPartialRatio = 4.5;
+const apcaAaPassLc = 60, apcaAaPartialLc = 45;
+const apcaAaaPassLc = 75, apcaAaaPartialLc = 60;
 
 /**
  * Pinia store for managing colour palettes, compliance modes, and contrast calculations.
@@ -27,6 +28,12 @@ export const useColourStore = defineStore("colourStore", () => {
    * @type {import('vue').Ref<string>}
    */
   const complianceMode = ref("AA");
+
+  /**
+   * The selected contrast algorithm: 'wcag' or 'apca'.
+   * @type {import('vue').Ref<string>}
+   */
+  const contrastMode = ref("wcag");
 
   /**
    * Array of saved colour palettes.
@@ -77,6 +84,15 @@ export const useColourStore = defineStore("colourStore", () => {
    * @type {import('vue').ComputedRef<ComplianceRatios|false>}
    */
   const complianceRatios = computed(() => {
+    if (contrastMode.value === "apca") {
+      if (complianceMode.value === "AA") {
+        return { min: apcaAaPartialLc, max: apcaAaPassLc };
+      } else if (complianceMode.value === "AAA") {
+        return { min: apcaAaaPartialLc, max: apcaAaaPassLc };
+      } else {
+        return false;
+      }
+    }
     if (complianceMode.value === "AA") {
       return {
         min: aaPartialRatio,
@@ -120,7 +136,10 @@ export const useColourStore = defineStore("colourStore", () => {
 
         if (!seenPairs.has(key)) {
           const pairToPush = focusColour.value ? [firstColour, secondColour] : sortedPair;
-          const ratio = Math.round(contrastRatio(firstColour, secondColour) * 100) / 100;
+          const calcFn = contrastMode.value === 'apca' ? apcaContrast : contrastRatio;
+          const ratio = contrastMode.value === 'apca'
+            ? calcFn(firstColour, secondColour)
+            : Math.round(calcFn(firstColour, secondColour) * 100) / 100;
 
           combinations.push([...pairToPush, ratio]);
           seenPairs.set(key, true);
@@ -198,6 +217,11 @@ export const useColourStore = defineStore("colourStore", () => {
    * Sets the focus colour and updates the URL.
    * @param {string} colour - The hex colour to set as focus, or an empty string to clear.
    */
+  function setContrastMode(mode) {
+    contrastMode.value = mode;
+    updateURLData();
+  }
+
   function setFocusColour(colour) {
     focusColour.value = colour;
     updateURLData();
@@ -232,6 +256,9 @@ export const useColourStore = defineStore("colourStore", () => {
     if (focusColourInURL) {
       setFocusColour(focusColourInURL);
     }
+
+    const modeFromURL = getContrastModeFromURL();
+    if (modeFromURL) contrastMode.value = modeFromURL;
   }
 
   /**
@@ -252,15 +279,10 @@ export const useColourStore = defineStore("colourStore", () => {
    * @param {number} id - The ID of the palette to delete.
    */
   function deleteLocalPalette(id) {
-    let localPalette = SearchArrayByItemPropertyValue(id, "id", palettes.value);
-    let indexOfPaletteToDelete = palettes.value.indexOf(localPalette);
-
-    if (indexOfPaletteToDelete === 0) {
-      palettes.value.shift();
-    } else {
-      palettes.value.splice(indexOfPaletteToDelete, indexOfPaletteToDelete);
-    }
-
+    const idx = palettes.value.indexOf(
+      SearchArrayByItemPropertyValue(id, "id", palettes.value)
+    );
+    palettes.value.splice(idx, 1);
     updateLocalStorage();
   }
 
@@ -270,7 +292,7 @@ export const useColourStore = defineStore("colourStore", () => {
   function loadPalettesFromLocalStorage() {
     if (localStorage.getItem("palettes") && localStorage.getItem("idCounter")) {
       palettes.value = JSON.parse(localStorage.getItem("palettes"));
-      paletteIDCounter.value = localStorage.getItem("idCounter");
+      paletteIDCounter.value = parseInt(localStorage.getItem("idCounter"), 10);
     }
   }
 
@@ -350,6 +372,7 @@ export const useColourStore = defineStore("colourStore", () => {
     url.searchParams.set("colours", coloursForURL);
     url.searchParams.set("title", paletteTitle.value);
     url.searchParams.set("focus", focusColour.value.replace("#", ""));
+    url.searchParams.set("contrastMode", contrastMode.value);
     window.history.pushState(history.state, "", url);
   }
 
@@ -377,6 +400,7 @@ export const useColourStore = defineStore("colourStore", () => {
   return {
     // State
     complianceMode,
+    contrastMode,
     palettes,
     paletteIDCounter,
     colourSwatches,
@@ -396,6 +420,7 @@ export const useColourStore = defineStore("colourStore", () => {
     failColourCombinations,
 
     // Actions
+    setContrastMode,
     setFocusColour,
     loadPaletteFromQueryString,
     addPaletteToLocalStorage,

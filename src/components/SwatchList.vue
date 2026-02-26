@@ -1,7 +1,7 @@
 <template>
   <draggable
     class="b_swatchList u_flow"
-    v-model="colours"
+    v-model="colourSwatches"
     @start="drag = true"
     @end="drag = false"
     @change="listOrderUpdated"
@@ -23,7 +23,7 @@ import { storeToRefs } from "pinia";
 
 const colourStore = useColourStore();
 
-const { colours } = storeToRefs(colourStore);
+const { colourSwatches } = storeToRefs(colourStore);
 const { updateURLData } = colourStore;
 
 const listOrderUpdated = function () {

@@ -1,14 +1,14 @@
 <template>
-  <div class="b_modeToggle">
-    <h3 class="b_modeToggle__title">{{ label }}</h3>
+  <div class="b_contrastModeToggle">
+    <h3 class="b_contrastModeToggle__title">Contrast Algorithm</h3>
     <button
-      class="b_modeToggle__control"
+      class="b_contrastModeToggle__control"
       :class="modeClass"
-      @click.prevent="toggleMode()"
+      @click.prevent="toggle()"
     >
-      <span class="b_modeToggle__label">AA</span>
-      <span class="b_modeToggle__switch u_pseudo"></span>
-      <span class="b_modeToggle__label">AAA</span>
+      <span class="b_contrastModeToggle__label">WCAG</span>
+      <span class="b_contrastModeToggle__switch u_pseudo"></span>
+      <span class="b_contrastModeToggle__label">APCA</span>
     </button>
   </div>
 </template>
@@ -18,24 +18,23 @@ import { computed } from "vue";
 import { useColourStore } from "@/stores/colourStore";
 const colourStore = useColourStore();
 
-const label = computed(() =>
-  colourStore.contrastMode === 'apca' ? 'APCA Level' : 'WCAG Level'
-);
-
 const modeClass = computed(() =>
-  colourStore.complianceMode === 'AAA' ? 'b_modeToggle--aaa' : 'b_modeToggle--aa'
+  colourStore.contrastMode === 'apca'
+    ? 'b_contrastModeToggle--apca'
+    : 'b_contrastModeToggle--wcag'
 );
 
-const toggleMode = () => {
-  colourStore.complianceMode = colourStore.complianceMode === 'AA' ? 'AAA' : 'AA';
-};
+const toggle = () =>
+  colourStore.setContrastMode(
+    colourStore.contrastMode === 'wcag' ? 'apca' : 'wcag'
+  );
 </script>
 
 <style lang="scss" scoped>
-.b_modeToggle {
+.b_contrastModeToggle {
   padding: calc(var(--main-spacing) * 0.4) var(--main-spacing);
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
   gap: 15px;
   background: var(--clr-grey-800);
@@ -85,7 +84,7 @@ const toggleMode = () => {
     }
   }
 
-  &--aaa {
+  &--apca {
     --switch-pill-left: calc(100% - 26px);
   }
 }

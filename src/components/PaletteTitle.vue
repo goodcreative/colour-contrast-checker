@@ -20,7 +20,7 @@ const state = reactive({
 const props = defineProps({});
 
 const titleText = computed(() => {
-  return colourStore.listTitle;
+  return colourStore.paletteTitle;
 });
 
 const titleMode = computed(() => {

@@ -3,7 +3,7 @@
     <div class="b_titleForm__field">
       <FormFieldText
         placeholder="Add a title for your colour palette..."
-        v-model="colourStore.listTitle"
+        v-model="colourStore.paletteTitle"
         id="titleField"
         label="This palette is"
         showLabel="true"

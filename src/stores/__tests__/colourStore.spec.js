@@ -127,6 +127,121 @@ describe('Colour Store', () => {
     });
   });
 
+  describe('contrastMode', () => {
+    it("defaults to 'wcag'", () => {
+      const store = useColourStore();
+      expect(store.contrastMode).toBe('wcag');
+    });
+
+    it("setContrastMode('apca') updates state", () => {
+      const store = useColourStore();
+      store.setContrastMode('apca');
+      expect(store.contrastMode).toBe('apca');
+    });
+
+    it('APCA AA: complianceRatios min=45, max=60', () => {
+      const store = useColourStore();
+      store.setContrastMode('apca');
+      store.complianceMode = 'AA';
+      expect(store.complianceRatios.min).toBe(45);
+      expect(store.complianceRatios.max).toBe(60);
+    });
+
+    it('APCA AAA: complianceRatios min=60, max=75', () => {
+      const store = useColourStore();
+      store.setContrastMode('apca');
+      store.complianceMode = 'AAA';
+      expect(store.complianceRatios.min).toBe(60);
+      expect(store.complianceRatios.max).toBe(75);
+    });
+
+    it('APCA mode: black/white combination has Lc > 100', () => {
+      const store = useColourStore();
+      store.setContrastMode('apca');
+      store.addColour('#000000');
+      store.addColour('#ffffff');
+      const combo = store.uniqueColourCombinations[0];
+      expect(combo[2]).toBeGreaterThan(100);
+    });
+
+    it('APCA AA: categorizes black/white as pass, mid-gray as largePass, light-gray as fail', () => {
+      const store = useColourStore();
+      store.setContrastMode('apca');
+      store.complianceMode = 'AA';
+      store.addColour('#ffffff');
+      store.addColour('#000000'); // Lc 106 → pass (>60)
+      store.addColour('#999999'); // Lc 54.6 → largePass (45-60)
+      store.addColour('#bbbbbb'); // Lc 36.7 → fail (<45)
+
+      const hasBlackWhiteInPass = store.passColourCombinations.some(
+        c => c.includes('#000000') && c.includes('#ffffff')
+      );
+      const hasGrayInLargePass = store.largePassColourCombinations.some(
+        c => c.includes('#999999') && c.includes('#ffffff')
+      );
+      const hasLightGrayInFail = store.failColourCombinations.some(
+        c => c.includes('#bbbbbb') && c.includes('#ffffff')
+      );
+      expect(hasBlackWhiteInPass).toBe(true);
+      expect(hasGrayInLargePass).toBe(true);
+      expect(hasLightGrayInFail).toBe(true);
+    });
+  });
+
+  describe('Archive Actions', () => {
+    let store;
+    beforeEach(() => {
+      store = useColourStore();
+      store.addColour('#FFFFFF');
+      store.addColour('#000000');
+      store.paletteTitle = 'Palette A';
+    });
+
+    it('addPaletteToLocalStorage adds palette with correct shape', () => {
+      store.addPaletteToLocalStorage();
+      expect(store.palettes).toHaveLength(1);
+      expect(store.palettes[0].title).toBe('Palette A');
+      expect(store.palettes[0].colours).toEqual(['#000000', '#FFFFFF']);
+      expect(store.palettes[0].id).toBe(0);
+    });
+
+    it('addPaletteToLocalStorage increments paletteIDCounter', () => {
+      store.addPaletteToLocalStorage();
+      store.paletteTitle = 'Palette B';
+      store.addPaletteToLocalStorage();
+      expect(store.palettes).toHaveLength(2);
+      expect(store.palettes[0].id).toBe(1);
+      expect(store.palettes[1].id).toBe(0);
+    });
+
+    it('deleteLocalPalette removes only the target item (non-first)', () => {
+      store.addPaletteToLocalStorage();          // id 0
+      store.paletteTitle = 'Palette B';
+      store.addPaletteToLocalStorage();          // id 1 (unshifted → index 0)
+      // palettes = [B(id1), A(id0)]
+      store.deleteLocalPalette(0);               // delete A at index 1
+      expect(store.palettes).toHaveLength(1);
+      expect(store.palettes[0].title).toBe('Palette B');
+    });
+
+    it('deleteLocalPalette removes only the target item (first)', () => {
+      store.addPaletteToLocalStorage();
+      store.paletteTitle = 'Palette B';
+      store.addPaletteToLocalStorage();
+      store.deleteLocalPalette(1);               // delete B at index 0
+      expect(store.palettes).toHaveLength(1);
+      expect(store.palettes[0].title).toBe('Palette A');
+    });
+
+    it('loadPalettesFromLocalStorage restores palettes and idCounter as number', () => {
+      store.addPaletteToLocalStorage();
+      const freshStore = useColourStore();
+      freshStore.loadPalettesFromLocalStorage();
+      expect(freshStore.palettes).toHaveLength(1);
+      expect(typeof freshStore.paletteIDCounter).toBe('number');
+    });
+  });
+
   describe('paletteCanBeArchived Computed Property', () => {
     it('returns true when palette has a title and colours', () => {
       const store = useColourStore();

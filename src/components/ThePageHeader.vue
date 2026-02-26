@@ -12,7 +12,6 @@
 </template>
 
 <script setup>
-// Imports
 import GoodLogo from "@/components/icons/IconGoodLogo.vue";
 </script>
 

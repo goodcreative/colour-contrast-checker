@@ -36,7 +36,7 @@
 
         <draggable
           class="b_paletteSelector__list"
-          v-model="palettesGetSet"
+          v-model="palettes"
           @start="drag = true"
           @end="drag = false"
           @change="palettesOrderUpdated"
@@ -69,7 +69,7 @@ import { storeToRefs } from "pinia";
 
 const colourStore = useColourStore();
 
-const { palettesGetSet } = storeToRefs(colourStore);
+const { palettes } = storeToRefs(colourStore);
 const { updateLocalStorage } = colourStore;
 
 // Data
@@ -147,7 +147,7 @@ const palettesOrderUpdated = function () {
       var(--border-rad-outer);
 
     &:not(:empty) {
-      padding: 15px;
+      padding: 10px;
     }
   }
 
@@ -156,9 +156,7 @@ const palettesOrderUpdated = function () {
     --form-button-height: auto;
     --formAction-background: var(--clr-red-400);
     --formAction-background-hov: var(--clr-red-300);
-    //--formAction-padding: 0.4em 0.65em;
-    //--formAction-font: var(--body-300);
-    padding: 15px;
+    padding: 10px 12px;
     justify-self: center;
   }
 

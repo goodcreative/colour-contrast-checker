@@ -13,7 +13,10 @@
       </div>
     </section>
     <main class="b_page__content">
-      <ComplianceModeToggle></ComplianceModeToggle>
+      <div class="b_page__toggles">
+        <ContrastModeToggle></ContrastModeToggle>
+        <ComplianceModeToggle></ComplianceModeToggle>
+      </div>
       <CombinationsList></CombinationsList>
     </main>
     <SampleModal></SampleModal>
@@ -30,6 +33,7 @@ import CombinationsList from "@/components/CombinationsList.vue";
 import PaletteTitle from "@/components/PaletteTitle.vue";
 import PaletteControls from "@/components/PaletteControls.vue";
 import ComplianceModeToggle from "@/components/ComplianceModeToggle.vue";
+import ContrastModeToggle from "@/components/ContrastModeToggle.vue";
 import SampleModal from "@/components/SampleModal.vue";
 import { useColourStore } from "@/stores/colourStore";
 
@@ -60,7 +64,6 @@ body {
   padding-block-end: var(--size-m);
 
   &__title {
-    //background: var(--clr-grey-900);
     grid-column: 1 / -1;
     grid-row: 2;
     display: flex;
@@ -91,6 +94,14 @@ body {
     grid-column: 2;
     grid-row: 3;
     border-radius: var(--size-s) 0 0 var(--size-s);
+  }
+
+  &__toggles {
+    display: flex;
+    justify-content: space-between;
+    background: var(--clr-grey-800);
+    border-radius: var(--size-s) 0 0 0;
+    overflow: hidden;
   }
 }
 </style>
