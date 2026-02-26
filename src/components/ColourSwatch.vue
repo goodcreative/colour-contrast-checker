@@ -78,23 +78,11 @@ const copyToClipboard = async () => {
   }
 };
 
-const isFocus = computed(() => {
-  const FOCUS_COLOUR = colourStore.focusColourGetSet;
+const isFocus = computed(() => colourStore.focusColour === props.colourHex);
 
-  if (FOCUS_COLOUR === props.colourHex) {
-    return true;
-  } else {
-    return false;
-  }
-});
-
-const setFocus = async () => {
-  if (isFocus.value) {
-    colourStore.focusColourGetSet = "";
-  } else {
-    window.console.log(hexToRGB(props.colourHex));
-    colourStore.focusColourGetSet = props.colourHex;
-  }
+const setFocus = () => {
+  if (isFocus.value) { colourStore.setFocusColour(""); }
+  else { colourStore.setFocusColour(props.colourHex); }
 };
 </script>
 
