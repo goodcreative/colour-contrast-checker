@@ -37,13 +37,16 @@
       >
         <span class="b_contrast__panelText">AaBbCcDdEeFfGg</span>
       </div>
-      <div class="b_contrast__panelMeta">
-        <span class="b_contrast__panelLc">Lc {{ contrastRatio }}</span>
-        <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${primaryUseCase.toLowerCase()}`">{{ primaryUseCase }}</span>
-      </div>
-      <div class="b_contrast__panelHexes">
-        <span class="b_contrast__panelHex">{{ primaryColour }}</span>
-        <span class="b_contrast__panelOn">on {{ contrastColour }}</span>
+
+      <div class="b_contrast__panelDetails">
+        <div class="b_contrast__panelMeta">
+          <span class="b_contrast__panelLc">Lc {{ contrastRatio }}</span>
+          <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${primaryUseCase.toLowerCase()}`">{{ primaryUseCase }}</span>
+        </div>
+        <div class="b_contrast__panelHexes">
+          <span class="b_contrast__panelHex">{{ primaryColour }}</span>
+          <span class="b_contrast__panelOn">on {{ contrastColour }}</span>
+        </div>
       </div>
     </div>
 
@@ -56,13 +59,15 @@
       >
         <span class="b_contrast__panelText">AaBbCcDdEeFfGg</span>
       </div>
-      <div class="b_contrast__panelMeta">
-        <span class="b_contrast__panelLc">Lc {{ reverseRatio }}</span>
-        <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${reverseUseCase.toLowerCase()}`">{{ reverseUseCase }}</span>
-      </div>
-      <div class="b_contrast__panelHexes">
-        <span class="b_contrast__panelHex">{{ contrastColour }}</span>
-        <span class="b_contrast__panelOn">on {{ primaryColour }}</span>
+      <div class="b_contrast__panelDetails">
+        <div class="b_contrast__panelMeta">
+          <span class="b_contrast__panelLc">Lc {{ reverseRatio }}</span>
+          <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${reverseUseCase.toLowerCase()}`">{{ reverseUseCase }}</span>
+        </div>
+        <div class="b_contrast__panelHexes">
+          <span class="b_contrast__panelHex">{{ contrastColour }}</span>
+          <span class="b_contrast__panelOn">on {{ primaryColour }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -214,6 +219,7 @@ function showSample() {
     display: grid;
     grid-template-rows: auto auto auto;
     overflow: hidden;
+    padding:6px;
   }
 
   &__panelSample {
@@ -229,11 +235,18 @@ function showSample() {
     line-height: 1;
   }
 
+  &__panelDetails {
+    display: flex;
+    justify-content:start;
+    gap:12px;
+    padding:10px;
+    align-items: center;
+  }
+
   &__panelMeta {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px 4px;
   }
 
   &__panelLc {
@@ -252,41 +265,36 @@ function showSample() {
 
     &--body {
       color: #fff;
-      background: #3D930F;
+      background: var(--clr-badge-body);
     }
 
     &--large {
       color: #fff;
-      background: #3392E9;
+      background: var(--clr-badge-large);
     }
 
     &--decorative {
       color: #fff;
-      background: #EE495B;
+      background: var(--clr-badge-decorative);
     }
   }
 
   &__panelHexes {
     display: flex;
     gap: 6px;
-    padding: 2px 12px 10px;
     align-items: baseline;
   }
 
-  &__panelHex {
-    font: var(--text-code-400);
-    font-size: 11px;
-    color: var(--clr-grey-300);
-  }
-
+  &__panelHex,
   &__panelOn {
-    font-size: 10px;
-    color: var(--clr-grey-500);
+    font: var(--text-code-400);
+    font-size: 16px;
+    color: var(--clr-grey-200);
   }
 
   &__panelDivider {
     width: 1px;
-    background: var(--clr-grey-900);
+    background: var(--clr-grey-800);
     flex-shrink: 0;
   }
 

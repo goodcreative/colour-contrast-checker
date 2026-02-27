@@ -12,20 +12,11 @@
 
 <script setup>
 // Imports
-import { reactive, computed, ref } from "vue";
+import { computed } from "vue";
 import { useColourStore } from "@/stores/colourStore";
 import FormAction from "@/components/FormAction.vue";
 
 const colourStore = useColourStore();
-
-// Data
-const state = reactive({
-  stateItem: [],
-});
-
-const props = defineProps({
-  propName: null,
-});
 
 const clearPalette = function () {
   colourStore.clearPalette();

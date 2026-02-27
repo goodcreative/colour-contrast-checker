@@ -6,16 +6,10 @@ import getTitleFromURL from "@/composables/getTitleFromURL";
 import getFocusColourFromURL from "@/composables/getFocusColourFromURL";
 import getContrastModeFromURL from "@/composables/getContrastModeFromURL";
 import contrastRatio from "@/composables/calculateColourContrast";
-import SearchArrayByItemPropertyValue from "@/composables/SearchArrayByItemPropertyValue";
+import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
 import hexToRGB from "@/composables/hexToRGB.js";
 import apcaContrast from "@/composables/calculateAPCAContrast.js";
-
-const aaPassRatio = 4.5;
-const aaPartialRatio = 3;
-const aaaPassRatio = 7;
-const aaaPartialRatio = 4.5;
-const apcaAaPassLc = 60, apcaAaPartialLc = 45;
-const apcaAaaPassLc = 75, apcaAaaPartialLc = 60;
+import { contrastConfig } from "@/config/contrastConfig.js";
 
 /**
  * Pinia store for managing colour palettes, compliance modes, and contrast calculations.
@@ -84,28 +78,9 @@ export const useColourStore = defineStore("colourStore", () => {
    * @type {import('vue').ComputedRef<ComplianceRatios|false>}
    */
   const complianceRatios = computed(() => {
-    if (contrastMode.value === "apca") {
-      if (complianceMode.value === "AA") {
-        return { min: apcaAaPartialLc, max: apcaAaPassLc };
-      } else if (complianceMode.value === "AAA") {
-        return { min: apcaAaaPartialLc, max: apcaAaaPassLc };
-      } else {
-        return false;
-      }
-    }
-    if (complianceMode.value === "AA") {
-      return {
-        min: aaPartialRatio,
-        max: aaPassRatio,
-      };
-    } else if (complianceMode.value === "AAA") {
-      return {
-        min: aaaPartialRatio,
-        max: aaaPassRatio,
-      };
-    } else {
-      return false;
-    }
+    const mode = contrastMode.value;
+    const level = complianceMode.value.toLowerCase();
+    return contrastConfig[mode]?.[level] ?? false;
   });
 
   /**
@@ -266,7 +241,8 @@ export const useColourStore = defineStore("colourStore", () => {
    * @param {number} id - The ID of the palette to load.
    */
   function loadLocalPalette(id) {
-    let localPalette = SearchArrayByItemPropertyValue(id, "id", palettes.value);
+    const localPalette = searchArrayByProperty(palettes.value, "id", id);
+    if (!localPalette) return;
     colourSwatches.value = Object.assign([], localPalette.colours);
     paletteTitle.value = localPalette.title;
     savedTitle.value = localPalette.title;
@@ -279,9 +255,9 @@ export const useColourStore = defineStore("colourStore", () => {
    * @param {number} id - The ID of the palette to delete.
    */
   function deleteLocalPalette(id) {
-    const idx = palettes.value.indexOf(
-      SearchArrayByItemPropertyValue(id, "id", palettes.value)
-    );
+    const palette = searchArrayByProperty(palettes.value, "id", id);
+    if (!palette) return;
+    const idx = palettes.value.indexOf(palette);
     palettes.value.splice(idx, 1);
     updateLocalStorage();
   }

@@ -46,6 +46,7 @@ const props = defineProps({
   icon: {
     type: String,
     required: false,
+    validator: (v) => ["hex"].includes(v),
   },
   placeholder: {
     type: String,
@@ -54,6 +55,7 @@ const props = defineProps({
   status: {
     type: String,
     required: false,
+    validator: (v) => ["error"].includes(v),
   },
   showLabel: {
     type: Boolean,
@@ -63,6 +65,7 @@ const props = defineProps({
   mode: {
     type: String,
     required: false,
+    validator: (v) => ["hex"].includes(v),
   },
 });
 

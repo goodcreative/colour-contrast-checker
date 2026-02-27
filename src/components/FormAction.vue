@@ -19,12 +19,7 @@
 
 <script setup>
 // Imports
-import { reactive, computed, ref } from "vue";
-
-// Data
-const state = reactive({
-  stateItem: [],
-});
+import { computed } from "vue";
 
 const props = defineProps({
   onClick: {
@@ -38,10 +33,13 @@ const props = defineProps({
   buttonMode: {
     type: String,
     required: true,
+    validator: (v) =>
+      ["positive", "negative", "utility", "actionToggle", "icon", "submit"].includes(v),
   },
   buttonType: {
     type: String,
     required: false,
+    validator: (v) => ["icon", "largeIcon"].includes(v),
   },
   isDisabled: {
     type: Boolean,
@@ -126,7 +124,7 @@ const hasVisibleLabel = computed(() => {
     --formAction-lineheight: 0;
     --formAction-width: 34px;
     --formAction-height: 34px;
-    --formAction-padding: 4px;
+    --formAction-padding: 9px;
     --formAction-bordrad: 50%;
 
     #{ $self }__button {

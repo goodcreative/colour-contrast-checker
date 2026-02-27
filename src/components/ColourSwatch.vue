@@ -98,8 +98,8 @@ const setFocus = () => {
   padding: 8px 12px 8px 8px;
   background: var(--swatch-back, var(--clr-grey-1000));
   box-shadow: var(--shadow-card);
-  border-radius: 40px var(--border-rad-small)
-    var(--border-rad-small) 40px;
+  border-radius: var(--size-l) var(--border-rad-small)
+    var(--border-rad-small) var(--size-l);
   cursor: move;
 
   &__colour {

@@ -1,25 +1,12 @@
 /**
- * Searches an array of objects, looking to match the value of an object property, and returning
- * the first object with a matching property value
+ * Searches an array of objects for the first item where item[prop] === value.
  *
- * @export
- * @param {*} nameKey - the unique value you are looking for
- * @param {*} property - the property the nameKey is set to
- * @param {*} arrayToSearch - the array, obvs
- * @returns
+ * @param {Array} array - The array to search
+ * @param {string} prop - The property name to match against
+ * @param {*} value - The value to look for
+ * @returns {Object|null} The matching item, or null if not found
  */
-export default function searchArrayByItemPropertyValue(
-  nameKey,
-  property,
-  arrayToSearch
-) {
-  if (arrayToSearch) {
-    for (var i = 0; i < arrayToSearch.length; i++) {
-      if (arrayToSearch[i] !== null && arrayToSearch[i][property] === nameKey) {
-        return arrayToSearch[i];
-      }
-    }
-  }
-
-  return false;
+export default function searchArrayByProperty(array, prop, value) {
+  if (!Array.isArray(array)) return null;
+  return array.find((item) => item !== null && item[prop] === value) ?? null;
 }

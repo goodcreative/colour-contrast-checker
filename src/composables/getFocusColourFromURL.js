@@ -1,11 +1,6 @@
-export default function getFocusColourFromURL() {
-  const currURL = new URL(document.URL);
-  const paramsInURL = new URLSearchParams(currURL.search);
-  const focusColourInURL = paramsInURL.get("focus");
+import getURLParam from "@/composables/getURLParam";
 
-  if (focusColourInURL) {
-    return "#" + focusColourInURL;
-  } else {
-    return false;
-  }
+export default function getFocusColourFromURL() {
+  const value = getURLParam("focus");
+  return value ? "#" + value : false;
 }

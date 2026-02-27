@@ -1,5 +1,6 @@
+import getURLParam from "@/composables/getURLParam";
+
 export default function getContrastModeFromURL() {
-  const params = new URLSearchParams(new URL(window.location.href).search);
-  const mode = params.get('contrastMode');
-  return (mode === 'wcag' || mode === 'apca') ? mode : false;
+  const mode = getURLParam("contrastMode");
+  return mode === "wcag" || mode === "apca" ? mode : false;
 }

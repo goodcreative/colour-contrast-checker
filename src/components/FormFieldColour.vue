@@ -51,6 +51,7 @@ const props = defineProps({
   status: {
     type: String,
     required: false,
+    validator: (v) => ["error"].includes(v),
   },
   showLabel: {
     type: Boolean,

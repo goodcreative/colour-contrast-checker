@@ -18,6 +18,7 @@
   max-width: var(--b-icon-max-width);
   max-height: var(--b-icon-max-height);
 }
+
 .b_iconActionToggle {
   [fill] {
     fill: var(--b-iconActionToggle-fill);
