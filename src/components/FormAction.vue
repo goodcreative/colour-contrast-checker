@@ -148,8 +148,8 @@ const hasVisibleLabel = computed(() => {
   }
 
   &--utility {
-    --formAction-background: var(--clr-grey-200);
-    --formAction-background-hov: var(--clr-grey-100);
+    --formAction-background: var(--clr-blue-200);
+    --formAction-background-hov: var(--clr-blue-100);
   }
 
   &--actionToggle {

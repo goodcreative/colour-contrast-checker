@@ -6,14 +6,12 @@
         <FormAction
           @click.prevent="closeSample"
           buttonLabel="Close"
-          :status="formMode"
           buttonMode="negative"
           ><FieldIconCross></FieldIconCross>
         </FormAction>
         <FormAction
           @click.prevent="flipColours"
           buttonLabel="Flip Colours"
-          :status="formMode"
           buttonMode="submit"
         >
         </FormAction>
@@ -55,7 +53,7 @@ const state = reactive({
 });
 
 const colourPair = computed(() => {
-  return colourStore.sampleColoursGetSet;
+  return colourStore.sampleColours;
 });
 
 const firstColour = computed(() => {
@@ -77,7 +75,7 @@ const isVisible = computed(() => {
 });
 
 function closeSample() {
-  colourStore.sampleColoursGetSet = [];
+  colourStore.sampleColours = [];
 }
 
 function flipColours() {

@@ -4,7 +4,6 @@
       <FormAction
         :onClick="clearPalette"
         buttonLabel="Clear palette"
-        :status="formMode"
         buttonMode="negative"
       ></FormAction>
     </div>
@@ -33,7 +32,7 @@ const clearPalette = function () {
 };
 
 const paletteIsNotEmpty = computed(() => {
-  if (colourStore.colours.length) {
+  if (colourStore.colourSwatches.length) {
     return true;
   }
 

@@ -6,7 +6,7 @@
         v-model="colourStore.paletteTitle"
         id="titleField"
         label="This palette is"
-        showLabel="true"
+        :showLabel="true"
         @keyup="submitForm"
       ></FormFieldText>
     </div>

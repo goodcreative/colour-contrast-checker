@@ -14,7 +14,6 @@
       <FormAction
         :onClick="loadPalette"
         buttonLabel="Delete"
-        :status="formMode"
         buttonMode="positive"
         buttonType="icon"
         ><IconEye></IconEye
@@ -22,7 +21,6 @@
       <FormAction
         :onClick="deletePalette"
         buttonLabel="Delete"
-        :status="formMode"
         buttonMode="negative"
         buttonType="icon"
         ><IconDustbin></IconDustbin

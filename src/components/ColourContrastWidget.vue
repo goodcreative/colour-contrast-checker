@@ -158,6 +158,7 @@ function showSample() {
     grid-template-columns: repeat(2, 1fr);
     overflow: hidden;
     position: relative;
+    padding:8px;
   }
 
   &__colour {

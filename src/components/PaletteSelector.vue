@@ -3,9 +3,9 @@
     <div class="b_paletteSelector__toggle">
       <FormAction
         :onClick="toggleArchive"
+        buttonMode="utility"
         buttonLabel="Archive"
-        :status="formMode"
-        iconFirst="true"
+        :iconFirst="true"
         ><IconArchive></IconArchive
       ></FormAction>
     </div>
@@ -15,7 +15,6 @@
           <FormAction
             :onClick="addPalette"
             buttonLabel="Add current palette to the archive"
-            :status="formMode"
             buttonMode="submit"
             :isDisabled="!canArchive"
             iconFirst="true"
