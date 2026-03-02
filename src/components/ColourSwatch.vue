@@ -3,7 +3,7 @@
     <div class="b_swatch__colour">
       <div
         class="b_swatch__sample u_pseudo"
-        :style="{ backgroundColor: colourHex }"
+        :style="{ backgroundColor: simulatedColour }"
         @click.prevent="setFocus"
       >
         <Transition>
@@ -77,6 +77,10 @@ const copyToClipboard = async () => {
     console.error("Failed to copy: ", err);
   }
 };
+
+const simulatedColour = computed(() =>
+  colourStore.simulatedSwatchMap.get(props.colourHex) ?? props.colourHex
+);
 
 const isFocus = computed(() => colourStore.focusColour === props.colourHex);
 

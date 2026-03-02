@@ -4,11 +4,21 @@
   ],
   "eablokker.tabsSidebar.config.customKindGroupsOrder" : [
     "vue",
-    "javascript"
+    "javascript",
+    "scss",
+    "markdown",
+    "json"
   ],
   "eablokker.tabsSidebar.config.customTabOrder" : [
     "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/components\/ActionMenu.vue",
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/stores\/colourStore.js",
     "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/stores\/__tests__\/colourStore.spec.js",
-    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/stores\/colourStore.js"
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/components\/ContrastModeToggle.vue",
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/components\/ColourContrastWidget.vue",
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/assets\/scss\/tokens\/_t-layout.scss",
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/components\/FormAction.vue",
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/src\/components\/icons\/IconActionToggle.vue",
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/CHANGELOG.md",
+    "file:\/\/\/Users\/jamieboyd\/Good\/Projects\/colour-contrast-checker\/.claude\/settings.local.json"
   ]
 }

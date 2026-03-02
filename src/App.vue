@@ -15,6 +15,17 @@
     <main class="b_page__content">
       <div class="b_page__toggles">
         <ContrastModeToggle></ContrastModeToggle>
+        <CVDModeSelector
+          title="CVD Simulation"
+          :options="[
+            { label: 'Normal', value: 'normal' },
+            { label: 'Protanopia', value: 'protanopia' },
+            { label: 'Deuteranopia', value: 'deuteranopia' },
+            { label: 'Tritanopia', value: 'tritanopia' },
+          ]"
+          :modelValue="colourStore.cvdMode"
+          @update:modelValue="colourStore.setCVDMode($event)"
+        />
         <ComplianceModeToggle></ComplianceModeToggle>
       </div>
       <CombinationsList></CombinationsList>
@@ -34,6 +45,7 @@ import PaletteTitle from "@/components/PaletteTitle.vue";
 import PaletteControls from "@/components/PaletteControls.vue";
 import ComplianceModeToggle from "@/components/ComplianceModeToggle.vue";
 import ContrastModeToggle from "@/components/ContrastModeToggle.vue";
+import CVDModeSelector from "@/components/CVDModeSelector.vue";
 import SampleModal from "@/components/SampleModal.vue";
 import { useColourStore } from "@/stores/colourStore";
 

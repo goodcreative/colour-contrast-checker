@@ -5,14 +5,14 @@
       <div class="b_contrast__colour">
         <div
           class="b_contrast__sample b_contrast__sample--primary"
-          :style="{ backgroundColor: primaryColour }"
+          :style="{ backgroundColor: simulatedPrimary }"
         ></div>
         <h3 class="b_contrast__colourHex">{{ primaryColour }}</h3>
       </div>
       <div class="b_contrast__colour">
         <div
           class="b_contrast__sample b_contrast__sample--secondary"
-          :style="{ backgroundColor: contrastColour }"
+          :style="{ backgroundColor: simulatedContrast }"
         ></div>
         <h3 class="b_contrast__colourHex">{{ contrastColour }}</h3>
       </div>
@@ -33,7 +33,7 @@
     <div class="b_contrast__panel">
       <div
         class="b_contrast__panelSample"
-        :style="{ backgroundColor: contrastColour, color: primaryColour }"
+        :style="{ backgroundColor: simulatedContrast, color: simulatedPrimary }"
       >
         <span class="b_contrast__panelText">AaBbCcDdEeFfGg</span>
       </div>
@@ -55,7 +55,7 @@
     <div class="b_contrast__panel">
       <div
         class="b_contrast__panelSample"
-        :style="{ backgroundColor: primaryColour, color: contrastColour }"
+        :style="{ backgroundColor: simulatedPrimary, color: simulatedContrast }"
       >
         <span class="b_contrast__panelText">AaBbCcDdEeFfGg</span>
       </div>
@@ -101,8 +101,15 @@ const props = defineProps({
 
 const isAPCA = computed(() => colourStore.contrastMode === 'apca');
 
+const simulatedPrimary = computed(() =>
+  colourStore.simulatedSwatchMap.get(props.primaryColour) ?? props.primaryColour
+);
+const simulatedContrast = computed(() =>
+  colourStore.simulatedSwatchMap.get(props.contrastColour) ?? props.contrastColour
+);
+
 const reverseRatio = computed(() =>
-  isAPCA.value ? apcaContrast(props.contrastColour, props.primaryColour) : null
+  isAPCA.value ? apcaContrast(simulatedContrast.value, simulatedPrimary.value) : null
 );
 
 function getUseCaseLabel(ratio) {

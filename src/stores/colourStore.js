@@ -5,10 +5,12 @@ import getColoursFromURL from "@/composables/getColoursFromURL";
 import getTitleFromURL from "@/composables/getTitleFromURL";
 import getFocusColourFromURL from "@/composables/getFocusColourFromURL";
 import getContrastModeFromURL from "@/composables/getContrastModeFromURL";
+import getCVDModeFromURL from "@/composables/getCVDModeFromURL";
 import contrastRatio from "@/composables/calculateColourContrast";
 import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
 import hexToRGB from "@/composables/hexToRGB.js";
 import apcaContrast from "@/composables/calculateAPCAContrast.js";
+import simulateCVD from "@/composables/simulateCVD.js";
 import { contrastConfig } from "@/config/contrastConfig.js";
 
 /**
@@ -28,6 +30,12 @@ export const useColourStore = defineStore("colourStore", () => {
    * @type {import('vue').Ref<string>}
    */
   const contrastMode = ref("wcag");
+
+  /**
+   * The active CVD simulation type: 'normal' | 'protanopia' | 'deuteranopia' | 'tritanopia'.
+   * @type {import('vue').Ref<string>}
+   */
+  const cvdMode = ref("normal");
 
   /**
    * Array of saved colour palettes.
@@ -90,6 +98,14 @@ export const useColourStore = defineStore("colourStore", () => {
   const isSampleMode = computed(() => sampleColours.value.length > 0);
 
   /**
+   * Maps each original swatch hex to its CVD-simulated hex.
+   * @type {import('vue').ComputedRef<Map<string, string>>}
+   */
+  const simulatedSwatchMap = computed(() =>
+    new Map(colourSwatches.value.map(h => [h, simulateCVD(h, cvdMode.value)]))
+  );
+
+  /**
    * Computes all unique colour combinations from `colourSwatches` and their WCAG contrast ratios.
    * If `focusColour` is set, only combinations involving the focus colour are returned.
    * Each combination is an array: `[colour1, colour2, wcagContrastRatio]`.
@@ -111,10 +127,12 @@ export const useColourStore = defineStore("colourStore", () => {
 
         if (!seenPairs.has(key)) {
           const pairToPush = focusColour.value ? [firstColour, secondColour] : sortedPair;
+          const simFirst = simulatedSwatchMap.value.get(firstColour) ?? firstColour;
+          const simSecond = simulatedSwatchMap.value.get(secondColour) ?? secondColour;
           const calcFn = contrastMode.value === 'apca' ? apcaContrast : contrastRatio;
           const ratio = contrastMode.value === 'apca'
-            ? calcFn(firstColour, secondColour)
-            : Math.round(calcFn(firstColour, secondColour) * 100) / 100;
+            ? calcFn(simFirst, simSecond)
+            : Math.round(calcFn(simFirst, simSecond) * 100) / 100;
 
           combinations.push([...pairToPush, ratio]);
           seenPairs.set(key, true);
@@ -197,6 +215,11 @@ export const useColourStore = defineStore("colourStore", () => {
     updateURLData();
   }
 
+  function setCVDMode(mode) {
+    cvdMode.value = mode;
+    updateURLData();
+  }
+
   function setFocusColour(colour) {
     focusColour.value = colour;
     updateURLData();
@@ -234,6 +257,9 @@ export const useColourStore = defineStore("colourStore", () => {
 
     const modeFromURL = getContrastModeFromURL();
     if (modeFromURL) contrastMode.value = modeFromURL;
+
+    const cvdFromURL = getCVDModeFromURL();
+    if (cvdFromURL) cvdMode.value = cvdFromURL;
   }
 
   /**
@@ -349,6 +375,7 @@ export const useColourStore = defineStore("colourStore", () => {
     url.searchParams.set("title", paletteTitle.value);
     url.searchParams.set("focus", focusColour.value.replace("#", ""));
     url.searchParams.set("contrastMode", contrastMode.value);
+    url.searchParams.set("cvdMode", cvdMode.value);
     window.history.pushState(history.state, "", url);
   }
 
@@ -377,6 +404,7 @@ export const useColourStore = defineStore("colourStore", () => {
     // State
     complianceMode,
     contrastMode,
+    cvdMode,
     palettes,
     paletteIDCounter,
     colourSwatches,
@@ -390,6 +418,7 @@ export const useColourStore = defineStore("colourStore", () => {
     isTitleUpdated,
     paletteCanBeArchived,
     complianceRatios,
+    simulatedSwatchMap,
     uniqueColourCombinations,
     passColourCombinations,
     largePassColourCombinations,
@@ -397,6 +426,7 @@ export const useColourStore = defineStore("colourStore", () => {
 
     // Actions
     setContrastMode,
+    setCVDMode,
     setFocusColour,
     loadPaletteFromQueryString,
     addPaletteToLocalStorage,
