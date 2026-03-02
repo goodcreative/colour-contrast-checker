@@ -48,9 +48,7 @@ const colourStore = useColourStore();
 
 // Data
 const state = reactive({
-  isEditing: false,
   isCopying: false,
-  isFocus: false,
 });
 
 const props = defineProps({

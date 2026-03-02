@@ -2,7 +2,7 @@
   <div
     class="b_action"
     :class="{
-      [`b_action--${modeClass}`]: buttonMode,
+      [`b_action--${props.buttonMode}`]: buttonMode,
       [`b_action--icon`]: isIconButton,
       [`b_action--disabled`]: isDisabled,
       [`b_action--iconFirst`]: iconFirst,
@@ -52,36 +52,8 @@ const props = defineProps({
   },
 });
 
-const modeClass = computed(() => {
-  return props.buttonMode;
-});
-
-const isIconButton = computed(() => {
-  if (props.buttonType === "icon") {
-    return true;
-  }
-
-  return false;
-});
-
-const isLargeIconButton = computed(() => {
-  if (props.buttonType === "largeIcon") {
-    return true;
-  }
-
-  return false;
-});
-
-const hasVisibleLabel = computed(() => {
-  if (props.buttonType !== "icon") {
-    return true;
-  }
-
-  return false;
-});
-
-// Functions
-// function functionName(){}
+const isIconButton = computed(() => props.buttonType === "icon");
+const hasVisibleLabel = computed(() => props.buttonType !== "icon");
 </script>
 
 <style lang="scss" scoped>

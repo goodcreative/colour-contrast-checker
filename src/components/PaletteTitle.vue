@@ -6,16 +6,11 @@
 
 <script setup>
 // Imports
-import { reactive, computed, ref } from "vue";
+import { computed } from "vue";
 import { useColourStore } from "@/stores/colourStore";
 import FormEditTitle from "@/components/FormEditTitle.vue";
 
 const colourStore = useColourStore();
-
-// Data
-const state = reactive({
-  stateItem: [],
-});
 
 const props = defineProps({});
 

@@ -31,7 +31,6 @@
 
 <script setup>
 // Imports
-import { reactive, computed, ref } from "vue";
 import { useColourStore } from "@/stores/colourStore";
 import FormAction from "@/components/FormAction.vue";
 import PaletteSelectorItemColourPreview from "@/components/PaletteSelectorItemColourPreview.vue";
@@ -39,11 +38,6 @@ import IconDustbin from "@/components/icons/IconDustbin.vue";
 import IconEye from "@/components/icons/IconEye.vue";
 
 const colourStore = useColourStore();
-
-// Data
-const state = reactive({
-  stateItem: [],
-});
 
 const props = defineProps({
   paletteTitle: {

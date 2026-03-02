@@ -115,7 +115,7 @@ const palettesOrderUpdated = function () {
   display: grid;
   align-self: end;
   padding: var(--size-small) 0;
-  z-index: 100;
+  z-index: 400;
 
   &__toggle {
     justify-self: end;

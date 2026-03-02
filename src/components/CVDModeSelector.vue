@@ -69,6 +69,7 @@ const activeInfo = computed(() => CVD_INFO[props.modelValue] ?? null);
   }
 
   &__controlContainer {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     gap:20px;

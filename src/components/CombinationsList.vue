@@ -16,11 +16,11 @@
       v-if="passList.length"
     >
       <ColourContrastWidget
-        v-for="(pair, index) in passList"
+        v-for="pair in passList"
         :primaryColour="pair[0]"
         :contrastColour="pair[1]"
         :contrastRatio="pair[2]"
-        :key="index"
+        :key="`${pair[0]}-${pair[1]}`"
       ></ColourContrastWidget>
     </div>
 
@@ -40,11 +40,11 @@
       v-if="largePassList.length"
     >
       <ColourContrastWidget
-        v-for="(pair, index) in largePassList"
+        v-for="pair in largePassList"
         :primaryColour="pair[0]"
         :contrastColour="pair[1]"
         :contrastRatio="pair[2]"
-        :key="index"
+        :key="`${pair[0]}-${pair[1]}`"
       ></ColourContrastWidget>
     </div>
 
@@ -64,11 +64,11 @@
       v-if="failList.length"
     >
       <ColourContrastWidget
-        v-for="(pair, index) in failList"
+        v-for="pair in failList"
         :primaryColour="pair[0]"
         :contrastColour="pair[1]"
         :contrastRatio="pair[2]"
-        :key="index"
+        :key="`${pair[0]}-${pair[1]}`"
       ></ColourContrastWidget>
     </div>
   </div>
