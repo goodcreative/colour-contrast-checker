@@ -257,7 +257,7 @@ function showSample() {
   &__panelDetails {
     display: flex;
     justify-content:center;
-    gap:12px;
+    gap:15px;
     padding:10px 20px;
     align-items: center;
   }
@@ -266,7 +266,7 @@ function showSample() {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding:6px 6px 6px 10px;
+    padding:5px 5px 5px 10px;
     background:var(--clr-grey-800);
     border-radius:4px;
     border:1px solid rgba(0, 0, 0, 0.2);
