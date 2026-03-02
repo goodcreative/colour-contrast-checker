@@ -17,18 +17,27 @@
         <div class="b_page__togglesRow">
           <ContrastModeToggle></ContrastModeToggle>
           <ComplianceModeToggle></ComplianceModeToggle>
+          <PillToggle
+            class="b_page__moreOptions"
+            label="More options"
+            v-model="showCVD"
+          />
         </div>
-        <CVDModeSelector
-          title="CVD Simulation"
-          :options="[
-            { label: 'Normal', value: 'normal' },
-            { label: 'Protanopia', value: 'protanopia' },
-            { label: 'Deuteranopia', value: 'deuteranopia' },
-            { label: 'Tritanopia', value: 'tritanopia' },
-          ]"
-          :modelValue="colourStore.cvdMode"
-          @update:modelValue="colourStore.setCVDMode($event)"
-        />
+        <Transition name="b_cvdReveal">
+          <div v-show="showCVD">
+            <CVDModeSelector
+              title="CVD Simulation"
+              :options="[
+                { label: 'Normal', value: 'normal' },
+                { label: 'Protanopia', value: 'protanopia' },
+                { label: 'Deuteranopia', value: 'deuteranopia' },
+                { label: 'Tritanopia', value: 'tritanopia' },
+              ]"
+              :modelValue="colourStore.cvdMode"
+              @update:modelValue="colourStore.setCVDMode($event)"
+            />
+          </div>
+        </Transition>
       </div>
       <CombinationsList></CombinationsList>
     </main>
@@ -37,7 +46,7 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, ref, watch } from "vue";
 import ThePageHeader from "@/components/ThePageHeader.vue";
 import FormAddColourVue from "@/components/FormAddColour.vue";
 import PaletteSelector from "@/components/PaletteSelector.vue";
@@ -48,10 +57,16 @@ import PaletteControls from "@/components/PaletteControls.vue";
 import ComplianceModeToggle from "@/components/ComplianceModeToggle.vue";
 import ContrastModeToggle from "@/components/ContrastModeToggle.vue";
 import CVDModeSelector from "@/components/CVDModeSelector.vue";
+import PillToggle from "@/components/PillToggle.vue";
 import SampleModal from "@/components/SampleModal.vue";
 import { useColourStore } from "@/stores/colourStore";
 
 const colourStore = useColourStore();
+const showCVD = ref(false);
+
+watch(showCVD, (val) => {
+  if (!val) colourStore.setCVDMode("normal");
+});
 
 onMounted(() => {
   colourStore.loadPaletteFromQueryString();
@@ -116,11 +131,34 @@ body {
     background: var(--clr-grey-800);
     border-radius: var(--size-s) 0 0 0;
     overflow: hidden;
+    position: sticky;
+    top:0;
+    z-index: 300;
   }
 
   &__togglesRow {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
+
+  &__moreOptions {
+    margin-left: auto;
+  }
+}
+
+.b_cvdReveal-enter-active,
+.b_cvdReveal-leave-active {
+  transition: max-height var(--trans-long), opacity var(--trans-long);
+  overflow: hidden;
+}
+.b_cvdReveal-enter-from,
+.b_cvdReveal-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+.b_cvdReveal-enter-to,
+.b_cvdReveal-leave-from {
+  max-height: 200px;
+  opacity: 1;
 }
 </style>
