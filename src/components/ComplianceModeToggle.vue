@@ -16,6 +16,6 @@ import ModeToggle from "@/components/ModeToggle.vue";
 const colourStore = useColourStore();
 
 const label = computed(() =>
-  colourStore.contrastMode === "apca" ? "APCA Level" : "WCAG Level"
+  "Compliance"
 );
 </script>

@@ -39,13 +39,13 @@
       </div>
 
       <div class="b_contrast__panelDetails">
-        <div class="b_contrast__panelMeta">
-          <span class="b_contrast__panelLc">Lc {{ displayRatio }}</span>
-          <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${primaryUseCase.toLowerCase()}`">{{ primaryUseCase }}</span>
-        </div>
         <div class="b_contrast__panelHexes">
           <span class="b_contrast__panelHex">{{ primaryColour }}</span>
           <span class="b_contrast__panelOn">on {{ contrastColour }}</span>
+        </div>
+        <div class="b_contrast__panelMeta">
+          <span class="b_contrast__panelLc">Lc {{ displayRatio }}</span>
+          <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${primaryUseCase.toLowerCase()}`">{{ primaryUseCase }}</span>
         </div>
       </div>
     </div>
@@ -60,13 +60,13 @@
         <span class="b_contrast__panelText">AaBbCcDdEeFfGg</span>
       </div>
       <div class="b_contrast__panelDetails">
-        <div class="b_contrast__panelMeta">
-          <span class="b_contrast__panelLc">Lc {{ reverseRatio }}</span>
-          <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${reverseUseCase.toLowerCase()}`">{{ reverseUseCase }}</span>
-        </div>
         <div class="b_contrast__panelHexes">
           <span class="b_contrast__panelHex">{{ contrastColour }}</span>
           <span class="b_contrast__panelOn">on {{ primaryColour }}</span>
+        </div>
+        <div class="b_contrast__panelMeta">
+          <span class="b_contrast__panelLc">Lc {{ reverseRatio }}</span>
+          <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${reverseUseCase.toLowerCase()}`">{{ reverseUseCase }}</span>
         </div>
       </div>
     </div>
@@ -266,6 +266,10 @@ function showSample() {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding:6px 6px 6px 10px;
+    background:var(--clr-grey-800);
+    border-radius:4px;
+    border:1px solid rgba(0, 0, 0, 0.2);
   }
 
   &__panelLc {
@@ -307,7 +311,7 @@ function showSample() {
   &__panelHex,
   &__panelOn {
     font: var(--text-code-400);
-    font-size: 16px;
+    font-weight: 700;
     color: var(--clr-grey-200);
   }
 

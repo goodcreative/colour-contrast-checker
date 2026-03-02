@@ -1,6 +1,6 @@
 <template>
   <ModeToggle
-    title="Contrast Algorithm"
+    title="Algorithm"
     :options="[{ label: 'WCAG', value: 'wcag' }, { label: 'APCA', value: 'apca' }]"
     :modelValue="colourStore.contrastMode"
     @update:modelValue="colourStore.setContrastMode($event)"
