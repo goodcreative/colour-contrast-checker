@@ -245,6 +245,7 @@ function showSample() {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding:10px 20px;
   }
 
   &__panelText {
@@ -255,9 +256,9 @@ function showSample() {
 
   &__panelDetails {
     display: flex;
-    justify-content:start;
+    justify-content:center;
     gap:12px;
-    padding:10px;
+    padding:10px 20px;
     align-items: center;
   }
 
