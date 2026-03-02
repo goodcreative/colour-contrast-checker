@@ -14,7 +14,10 @@
     </section>
     <main class="b_page__content">
       <div class="b_page__toggles">
-        <ContrastModeToggle></ContrastModeToggle>
+        <div class="b_page__togglesRow">
+          <ContrastModeToggle></ContrastModeToggle>
+          <ComplianceModeToggle></ComplianceModeToggle>
+        </div>
         <CVDModeSelector
           title="CVD Simulation"
           :options="[
@@ -26,7 +29,6 @@
           :modelValue="colourStore.cvdMode"
           @update:modelValue="colourStore.setCVDMode($event)"
         />
-        <ComplianceModeToggle></ComplianceModeToggle>
       </div>
       <CombinationsList></CombinationsList>
     </main>
@@ -110,10 +112,15 @@ body {
 
   &__toggles {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     background: var(--clr-grey-800);
     border-radius: var(--size-s) 0 0 0;
     overflow: hidden;
+  }
+
+  &__togglesRow {
+    display: flex;
+    justify-content: space-between;
   }
 }
 </style>

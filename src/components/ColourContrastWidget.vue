@@ -1,18 +1,18 @@
 <template>
   <!-- WCAG card -->
-  <div v-if="!isAPCA" class="b_contrast">
+  <div v-if="!isAPCA" class="b_contrast" @mouseenter="isHovered = true" @mouseleave="isHovered = false">
     <div class="b_contrast__pair">
       <div class="b_contrast__colour">
         <div
           class="b_contrast__sample b_contrast__sample--primary"
-          :style="{ backgroundColor: simulatedPrimary }"
+          :style="{ backgroundColor: activeColour1 }"
         ></div>
         <h3 class="b_contrast__colourHex">{{ primaryColour }}</h3>
       </div>
       <div class="b_contrast__colour">
         <div
           class="b_contrast__sample b_contrast__sample--secondary"
-          :style="{ backgroundColor: simulatedContrast }"
+          :style="{ backgroundColor: activeColour2 }"
         ></div>
         <h3 class="b_contrast__colourHex">{{ contrastColour }}</h3>
       </div>
@@ -29,18 +29,18 @@
   </div>
 
   <!-- APCA card -->
-  <div v-else class="b_contrast b_contrast--apca">
+  <div v-else class="b_contrast b_contrast--apca" @mouseenter="isHovered = true" @mouseleave="isHovered = false">
     <div class="b_contrast__panel">
       <div
         class="b_contrast__panelSample"
-        :style="{ backgroundColor: simulatedContrast, color: simulatedPrimary }"
+        :style="{ backgroundColor: activeColour2, color: activeColour1 }"
       >
         <span class="b_contrast__panelText">AaBbCcDdEeFfGg</span>
       </div>
 
       <div class="b_contrast__panelDetails">
         <div class="b_contrast__panelMeta">
-          <span class="b_contrast__panelLc">Lc {{ contrastRatio }}</span>
+          <span class="b_contrast__panelLc">Lc {{ displayRatio }}</span>
           <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${primaryUseCase.toLowerCase()}`">{{ primaryUseCase }}</span>
         </div>
         <div class="b_contrast__panelHexes">
@@ -55,7 +55,7 @@
     <div class="b_contrast__panel">
       <div
         class="b_contrast__panelSample"
-        :style="{ backgroundColor: simulatedPrimary, color: simulatedContrast }"
+        :style="{ backgroundColor: activeColour1, color: activeColour2 }"
       >
         <span class="b_contrast__panelText">AaBbCcDdEeFfGg</span>
       </div>
@@ -74,13 +74,14 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import IconResultPass from "@/components/icons/IconResultPass.vue";
 import IconResultPassLarge from "@/components/icons/IconResultPassLarge.vue";
 import IconResultFail from "@/components/icons/IconResultFail.vue";
 import FormAction from "@/components/FormAction.vue";
 import FieldIconPlus from "@/components/icons/FieldIconPlus.vue";
 import apcaContrast from "@/composables/calculateAPCAContrast.js";
+import calcContrastRatio from "@/composables/calculateColourContrast.js";
 import { useColourStore } from "@/stores/colourStore";
 const colourStore = useColourStore();
 
@@ -101,6 +102,8 @@ const props = defineProps({
 
 const isAPCA = computed(() => colourStore.contrastMode === 'apca');
 
+const isHovered = ref(false);
+
 const simulatedPrimary = computed(() =>
   colourStore.simulatedSwatchMap.get(props.primaryColour) ?? props.primaryColour
 );
@@ -108,8 +111,16 @@ const simulatedContrast = computed(() =>
   colourStore.simulatedSwatchMap.get(props.contrastColour) ?? props.contrastColour
 );
 
+const activeColour1 = computed(() => isHovered.value ? props.primaryColour : simulatedPrimary.value);
+const activeColour2 = computed(() => isHovered.value ? props.contrastColour : simulatedContrast.value);
+
+const displayRatio = computed(() => {
+  if (isAPCA.value) return apcaContrast(activeColour1.value, activeColour2.value);
+  return Math.round(calcContrastRatio(activeColour1.value, activeColour2.value) * 100) / 100;
+});
+
 const reverseRatio = computed(() =>
-  isAPCA.value ? apcaContrast(simulatedContrast.value, simulatedPrimary.value) : null
+  isAPCA.value ? apcaContrast(activeColour2.value, activeColour1.value) : null
 );
 
 function getUseCaseLabel(ratio) {
@@ -118,21 +129,21 @@ function getUseCaseLabel(ratio) {
   return 'Decorative';
 }
 
-const primaryUseCase = computed(() => getUseCaseLabel(props.contrastRatio));
+const primaryUseCase = computed(() => getUseCaseLabel(displayRatio.value));
 const reverseUseCase = computed(() =>
   reverseRatio.value !== null ? getUseCaseLabel(reverseRatio.value) : ''
 );
 
 const contrastLabel = computed(() =>
   colourStore.contrastMode === 'apca'
-    ? `Lc ${props.contrastRatio}`
-    : `${props.contrastRatio}:1`
+    ? `Lc ${displayRatio.value}`
+    : `${displayRatio.value}:1`
 );
 
 const contrastRating = computed(() => {
-  if (props.contrastRatio < colourStore.complianceRatios.min) {
+  if (displayRatio.value < colourStore.complianceRatios.min) {
     return "Fail";
-  } else if (props.contrastRatio < colourStore.complianceRatios.max) {
+  } else if (displayRatio.value < colourStore.complianceRatios.max) {
     return "Partial";
   } else {
     return "Pass";
@@ -140,9 +151,9 @@ const contrastRating = computed(() => {
 });
 
 const ratingIcon = computed(() => {
-  if (props.contrastRatio < colourStore.complianceRatios.min) {
+  if (displayRatio.value < colourStore.complianceRatios.min) {
     return IconResultFail;
-  } else if (props.contrastRatio < colourStore.complianceRatios.max) {
+  } else if (displayRatio.value < colourStore.complianceRatios.max) {
     return IconResultPassLarge;
   } else {
     return IconResultPass;

@@ -106,9 +106,9 @@ export const useColourStore = defineStore("colourStore", () => {
   );
 
   /**
-   * Computes all unique colour combinations from `colourSwatches` and their WCAG contrast ratios.
+   * Computes all unique colour combinations from `colourSwatches` and their base contrast ratios.
    * If `focusColour` is set, only combinations involving the focus colour are returned.
-   * Each combination is an array: `[colour1, colour2, wcagContrastRatio]`.
+   * Each combination is an array: `[colour1, colour2, baseRatio]` where baseRatio is CVD-independent.
    * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
    */
   const uniqueColourCombinations = computed(() => {
@@ -127,12 +127,10 @@ export const useColourStore = defineStore("colourStore", () => {
 
         if (!seenPairs.has(key)) {
           const pairToPush = focusColour.value ? [firstColour, secondColour] : sortedPair;
-          const simFirst = simulatedSwatchMap.value.get(firstColour) ?? firstColour;
-          const simSecond = simulatedSwatchMap.value.get(secondColour) ?? secondColour;
           const calcFn = contrastMode.value === 'apca' ? apcaContrast : contrastRatio;
           const ratio = contrastMode.value === 'apca'
-            ? calcFn(simFirst, simSecond)
-            : Math.round(calcFn(simFirst, simSecond) * 100) / 100;
+            ? calcFn(firstColour, secondColour)
+            : Math.round(calcFn(firstColour, secondColour) * 100) / 100;
 
           combinations.push([...pairToPush, ratio]);
           seenPairs.set(key, true);
