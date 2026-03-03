@@ -13,23 +13,7 @@ and surface it in `FormFieldColour`'s error slot.
 
 ---
 
-## R2. Component test suite
-
-**Files:** `src/components/__tests__/` (create), existing composable tests
-
-41 tests cover store + 3 composables. Zero component coverage.
-
-**Goal:** Vitest + Vue Test Utils specs for at minimum:
-- `CombinationsList.vue` — correct bucketing, key stability
-- `CVDModeSelector.vue` — mode selection, URL param sync
-- `ColourSwatch.vue` — copy-to-clipboard feedback, focus mode activation
-- `ColourContrastWidget.vue` — badge labels, APCA vs WCAG display branch
-
-Also add edge-case coverage for `calculateColourContrast.js` and `checkHexColourIsValid.js`.
-
----
-
-## R3. CSS export from palette
+## R2. CSS export from palette
 
 **No existing files — new feature**
 
