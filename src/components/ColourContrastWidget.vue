@@ -78,8 +78,6 @@ import { computed, ref } from "vue";
 import IconResultPass from "@/components/icons/IconResultPass.vue";
 import IconResultPassLarge from "@/components/icons/IconResultPassLarge.vue";
 import IconResultFail from "@/components/icons/IconResultFail.vue";
-import FormAction from "@/components/FormAction.vue";
-import FieldIconPlus from "@/components/icons/FieldIconPlus.vue";
 import apcaContrast from "@/composables/calculateAPCAContrast.js";
 import calcContrastRatio from "@/composables/calculateColourContrast.js";
 import { useColourStore } from "@/stores/colourStore";
@@ -92,10 +90,6 @@ const props = defineProps({
   },
   contrastColour: {
     type: String,
-    required: true,
-  },
-  contrastRatio: {
-    type: Number,
     required: true,
   },
 });

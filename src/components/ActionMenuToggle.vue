@@ -8,20 +8,7 @@
 
 <script setup>
 // Imports
-import { reactive, computed, ref } from "vue";
 import IconActionToggle from "@/components/icons/IconActionToggle.vue";
-
-// Data
-const state = reactive({
-  stateItem: [],
-});
-
-const props = defineProps({
-  propName: null,
-});
-
-// Functions
-// function functionName(){}
 </script>
 
 <style lang="scss" scoped></style>

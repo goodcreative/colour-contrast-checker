@@ -21,7 +21,7 @@
 
 <script setup>
 // Imports
-import { computed, reactive, onMounted } from "vue";
+import { computed, reactive } from "vue";
 
 const state = reactive({
   colourValue: "#ffffff",
@@ -68,11 +68,6 @@ const emit = defineEmits(["update:modelValue"]);
 
 const updateValue = (event) => {
   state.colourValue = event.target.value;
-
-  // if (fieldText.charAt(0) === "#" && props.mode === "hex") {
-  //   fieldText = fieldText.substring(1);
-  // }
-
   emit("update:modelValue", state.colourValue);
 };
 

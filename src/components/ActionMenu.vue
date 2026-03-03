@@ -48,7 +48,7 @@ const isOpen = computed(() => {
     bottom: 0;
     transform: translateY(calc(100% + 5px));
     z-index: 110;
-    background: red;
+    background: var(--clr-grey-1000);
     padding: 15px;
   }
 }

@@ -19,7 +19,7 @@
         v-for="pair in passList"
         :primaryColour="pair[0]"
         :contrastColour="pair[1]"
-        :contrastRatio="pair[2]"
+
         :key="`${pair[0]}-${pair[1]}`"
       ></ColourContrastWidget>
     </div>
@@ -43,7 +43,7 @@
         v-for="pair in largePassList"
         :primaryColour="pair[0]"
         :contrastColour="pair[1]"
-        :contrastRatio="pair[2]"
+
         :key="`${pair[0]}-${pair[1]}`"
       ></ColourContrastWidget>
     </div>
@@ -67,7 +67,7 @@
         v-for="pair in failList"
         :primaryColour="pair[0]"
         :contrastColour="pair[1]"
-        :contrastRatio="pair[2]"
+
         :key="`${pair[0]}-${pair[1]}`"
       ></ColourContrastWidget>
     </div>
@@ -85,8 +85,6 @@ import { useColourStore } from "@/stores/colourStore";
 const colourStore = useColourStore();
 
 const isAPCA = computed(() => colourStore.contrastMode === 'apca');
-const { min, max } = colourStore.complianceRatios;
-
 const passList = computed(() => colourStore.passColourCombinations);
 const largePassList = computed(() => colourStore.largePassColourCombinations);
 const failList = computed(() => colourStore.failColourCombinations);

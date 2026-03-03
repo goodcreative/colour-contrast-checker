@@ -10,34 +10,19 @@
         @keyup="submitForm"
       ></FormFieldText>
     </div>
-    <!-- <div class="b_titleForm__action">
-      <FormAction
-        buttonLabel="Update title"
-        :onClick="submitForm"
-        :status="formMode"
-        buttonMode="submit"
-        :isDisabled="formDisabled"
-      ></FormAction>
-    </div> -->
   </div>
 </template>
 
 <script setup>
 // Imports
-import { reactive, computed, ref, onMounted } from "vue";
+import { computed } from "vue";
 import FormFieldText from "@/components/FormFieldText.vue";
-//import FormAction from "@/components/FormAction.vue";
 
 import { useColourStore } from "@/stores/colourStore";
 const colourStore = useColourStore();
 
-const state = reactive({
-  titleValue: "",
-  formMode: "default",
-});
-
 const formDisabled = computed(() => {
-  return colourStore.isTitleUpdated;
+  return colourStore.isTitleUnchanged;
 });
 
 const submitForm = async () => {

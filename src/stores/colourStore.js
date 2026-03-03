@@ -8,7 +8,6 @@ import getContrastModeFromURL from "@/composables/getContrastModeFromURL";
 import getCVDModeFromURL from "@/composables/getCVDModeFromURL";
 import contrastRatio from "@/composables/calculateColourContrast";
 import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
-import hexToRGB from "@/composables/hexToRGB.js";
 import apcaContrast from "@/composables/calculateAPCAContrast.js";
 import simulateCVD from "@/composables/simulateCVD.js";
 import { contrastConfig } from "@/config/contrastConfig.js";
@@ -194,7 +193,7 @@ export const useColourStore = defineStore("colourStore", () => {
    * Indicates if the current palette title has been updated compared to the last saved title.
    * @type {import('vue').ComputedRef<boolean>}
    */
-  const isTitleUpdated = computed(() => savedTitle.value === paletteTitle.value);
+  const isTitleUnchanged = computed(() => savedTitle.value === paletteTitle.value);
 
   /**
    * Indicates if the current palette can be archived (has a title and colours).
@@ -413,7 +412,7 @@ export const useColourStore = defineStore("colourStore", () => {
 
     // Getters
     isSampleMode,
-    isTitleUpdated,
+    isTitleUnchanged,
     paletteCanBeArchived,
     complianceRatios,
     simulatedSwatchMap,

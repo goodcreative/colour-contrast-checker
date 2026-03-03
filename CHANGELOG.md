@@ -1,5 +1,21 @@
 # Changelog
 
+## [Unreleased] — 2026-03-03 · Bug Fixes & Dead Code Cleanup
+
+- **Bug fix** — `hexToRGB` alpha path pushed a string instead of a number; 8-digit hex inputs now return correct numeric RGBA arrays
+- **Rename** — `isTitleUpdated` → `isTitleUnchanged` in store + consumer (name implied opposite of actual semantics)
+- **Debug artifact** — removed `background: red` from `ActionMenu` dropdown
+- **Dead code removal** — unused imports (`hexToRGB`, `FormAction`, `FieldIconPlus`, `onMounted`), unused props (`contrastRatio`), commented-out template/code blocks, scaffolded `state`/`props`/`reactive`/`computed`/`ref` boilerplate across 8 components
+- **Micro-cleanup** — `checkHexColourIsValid` simplified to direct return; duplicate `border-radius` removed from `PaletteSelectorItemColourPreview`
+
+## [Unreleased] — 2026-03-03 · R2 Component Test Suite
+
+- **6 new spec files** — `checkHexColourIsValid`, `calculateColourContrast`, `CVDModeSelector`, `ColourSwatch`, `ColourContrastWidget`, `CombinationsList`
+- **130 tests passing** across 10 spec files (up from 41 in 4 files)
+- **`@pinia/testing@0.1.7`** installed for `createTestingPinia` in component tests
+- Component tests use real store computeds driven by `colourSwatches` state rather than computed overrides
+- jsdom-specific: hex inline styles are read back as `rgb()`, navigator is getter-only (patched via `Object.defineProperty` on `.clipboard`)
+
 ## [Unreleased] — 2026-03-02 · Code optimisations
 
 - **Stable v-for keys** — `CombinationsList` uses composite `pair[0]-pair[1]` keys instead of index; fixes stale DOM on swatch reorder
