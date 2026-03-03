@@ -10,7 +10,7 @@
 
 $textBase: 16;
 
-@function parseInt($n) { 
+@function parseInt($n) {
   @return $n / ($n * 0 + 1);
 }
 
@@ -19,11 +19,11 @@ $textBase: 16;
 Parameters: @pixels value (no units), optional @context value (no units) e.g. if you are calculating padding on an element that has a font size applied already.
 */
 @function em($pixels, $context: $textBase) {
-  @return #{$pixels/$context}em;
+  @return #{calc($pixels / $context)}em;
 }
 
 @function rem($pixels, $context: $textBase) {
-  @return #{$pixels/$context}rem;
+  @return #{calc($pixels / $context)}rem;
 }
 
 @function px($pixels) {
@@ -31,7 +31,7 @@ Parameters: @pixels value (no units), optional @context value (no units) e.g. if
 }
 
 @function vw($pixels,$context) {
-  @return #{($pixels/$context)*100}vw;
+  @return #{(calc($pixels / $context))*100}vw;
 }
 
 //
