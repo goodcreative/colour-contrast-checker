@@ -73,6 +73,18 @@ export const useColourStore = defineStore("colourStore", () => {
   const paletteTitle = ref("");
 
   /**
+   * Controls visibility of the Export modal.
+   * @type {import('vue').Ref<boolean>}
+   */
+  const isExportModalOpen = ref(false);
+
+  /**
+   * Controls visibility of the Import modal.
+   * @type {import('vue').Ref<boolean>}
+   */
+  const isImportModalOpen = ref(false);
+
+  /**
    * Stores the last saved title of the palette, used for comparison.
    * @type {import('vue').Ref<string>}
    */
@@ -396,6 +408,25 @@ export const useColourStore = defineStore("colourStore", () => {
     return b[2] - a[2];
   }
 
+  function openExportModal() { isExportModalOpen.value = true; }
+  function closeExportModal() { isExportModalOpen.value = false; }
+  function openImportModal() { isImportModalOpen.value = true; }
+  function closeImportModal() { isImportModalOpen.value = false; }
+
+  /**
+   * Imports a palette in replace or merge mode.
+   * @param {{ name: string, colours: string[] }} palette
+   * @param {'replace'|'merge'} mode
+   */
+  function importPalette({ name, colours }, mode) {
+    if (mode === 'replace') {
+      colourSwatches.value = [];
+      paletteTitle.value = name;
+    }
+    const existing = new Set(colourSwatches.value);
+    colours.filter(c => !existing.has(c)).forEach(c => addColour(c));
+  }
+
   // Expose the store's state, getters, and actions
   return {
     // State
@@ -409,6 +440,8 @@ export const useColourStore = defineStore("colourStore", () => {
     sampleColours,
     paletteTitle,
     savedTitle,
+    isExportModalOpen,
+    isImportModalOpen,
 
     // Getters
     isSampleMode,
@@ -436,5 +469,10 @@ export const useColourStore = defineStore("colourStore", () => {
     loadPalettesFromLocalStorage,
     loadLocalPalette,
     deleteLocalPalette,
+    openExportModal,
+    closeExportModal,
+    openImportModal,
+    closeImportModal,
+    importPalette,
   };
 });
