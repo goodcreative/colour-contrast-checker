@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased] — 2026-03-03 · R3 Palette Import/Export
+
+- **Export JSON** — serialises active palette to `{ app, name, colours }` schema; downloaded as `<name>.json`
+- **Export CSS** — generates `/* name */` comment + `:root { --colour-N }` block; downloaded as `<name>.css`
+- **Export ASE** — binary Adobe Swatch Exchange format (ASEF header, UTF-16BE names, IEEE 754 RGB floats); downloaded as `<name>.ase`
+- **Import JSON** — parses and validates file against schema; descriptive errors for wrong app key, missing fields, invalid hex values
+- **Replace / Merge modes** — Replace clears palette and loads file; Merge appends deduped colours, keeps current title
+- **ExportModal** — format selector (JSON / CSS / ASE) + Download button; closes after download
+- **ImportModal** — file input, Replace/Merge toggle, error display, Import button disabled until valid file loaded
+- **PaletteControls** — Export + Import buttons added alongside Clear; all three visible only when palette non-empty
+- **5 new composables** — `exportPaletteAsJSON`, `exportPaletteAsCSS`, `exportPaletteAsASE`, `importPaletteFromJSON`, `downloadFile`
+- **69 new tests** across 8 new spec files (38 composable + 11 ExportModal + 12 ImportModal + 8 PaletteControls)
+
 ## [Unreleased] — 2026-03-03 · Bug Fixes & Dead Code Cleanup
 
 - **Bug fix** — `hexToRGB` alpha path pushed a string instead of a number; 8-digit hex inputs now return correct numeric RGBA arrays

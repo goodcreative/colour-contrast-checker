@@ -1,50 +1,62 @@
 <template>
   <div class="b_controls">
-    <div class="b_controls__clear" v-if="paletteIsNotEmpty">
+    <div class="b_controls__import">
       <FormAction
-        :onClick="clearPalette"
-        buttonLabel="Clear palette"
-        buttonMode="negative"
+        :onClick="openImport"
+        buttonLabel="Import"
+        buttonMode="positive"
       ></FormAction>
     </div>
+    <template v-if="paletteIsNotEmpty">
+      <div class="b_controls__export">
+        <FormAction
+          :onClick="openExport"
+          buttonLabel="Export"
+          buttonMode="utility"
+        ></FormAction>
+      </div>
+      <div class="b_controls__clear">
+        <FormAction
+          :onClick="clearPalette"
+          buttonLabel="Clear palette"
+          buttonMode="negative"
+        ></FormAction>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup>
-// Imports
 import { computed } from "vue";
 import { useColourStore } from "@/stores/colourStore";
 import FormAction from "@/components/FormAction.vue";
 
 const colourStore = useColourStore();
 
-const clearPalette = function () {
-  colourStore.clearPalette();
-};
+const paletteIsNotEmpty = computed(() => colourStore.colourSwatches.length > 0);
 
-const paletteIsNotEmpty = computed(() => {
-  if (colourStore.colourSwatches.length) {
-    return true;
-  }
-
-  return false;
-});
-
-// Functions
-// function functionName(){}
+function clearPalette() { colourStore.clearPalette(); }
+function openExport() { colourStore.openExportModal(); }
+function openImport() { colourStore.openImportModal(); }
 </script>
 
 <style lang="scss" scoped>
 .b_controls {
+  display: flex;
+  gap: var(--size-s);
   padding: calc(var(--main-spacing) / 2) var(--main-spacing);
 
+  &__export,
+  &__import,
   &__clear {
-    --form-button-width: auto;
-    --form-button-height: auto;
-    --formAction-background: var(--clr-red-400);
-    --formAction-background-hov: var(--clr-red-300);
     --formAction-padding: 0.4em 0.65em;
     --formAction-font: var(--body-300);
+  }
+
+  &__clear {
+    --formAction-background: var(--clr-red-400);
+    --formAction-background-hov: var(--clr-red-300);
+    margin-left: auto;
   }
 }
 </style>

@@ -42,6 +42,8 @@
       <CombinationsList></CombinationsList>
     </main>
     <SampleModal></SampleModal>
+    <ExportModal></ExportModal>
+    <ImportModal></ImportModal>
   </div>
 </template>
 
@@ -59,6 +61,8 @@ import ContrastModeToggle from "@/components/ContrastModeToggle.vue";
 import CVDModeSelector from "@/components/CVDModeSelector.vue";
 import PillToggle from "@/components/PillToggle.vue";
 import SampleModal from "@/components/SampleModal.vue";
+import ExportModal from "@/components/ExportModal.vue";
+import ImportModal from "@/components/ImportModal.vue";
 import { useColourStore } from "@/stores/colourStore";
 
 const colourStore = useColourStore();
