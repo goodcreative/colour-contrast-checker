@@ -43,28 +43,26 @@
 import FieldIconCross from "@/components/icons/FieldIconCross.vue";
 import FormAction from "@/components/FormAction.vue";
 
-import { reactive, computed } from "vue";
+import { ref, computed } from "vue";
 import { useColourStore } from "@/stores/colourStore";
 const colourStore = useColourStore();
 
 // Data
-const state = reactive({
-  flipped: false,
-});
+const flipped = ref(false);
 
 const colourPair = computed(() => {
   return colourStore.sampleColours;
 });
 
 const firstColour = computed(() => {
-  if (state.flipped) {
+  if (flipped.value) {
     return colourPair.value[1];
   }
   return colourPair.value[0];
 });
 
 const secondColour = computed(() => {
-  if (state.flipped) {
+  if (flipped.value) {
     return colourPair.value[0];
   }
   return colourPair.value[1];
@@ -75,11 +73,11 @@ const isVisible = computed(() => {
 });
 
 function closeSample() {
-  colourStore.sampleColours = [];
+  colourStore.closeSample();
 }
 
 function flipColours() {
-  state.flipped = !state.flipped;
+  flipped.value = !flipped.value;
 }
 </script>
 <style lang="scss" scoped>

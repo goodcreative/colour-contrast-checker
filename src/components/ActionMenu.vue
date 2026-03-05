@@ -11,25 +11,16 @@
 
 <script setup>
 // Imports
-import { reactive, computed, ref } from "vue";
+import { ref } from "vue";
 import FormAction from "@/components/FormAction.vue";
 import IconActionToggle from "./icons/IconActionToggle.vue";
 
 // Data
-const state = reactive({
-  isOpen: false,
-});
+const isOpen = ref(false);
 
 const toggleMenu = function () {
-  state.isOpen = !state.isOpen;
+  isOpen.value = !isOpen.value;
 };
-
-const isOpen = computed(() => {
-  return state.isOpen;
-});
-
-// Functions
-// function functionName(){}
 </script>
 
 <style lang="scss" scoped>

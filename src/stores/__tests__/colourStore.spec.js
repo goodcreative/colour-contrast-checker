@@ -242,6 +242,46 @@ describe('Colour Store', () => {
     });
   });
 
+  describe('clearPalette Action', () => {
+    it('resets swatches, title, and focus', () => {
+      const store = useColourStore();
+      store.addColour('#FFFFFF');
+      store.addColour('#000000');
+      store.paletteTitle = 'Test';
+      store.setFocusColour('#FFFFFF');
+      store.clearPalette();
+      expect(store.colourSwatches).toEqual([]);
+      expect(store.paletteTitle).toBe('');
+      expect(store.focusColour).toBe('');
+    });
+  });
+
+  describe('closeSample Action', () => {
+    it('clears sampleColours', () => {
+      const store = useColourStore();
+      store.sampleColours = ['#ff0000', '#00ff00'];
+      expect(store.isSampleMode).toBe(true);
+      store.closeSample();
+      expect(store.sampleColours).toEqual([]);
+      expect(store.isSampleMode).toBe(false);
+    });
+  });
+
+  describe('formatPaletteQueryString', () => {
+    it('formats colours as dash-separated hex without #', () => {
+      const store = useColourStore();
+      store.addColour('#ff0000');
+      store.addColour('#00ff00');
+      // addColour uses unshift, so order is reversed
+      expect(store.colourSwatches).toEqual(['#00ff00', '#ff0000']);
+    });
+
+    it('returns empty string for no colours', () => {
+      const store = useColourStore();
+      expect(store.colourSwatches).toEqual([]);
+    });
+  });
+
   describe('paletteCanBeArchived Computed Property', () => {
     it('returns true when palette has a title and colours', () => {
       const store = useColourStore();

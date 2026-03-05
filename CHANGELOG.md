@@ -1,5 +1,28 @@
 # Changelog
 
+## [Unreleased] — 2026-03-05 · Code Review: Bugs, Tests & Optimisations
+
+### Bug Fixes
+- **`relativeLum()` crash** — `colour` var scoped inside `if` block but used outside; moved declaration, added TypeError for non-string input
+- **`setContrastMode()` JSDoc** — copy-paste error said "Sets the focus colour"
+- **`PaletteTitle.vue`** — dead `titleMode` computed referencing non-existent prop removed
+- **`ColourContrastWidget.vue`** — dead `showSample()` function removed
+- **`FormFieldText.vue`** — `IconComponent` returned `false` instead of `null` for invalid `<component :is>`
+
+### Code Quality
+- **URL history** — `pushState` → `replaceState` to stop spamming browser history on every change
+- **URL params** — empty `title=` and `focus=` no longer pollute query string
+- **`SampleModal.vue`** — direct store mutation replaced with `closeSample()` action; `reactive` → `ref`
+- **`ActionMenu.vue`** — replaced `reactive` + `computed` wrapper with single `ref`; removed unused imports
+- **`calculateColourContrast.js`** — `var` → `const/let`
+- **Store** — `Object.assign([], ...)` → spread `[...arr]`
+- **SCSS tokens** — hardcoded `#fff` (badge text) → `--clr-badge-text`; `#999` (placeholder) → `--clr-grey-600`
+
+### Tests (156 passing, up from 76)
+- **New**: `hexToRGB.spec.js` — 3/6/8-digit hex, with/without `#`, alpha channel
+- **New**: `getURLParam.spec.js` — param extraction, missing params, empty values, URL encoding
+- **Edge cases added**: `calculateColourContrast` (non-string TypeError), `colourStore` (`clearPalette`, `closeSample`, `formatPaletteQueryString`)
+
 ## [Unreleased] — 2026-03-03 · Bug Fixes & Dead Code Cleanup
 
 - **Bug fix** — `hexToRGB` alpha path pushed a string instead of a number; 8-digit hex inputs now return correct numeric RGBA arrays

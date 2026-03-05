@@ -154,9 +154,7 @@ const ratingIcon = computed(() => {
   }
 });
 
-function showSample() {
-  colourStore.sampleColours = [props.primaryColour, props.contrastColour];
-}
+
 </script>
 
 <style lang="scss" scoped>
@@ -281,17 +279,17 @@ function showSample() {
     padding: 2px 6px;
 
     &--body {
-      color: #fff;
+      color: var(--clr-badge-text);
       background: var(--clr-badge-body);
     }
 
     &--large {
-      color: #fff;
+      color: var(--clr-badge-text);
       background: var(--clr-badge-large);
     }
 
     &--decorative {
-      color: #fff;
+      color: var(--clr-badge-text);
       background: var(--clr-badge-decorative);
     }
   }

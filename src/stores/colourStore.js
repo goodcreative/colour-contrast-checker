@@ -204,8 +204,8 @@ export const useColourStore = defineStore("colourStore", () => {
   // --- ACTIONS ---
 
   /**
-   * Sets the focus colour and updates the URL.
-   * @param {string} colour - The hex colour to set as focus, or an empty string to clear.
+   * Sets the contrast algorithm mode and updates the URL.
+   * @param {string} mode - The contrast mode to set ('wcag' or 'apca').
    */
   function setContrastMode(mode) {
     contrastMode.value = mode;
@@ -266,7 +266,7 @@ export const useColourStore = defineStore("colourStore", () => {
   function loadLocalPalette(id) {
     const localPalette = searchArrayByProperty(palettes.value, "id", id);
     if (!localPalette) return;
-    colourSwatches.value = Object.assign([], localPalette.colours);
+    colourSwatches.value = [...localPalette.colours];
     paletteTitle.value = localPalette.title;
     savedTitle.value = localPalette.title;
     setFocusColour("");
@@ -301,7 +301,7 @@ export const useColourStore = defineStore("colourStore", () => {
   function addPaletteToLocalStorage() {
     if (paletteTitle.value !== "") {
       let savedPalette = {
-        colours: Object.assign([], colourSwatches.value),
+        colours: [...colourSwatches.value],
         id: paletteIDCounter.value,
         title: paletteTitle.value,
       };
@@ -369,16 +369,27 @@ export const useColourStore = defineStore("colourStore", () => {
     const coloursForURL = formatPaletteQueryString();
     const url = new URL(window.location);
     url.searchParams.set("colours", coloursForURL);
-    url.searchParams.set("title", paletteTitle.value);
-    url.searchParams.set("focus", focusColour.value.replace("#", ""));
+
+    const title = paletteTitle.value;
+    if (title) url.searchParams.set("title", title);
+    else url.searchParams.delete("title");
+
+    const focus = focusColour.value.replace("#", "");
+    if (focus) url.searchParams.set("focus", focus);
+    else url.searchParams.delete("focus");
+
     url.searchParams.set("contrastMode", contrastMode.value);
     url.searchParams.set("cvdMode", cvdMode.value);
-    window.history.pushState(history.state, "", url);
+    window.history.replaceState(history.state, "", url);
   }
 
   /**
    * Clears the current active colour palette, title, and focus colour.
    */
+  function closeSample() {
+    sampleColours.value = [];
+  }
+
   function clearPalette() {
     colourSwatches.value = [];
     paletteTitle.value = "";
@@ -432,6 +443,7 @@ export const useColourStore = defineStore("colourStore", () => {
     updateURLData,
     updateLocalStorage,
     clearPalette,
+    closeSample,
     updatePaletteTitle,
     loadPalettesFromLocalStorage,
     loadLocalPalette,

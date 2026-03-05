@@ -1,9 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&family=Inter:wght@200..700&display=swap');
 
 :root {
-  --fontFamily-base:'Inter', sans-serif; 
-  --fontFamily-base:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
-  --fontFamily-code: 'Fira Code', monospace; 
+  --fontFamily-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  --fontFamily-code: 'Fira Code', monospace;
 
   --font-size-1200: #{clamped(40px,54px)};
   --font-size-1000: #{clamped(24px,32px)};
@@ -18,14 +17,14 @@
   --heading-1000: 700 var(--font-size-1000)/1 var(--fontFamily-base);
   --heading-800: 700 var(--font-size-800)/1 var(--fontFamily-base);
   --heading-700: 700 var(--font-size-700)/1 var(--fontFamily-base);
-  
+
   --body-400: 400 var(--font-size-400)/1 var(--fontFamily-base);
   --body-300: 400 var(--font-size-300)/1 var(--fontFamily-base);
   --body-200: 400 var(--font-size-200)/1 var(--fontFamily-base);
-  
+
   --text-code-400: 500 var(--font-size-400)/1 var(--fontFamily-code);
   --text-code-300: 500 var(--font-size-300)/1 var(--fontFamily-code);
   --text-code-200: 500 var(--font-size-200)/1 var(--fontFamily-code);
 
-  --text-token-value:var(--text-code-400); 
+  --text-token-value:var(--text-code-400);
 }

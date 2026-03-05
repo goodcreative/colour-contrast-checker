@@ -93,7 +93,7 @@ const IconComponent = computed(() => {
   if (props.icon === "hex") {
     return HexIcon;
   } else {
-    return false;
+    return null;
   }
 });
 
@@ -108,7 +108,7 @@ const IconComponent = computed(() => {
   grid-gap: var(--size-xsmall);
 
   ::placeholder {
-    color: #999;
+    color: var(--clr-grey-600);
   }
 
   &__label,

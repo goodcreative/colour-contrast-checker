@@ -48,4 +48,10 @@ describe('contrastRatio', () => {
     expect(ratio).toBeGreaterThan(2.0);
     expect(ratio).toBeLessThan(2.5);
   });
+
+  it('throws TypeError for non-string input', () => {
+    expect(() => contrastRatio(123, '#ffffff')).toThrow(TypeError);
+    expect(() => contrastRatio(null, '#ffffff')).toThrow(TypeError);
+    expect(() => contrastRatio(undefined, '#ffffff')).toThrow(TypeError);
+  });
 });

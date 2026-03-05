@@ -12,22 +12,9 @@ import FormEditTitle from "@/components/FormEditTitle.vue";
 
 const colourStore = useColourStore();
 
-const props = defineProps({});
-
 const titleText = computed(() => {
   return colourStore.paletteTitle;
 });
-
-const titleMode = computed(() => {
-  if (props.titleText) {
-    return "set";
-  } else {
-    return "empty";
-  }
-});
-
-// Functions
-// function functionName(){}
 </script>
 
 <style lang="scss" scoped>
