@@ -11,6 +11,4 @@
       fill="black"
     />
   </svg>
-
-  <template> </template>
 </template>

@@ -20,9 +20,3 @@
     />
   </svg>
 </template>
-<style lang="scss" scoped>
-.b_icon {
-  max-width: var(--b-icon-max-width);
-  max-height: var(--b-icon-max-height);
-}
-</style>

@@ -1,7 +1,0 @@
-<svg width="24" height="23" viewBox="0 0 24 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-<mask id="path-1-inside-1_145_29" fill="white">
-<rect width="24" height="4" rx="1"/>
-</mask>
-<rect width="24" height="4" rx="1" stroke="white" stroke-width="4" mask="url(#path-1-inside-1_145_29)"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M3 5C2.44772 5 2 5.44772 2 6V22C2 22.5523 2.44772 23 3 23H21C21.5523 23 22 22.5523 22 22V6C22 5.44772 21.5523 5 21 5H3ZM8.5 9C7.67157 9 7 9.67157 7 10.5C7 11.3284 7.67157 12 8.5 12H15.5C16.3284 12 17 11.3284 17 10.5C17 9.67157 16.3284 9 15.5 9H8.5Z" fill="white"/>
-</svg>
