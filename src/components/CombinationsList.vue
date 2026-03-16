@@ -106,17 +106,17 @@ const passGroup = computed(() => {
 });
 
 const largePassGroup = computed(() => {
-  const { min: rMin, max: rMax } = colourStore.complianceRatios;
+  const { min: rMin, max: rMax, displayEpsilon } = colourStore.complianceRatios;
   if (isAPCA.value) {
     return {
       title: 'Large text & UI',
-      threshold: `Lc ${rMin}–${rMax - 0.1}`,
+      threshold: `Lc ${rMin}–${rMax - displayEpsilon}`,
       description: `Headlines, UI components — meets APCA ${colourStore.complianceMode} for large text.`,
     };
   }
   return {
     title: 'Partial Pass',
-    threshold: `Contrast ratio ${rMin}:1 to ${rMax - 0.01}:1`,
+    threshold: `Contrast ratio ${rMin}:1 to ${rMax - displayEpsilon}:1`,
     description: `Meets WCAG ${colourStore.complianceMode} for bold text above 18px and all text above 24px.`,
   };
 });

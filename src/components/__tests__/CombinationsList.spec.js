@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import { createTestingPinia } from '@pinia/testing';
 import CombinationsList from '../CombinationsList.vue';
 import ColourContrastWidget from '../ColourContrastWidget.vue';
+import { contrastConfig } from '@/config/contrastConfig';
 
 // Colour pairs chosen for known WCAG AA contrast ratios:
 //   #000000 / #ffffff → 21:1    → PASS   (>= 4.5)
@@ -96,9 +97,12 @@ describe('CombinationsList — WCAG mode', () => {
     expect(wrapper.find('.b_combinations__intro h2').text()).toBe('Partial Pass');
   });
 
-  it('shows threshold range "3:1 to 4.49:1" in WCAG AA largePass group', () => {
+  it('shows threshold range in WCAG AA largePass group', () => {
     const wrapper = makeWrapper({ colourSwatches: ['#888888', '#ffffff'] });
-    expect(wrapper.find('.b_combinations__intro p strong').text()).toContain('3:1');
+    const { min, max, displayEpsilon } = contrastConfig.wcag.aa;
+    const text = wrapper.find('.b_combinations__intro p strong').text();
+    expect(text).toContain(`${min}:1`);
+    expect(text).toContain(`${max - displayEpsilon}:1`);
   });
 
   it('shows title "Fail" in WCAG fail group', () => {
@@ -129,9 +133,12 @@ describe('CombinationsList — APCA mode', () => {
     expect(wrapper.find('.b_combinations__intro h2').text()).toBe('Large text & UI');
   });
 
-  it('shows "Lc 45" range in APCA AA largePass group', () => {
+  it('shows range in APCA AA largePass group', () => {
     const wrapper = makeWrapper({ contrastMode: 'apca', colourSwatches: ['#999999', '#ffffff'] });
-    expect(wrapper.find('.b_combinations__intro p strong').text()).toContain('Lc 45');
+    const { min, max, displayEpsilon } = contrastConfig.apca.aa;
+    const text = wrapper.find('.b_combinations__intro p strong').text();
+    expect(text).toContain(`Lc ${min}`);
+    expect(text).toContain(`${max - displayEpsilon}`);
   });
 
   it('shows title "Not suitable" in APCA fail group', () => {
