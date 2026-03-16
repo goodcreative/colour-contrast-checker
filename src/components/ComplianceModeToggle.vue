@@ -4,7 +4,7 @@
     :options="[{ label: 'AA', value: 'AA' }, { label: 'AAA', value: 'AAA' }]"
     :modelValue="colourStore.complianceMode"
     justify="flex-end"
-    @update:modelValue="colourStore.complianceMode = $event"
+    @update:modelValue="colourStore.setComplianceMode($event)"
   />
 </template>
 

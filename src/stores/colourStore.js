@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, computed, readonly } from "vue";
 import { defineStore } from "pinia";
 import checkHexColourIsValid from "@/composables/checkHexColourIsValid";
 import getColoursFromURL from "@/composables/getColoursFromURL";
@@ -6,6 +6,7 @@ import getTitleFromURL from "@/composables/getTitleFromURL";
 import getFocusColourFromURL from "@/composables/getFocusColourFromURL";
 import getContrastModeFromURL from "@/composables/getContrastModeFromURL";
 import getCVDModeFromURL from "@/composables/getCVDModeFromURL";
+import getComplianceModeFromURL from "@/composables/getComplianceModeFromURL";
 import contrastRatio from "@/composables/calculateColourContrast";
 import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
 import apcaContrast from "@/composables/calculateAPCAContrast.js";
@@ -212,9 +213,18 @@ export const useColourStore = defineStore("colourStore", () => {
     updateURLData();
   }
 
+  function setComplianceMode(mode) {
+    complianceMode.value = mode;
+    updateURLData();
+  }
+
   function setCVDMode(mode) {
     cvdMode.value = mode;
     updateURLData();
+  }
+
+  function hideCVDPanel() {
+    setCVDMode('normal');
   }
 
   function setFocusColour(colour) {
@@ -257,6 +267,9 @@ export const useColourStore = defineStore("colourStore", () => {
 
     const cvdFromURL = getCVDModeFromURL();
     if (cvdFromURL) cvdMode.value = cvdFromURL;
+
+    const complianceModeFromURL = getComplianceModeFromURL();
+    if (complianceModeFromURL) complianceMode.value = complianceModeFromURL;
   }
 
   /**
@@ -380,6 +393,7 @@ export const useColourStore = defineStore("colourStore", () => {
 
     url.searchParams.set("contrastMode", contrastMode.value);
     url.searchParams.set("cvdMode", cvdMode.value);
+    url.searchParams.set("complianceMode", complianceMode.value);
     window.history.replaceState(history.state, "", url);
   }
 
@@ -410,7 +424,7 @@ export const useColourStore = defineStore("colourStore", () => {
   // Expose the store's state, getters, and actions
   return {
     // State
-    complianceMode,
+    complianceMode: readonly(complianceMode),
     contrastMode,
     cvdMode,
     palettes,
@@ -433,8 +447,10 @@ export const useColourStore = defineStore("colourStore", () => {
     failColourCombinations,
 
     // Actions
+    setComplianceMode,
     setContrastMode,
     setCVDMode,
+    hideCVDPanel,
     setFocusColour,
     loadPaletteFromQueryString,
     addPaletteToLocalStorage,
