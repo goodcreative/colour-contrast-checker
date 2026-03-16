@@ -14,7 +14,7 @@ const STUBS = {
   IconResultFail: true,
 };
 
-function makeWrapper({ primaryColour = '#000000', contrastColour = '#ffffff', contrastMode = 'wcag', complianceMode = 'AA', cvdMode = 'normal', colourSwatches = [] } = {}) {
+function makeWrapper({ primaryColour = '#000000', contrastColour = '#ffffff', contrastMode = 'wcag', cvdMode = 'normal', colourSwatches = [] } = {}) {
   return mount(ColourContrastWidget, {
     props: {
       primaryColour,
@@ -25,7 +25,7 @@ function makeWrapper({ primaryColour = '#000000', contrastColour = '#ffffff', co
       plugins: [
         createTestingPinia({
           initialState: {
-            colourStore: { contrastMode, complianceMode, cvdMode, colourSwatches },
+            colourStore: { contrastMode, cvdMode, colourSwatches },
           },
           stubActions: false,
           createSpy: vi.fn,
@@ -65,13 +65,13 @@ describe('ColourContrastWidget — WCAG mode', () => {
 
   it('shows "Partial" rating for #888888 on white (WCAG AA, ~3.55:1)', () => {
     // #888888 on white ≈ 3.55:1 — between AA min(3) and max(4.5) → Partial Pass
-    const wrapper = makeWrapper({ primaryColour: '#888888', contrastColour: '#ffffff', complianceMode: 'AA' });
+    const wrapper = makeWrapper({ primaryColour: '#888888', contrastColour: '#ffffff' });
     expect(wrapper.find('.b_contrast__result p').text()).toContain('Partial');
   });
 
   it('shows "Fail" rating for low-contrast pair', () => {
     // #AAAAAA on white ≈ 2.32, below AA min of 3
-    const wrapper = makeWrapper({ primaryColour: '#AAAAAA', contrastColour: '#ffffff', complianceMode: 'AA' });
+    const wrapper = makeWrapper({ primaryColour: '#AAAAAA', contrastColour: '#ffffff' });
     expect(wrapper.find('.b_contrast__result p').text()).toContain('Fail');
   });
 
@@ -120,39 +120,39 @@ describe('ColourContrastWidget — APCA mode', () => {
 
   it('shows "Body" use-case badge when Lc >= 60 (black/white, APCA AA)', () => {
     // black on white ≈ Lc 108 → body (>= max 60)
-    const wrapper = makeWrapper({ primaryColour: '#000000', contrastColour: '#ffffff', contrastMode: 'apca', complianceMode: 'AA' });
+    const wrapper = makeWrapper({ primaryColour: '#000000', contrastColour: '#ffffff', contrastMode: 'apca' });
     const useCaseSpans = wrapper.findAll('.b_contrast__panelUseCase');
     expect(useCaseSpans[0].text()).toBe('Body');
   });
 
   it('shows "Large" use-case badge when 45 <= Lc < 60', () => {
     // #999999 on white ≈ Lc 54 → large (>= min 45, < max 60)
-    const wrapper = makeWrapper({ primaryColour: '#999999', contrastColour: '#ffffff', contrastMode: 'apca', complianceMode: 'AA' });
+    const wrapper = makeWrapper({ primaryColour: '#999999', contrastColour: '#ffffff', contrastMode: 'apca' });
     const useCaseSpans = wrapper.findAll('.b_contrast__panelUseCase');
     expect(useCaseSpans[0].text()).toBe('Large');
   });
 
   it('shows "Decorative" use-case badge when Lc < 45', () => {
     // #BBBBBB on white ≈ Lc 36 → decorative (< min 45)
-    const wrapper = makeWrapper({ primaryColour: '#bbbbbb', contrastColour: '#ffffff', contrastMode: 'apca', complianceMode: 'AA' });
+    const wrapper = makeWrapper({ primaryColour: '#bbbbbb', contrastColour: '#ffffff', contrastMode: 'apca' });
     const useCaseSpans = wrapper.findAll('.b_contrast__panelUseCase');
     expect(useCaseSpans[0].text()).toBe('Decorative');
   });
 
   it('applies --body CSS modifier when use case is Body', () => {
-    const wrapper = makeWrapper({ primaryColour: '#000000', contrastColour: '#ffffff', contrastMode: 'apca', complianceMode: 'AA' });
+    const wrapper = makeWrapper({ primaryColour: '#000000', contrastColour: '#ffffff', contrastMode: 'apca' });
     const useCaseSpan = wrapper.findAll('.b_contrast__panelUseCase')[0];
     expect(useCaseSpan.classes()).toContain('b_contrast__panelUseCase--body');
   });
 
   it('applies --large CSS modifier when use case is Large', () => {
-    const wrapper = makeWrapper({ primaryColour: '#999999', contrastColour: '#ffffff', contrastMode: 'apca', complianceMode: 'AA' });
+    const wrapper = makeWrapper({ primaryColour: '#999999', contrastColour: '#ffffff', contrastMode: 'apca' });
     const useCaseSpan = wrapper.findAll('.b_contrast__panelUseCase')[0];
     expect(useCaseSpan.classes()).toContain('b_contrast__panelUseCase--large');
   });
 
   it('applies --decorative CSS modifier when use case is Decorative', () => {
-    const wrapper = makeWrapper({ primaryColour: '#bbbbbb', contrastColour: '#ffffff', contrastMode: 'apca', complianceMode: 'AA' });
+    const wrapper = makeWrapper({ primaryColour: '#bbbbbb', contrastColour: '#ffffff', contrastMode: 'apca' });
     const useCaseSpan = wrapper.findAll('.b_contrast__panelUseCase')[0];
     expect(useCaseSpan.classes()).toContain('b_contrast__panelUseCase--decorative');
   });

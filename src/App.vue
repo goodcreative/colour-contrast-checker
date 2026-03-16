@@ -65,7 +65,7 @@ const colourStore = useColourStore();
 const showCVD = ref(false);
 
 watch(showCVD, (val) => {
-  if (!val) colourStore.setCVDMode("normal");
+  if (!val) colourStore.hideCVDPanel();
 });
 
 onMounted(() => {

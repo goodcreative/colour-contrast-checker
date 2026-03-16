@@ -73,14 +73,14 @@ describe('Colour Store', () => {
   describe('complianceRatios Computed Property', () => {
     it("returns correct ratios for 'AA' mode", () => {
       const store = useColourStore();
-      store.complianceMode = 'AA';
+      store.setComplianceMode('AA');
       expect(store.complianceRatios.min).toBe(3);
       expect(store.complianceRatios.max).toBe(4.5);
     });
 
     it("returns correct ratios for 'AAA' mode", () => {
       const store = useColourStore();
-      store.complianceMode = 'AAA';
+      store.setComplianceMode('AAA');
       expect(store.complianceRatios.min).toBe(4.5);
       expect(store.complianceRatios.max).toBe(7);
     });
@@ -109,19 +109,19 @@ describe('Colour Store', () => {
     });
 
     it('correctly categorizes passing combinations for AAA', () => {
-      store.complianceMode = 'AAA';
+      store.setComplianceMode('AAA');
       const passing = store.passColourCombinations.filter(c => c.includes('#FFFFFF') && c.includes('#000000'));
       expect(passing).toHaveLength(1);
     });
 
     it('correctly categorizes large text pass combinations for AAA', () => {
-      store.complianceMode = 'AAA';
+      store.setComplianceMode('AAA');
       const largePass = store.largePassColourCombinations.filter(c => c.includes('#FFFFFF') && c.includes('#757575'));
       expect(largePass).toHaveLength(1);
     });
     
     it('correctly categorizes failing combinations for AA', () => {
-      store.complianceMode = 'AA';
+      store.setComplianceMode('AA');
       const failing = store.failColourCombinations.filter(c => c.includes('#FFFFFF') && c.includes('#AAAAAA'));
       expect(failing).toHaveLength(1);
     });
@@ -142,7 +142,7 @@ describe('Colour Store', () => {
     it('APCA AA: complianceRatios min=45, max=60', () => {
       const store = useColourStore();
       store.setContrastMode('apca');
-      store.complianceMode = 'AA';
+      store.setComplianceMode('AA');
       expect(store.complianceRatios.min).toBe(45);
       expect(store.complianceRatios.max).toBe(60);
     });
@@ -150,7 +150,7 @@ describe('Colour Store', () => {
     it('APCA AAA: complianceRatios min=60, max=75', () => {
       const store = useColourStore();
       store.setContrastMode('apca');
-      store.complianceMode = 'AAA';
+      store.setComplianceMode('AAA');
       expect(store.complianceRatios.min).toBe(60);
       expect(store.complianceRatios.max).toBe(75);
     });
@@ -167,7 +167,7 @@ describe('Colour Store', () => {
     it('APCA AA: categorizes black/white as pass, mid-gray as largePass, light-gray as fail', () => {
       const store = useColourStore();
       store.setContrastMode('apca');
-      store.complianceMode = 'AA';
+      store.setComplianceMode('AA');
       store.addColour('#ffffff');
       store.addColour('#000000'); // Lc 106 → pass (>60)
       store.addColour('#999999'); // Lc 54.6 → largePass (45-60)
@@ -279,6 +279,43 @@ describe('Colour Store', () => {
     it('returns empty string for no colours', () => {
       const store = useColourStore();
       expect(store.colourSwatches).toEqual([]);
+    });
+  });
+
+  describe('complianceMode', () => {
+    it("setComplianceMode('AAA') updates state and URL", () => {
+      const store = useColourStore();
+      store.setComplianceMode('AAA');
+      expect(store.complianceMode).toBe('AAA');
+      expect(window.location.href).toContain('complianceMode=AAA');
+    });
+
+    it("setComplianceMode('AA') writes complianceMode=AA to URL", () => {
+      const store = useColourStore();
+      store.setComplianceMode('AA');
+      expect(window.location.href).toContain('complianceMode=AA');
+    });
+
+    it('loadPaletteFromQueryString reads complianceMode=AAA from URL', () => {
+      window.history.replaceState({}, '', '?complianceMode=AAA');
+      const store = useColourStore();
+      store.loadPaletteFromQueryString();
+      expect(store.complianceMode).toBe('AAA');
+    });
+
+    it('loadPaletteFromQueryString ignores invalid complianceMode', () => {
+      window.history.replaceState({}, '', '?complianceMode=invalid');
+      const store = useColourStore();
+      store.loadPaletteFromQueryString();
+      expect(store.complianceMode).toBe('AA');
+    });
+
+    it('hideCVDPanel resets cvdMode to normal', () => {
+      const store = useColourStore();
+      store.setCVDMode('protanopia');
+      expect(store.cvdMode).toBe('protanopia');
+      store.hideCVDPanel();
+      expect(store.cvdMode).toBe('normal');
     });
   });
 

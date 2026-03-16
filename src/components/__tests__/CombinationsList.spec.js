@@ -21,13 +21,13 @@ const STUBS = {
   IconResultFail: true,
 };
 
-function makeWrapper({ contrastMode = 'wcag', complianceMode = 'AA', colourSwatches = [] } = {}) {
+function makeWrapper({ contrastMode = 'wcag', colourSwatches = [] } = {}) {
   return shallowMount(CombinationsList, {
     global: {
       plugins: [
         createTestingPinia({
           initialState: {
-            colourStore: { contrastMode, complianceMode, colourSwatches },
+            colourStore: { contrastMode, colourSwatches },
           },
           stubActions: false,
           createSpy: vi.fn,
