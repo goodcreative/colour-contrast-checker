@@ -1,10 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { useColourStore } from '../colourStore';
+import { useColourStore, setAdapters } from '../colourStore';
+import { createInMemoryUrlAdapter, createInMemoryStorageAdapter } from '@/adapters/testAdapters';
 
 describe('Colour Store', () => {
+  let urlAdapter;
+  let storageAdapter;
+
   beforeEach(() => {
     setActivePinia(createPinia());
+    urlAdapter = createInMemoryUrlAdapter();
+    storageAdapter = createInMemoryStorageAdapter();
+    setAdapters(urlAdapter, storageAdapter);
   });
 
   it('initializes with correct default values', () => {
@@ -242,6 +249,25 @@ describe('Colour Store', () => {
     });
   });
 
+  describe('CVD bucketing', () => {
+    it('normal mode: red/white ratio is ≈4.0 → largePass in WCAG AA', () => {
+      const store = useColourStore();
+      store.addColour('#ff0000');
+      store.addColour('#ffffff');
+      expect(store.largePassColourCombinations).toHaveLength(1);
+      expect(store.passColourCombinations).toHaveLength(0);
+    });
+
+    it('protanopia: simulated red/white shifts bucket to pass (simulated ratio > 4.5)', () => {
+      const store = useColourStore();
+      store.setCVDMode('protanopia');
+      store.addColour('#ff0000');
+      store.addColour('#ffffff');
+      expect(store.passColourCombinations).toHaveLength(1);
+      expect(store.largePassColourCombinations).toHaveLength(0);
+    });
+  });
+
   describe('clearPalette Action', () => {
     it('resets swatches, title, and focus', () => {
       const store = useColourStore();
@@ -287,24 +313,39 @@ describe('Colour Store', () => {
       const store = useColourStore();
       store.setComplianceMode('AAA');
       expect(store.complianceMode).toBe('AAA');
-      expect(window.location.href).toContain('complianceMode=AAA');
+      expect(urlAdapter.snapshot()).toContain('complianceMode=AAA');
     });
 
     it("setComplianceMode('AA') writes complianceMode=AA to URL", () => {
       const store = useColourStore();
       store.setComplianceMode('AA');
-      expect(window.location.href).toContain('complianceMode=AA');
+      expect(urlAdapter.snapshot()).toContain('complianceMode=AA');
+    });
+
+    it('loadPaletteFromQueryString applies all parsed fields to store state', () => {
+      setAdapters(
+        createInMemoryUrlAdapter('?colours=ff0000-000000&title=Brand&focus=ff0000&contrastMode=apca&cvdMode=protanopia&complianceMode=AAA'),
+        storageAdapter,
+      );
+      const store = useColourStore();
+      store.loadPaletteFromQueryString();
+      expect(store.colourSwatches).toEqual(['#ff0000', '#000000']);
+      expect(store.paletteTitle).toBe('Brand');
+      expect(store.focusColour).toBe('#ff0000');
+      expect(store.contrastMode).toBe('apca');
+      expect(store.cvdMode).toBe('protanopia');
+      expect(store.complianceMode).toBe('AAA');
     });
 
     it('loadPaletteFromQueryString reads complianceMode=AAA from URL', () => {
-      window.history.replaceState({}, '', '?complianceMode=AAA');
+      setAdapters(createInMemoryUrlAdapter('?complianceMode=AAA'), storageAdapter);
       const store = useColourStore();
       store.loadPaletteFromQueryString();
       expect(store.complianceMode).toBe('AAA');
     });
 
     it('loadPaletteFromQueryString ignores invalid complianceMode', () => {
-      window.history.replaceState({}, '', '?complianceMode=invalid');
+      setAdapters(createInMemoryUrlAdapter('?complianceMode=invalid'), storageAdapter);
       const store = useColourStore();
       store.loadPaletteFromQueryString();
       expect(store.complianceMode).toBe('AA');

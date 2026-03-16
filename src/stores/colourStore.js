@@ -1,12 +1,19 @@
 import { ref, computed, readonly } from "vue";
 import { defineStore } from "pinia";
-import checkHexColourIsValid from "@/composables/checkHexColourIsValid";
-import getColoursFromURL from "@/composables/getColoursFromURL";
-import getTitleFromURL from "@/composables/getTitleFromURL";
-import getFocusColourFromURL from "@/composables/getFocusColourFromURL";
-import getContrastModeFromURL from "@/composables/getContrastModeFromURL";
-import getCVDModeFromURL from "@/composables/getCVDModeFromURL";
-import getComplianceModeFromURL from "@/composables/getComplianceModeFromURL";
+import parsePaletteFromURL from "@/composables/parsePaletteFromURL";
+import { createBrowserUrlAdapter } from "@/adapters/browserUrlAdapter";
+import { createBrowserStorageAdapter } from "@/adapters/browserStorageAdapter";
+
+let _urlPort = createBrowserUrlAdapter();
+let _storagePort = createBrowserStorageAdapter();
+
+/**
+ * Replace browser adapters with test doubles. Call in beforeEach.
+ */
+export function setAdapters(urlPort, storagePort) {
+  _urlPort = urlPort;
+  _storagePort = storagePort;
+}
 import contrastRatio from "@/composables/calculateColourContrast";
 import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
 import apcaContrast from "@/composables/calculateAPCAContrast.js";
@@ -127,10 +134,12 @@ export const useColourStore = defineStore("colourStore", () => {
 
         if (!seenPairs.has(key)) {
           const pairToPush = focusColour.value ? [firstColour, secondColour] : sortedPair;
+          const simFirst = simulatedSwatchMap.value.get(pairToPush[0]) ?? pairToPush[0];
+          const simSecond = simulatedSwatchMap.value.get(pairToPush[1]) ?? pairToPush[1];
           const calcFn = contrastMode.value === 'apca' ? apcaContrast : contrastRatio;
           const ratio = contrastMode.value === 'apca'
-            ? calcFn(firstColour, secondColour)
-            : Math.round(calcFn(firstColour, secondColour) * 100) / 100;
+            ? calcFn(simFirst, simSecond)
+            : Math.round(calcFn(simFirst, simSecond) * 100) / 100;
 
           combinations.push([...pairToPush, ratio]);
           seenPairs.set(key, true);
@@ -236,40 +245,18 @@ export const useColourStore = defineStore("colourStore", () => {
    * Loads colour palette data from the URL query string.
    */
   function loadPaletteFromQueryString() {
-    colourSwatches.value = [];
-    const coloursInURL = getColoursFromURL();
+    const { colours, title, focusColour: focus, contrastMode: cm, cvdMode: cvd, complianceMode: compliance }
+      = parsePaletteFromURL('http://localhost/' + _urlPort.getSearch());
 
-    if (coloursInURL) {
-      const coloursToAdd = coloursInURL.split("-");
-      coloursToAdd.forEach((element) => {
-        const formattedHex = "#" + element;
-        if (checkHexColourIsValid(formattedHex)) {
-          colourSwatches.value.push(formattedHex);
-        }
-      });
-    }
+    colourSwatches.value = colours;
 
-    paletteTitle.value = "";
-    const titleInURL = getTitleFromURL();
+    paletteTitle.value = title ?? "";
+    savedTitle.value = title ?? "";
 
-    if (titleInURL) {
-      savedTitle.value = titleInURL;
-      paletteTitle.value = titleInURL;
-    }
-
-    const focusColourInURL = getFocusColourFromURL();
-    if (focusColourInURL) {
-      setFocusColour(focusColourInURL);
-    }
-
-    const modeFromURL = getContrastModeFromURL();
-    if (modeFromURL) contrastMode.value = modeFromURL;
-
-    const cvdFromURL = getCVDModeFromURL();
-    if (cvdFromURL) cvdMode.value = cvdFromURL;
-
-    const complianceModeFromURL = getComplianceModeFromURL();
-    if (complianceModeFromURL) complianceMode.value = complianceModeFromURL;
+    if (focus) setFocusColour(focus);
+    if (cm) contrastMode.value = cm;
+    if (cvd) cvdMode.value = cvd;
+    if (compliance) complianceMode.value = compliance;
   }
 
   /**
@@ -302,9 +289,11 @@ export const useColourStore = defineStore("colourStore", () => {
    * Loads all saved palettes and the ID counter from browser local storage.
    */
   function loadPalettesFromLocalStorage() {
-    if (localStorage.getItem("palettes") && localStorage.getItem("idCounter")) {
-      palettes.value = JSON.parse(localStorage.getItem("palettes"));
-      paletteIDCounter.value = parseInt(localStorage.getItem("idCounter"), 10);
+    const raw = _storagePort.load("palettes");
+    const counter = _storagePort.load("idCounter");
+    if (raw && counter) {
+      palettes.value = JSON.parse(raw);
+      paletteIDCounter.value = parseInt(counter, 10);
     }
   }
 
@@ -329,8 +318,8 @@ export const useColourStore = defineStore("colourStore", () => {
    * Updates the 'palettes' and 'idCounter' items in browser local storage.
    */
   function updateLocalStorage() {
-    localStorage.setItem("palettes", JSON.stringify(palettes.value));
-    localStorage.setItem("idCounter", paletteIDCounter.value);
+    _storagePort.save("palettes", JSON.stringify(palettes.value));
+    _storagePort.save("idCounter", paletteIDCounter.value);
   }
 
   /**
@@ -379,22 +368,15 @@ export const useColourStore = defineStore("colourStore", () => {
    * Updates the browser's URL query parameters based on the current active palette.
    */
   function updateURLData() {
-    const coloursForURL = formatPaletteQueryString();
-    const url = new URL(window.location);
-    url.searchParams.set("colours", coloursForURL);
-
-    const title = paletteTitle.value;
-    if (title) url.searchParams.set("title", title);
-    else url.searchParams.delete("title");
-
     const focus = focusColour.value.replace("#", "");
-    if (focus) url.searchParams.set("focus", focus);
-    else url.searchParams.delete("focus");
-
-    url.searchParams.set("contrastMode", contrastMode.value);
-    url.searchParams.set("cvdMode", cvdMode.value);
-    url.searchParams.set("complianceMode", complianceMode.value);
-    window.history.replaceState(history.state, "", url);
+    _urlPort.setParams({
+      colours: formatPaletteQueryString(),
+      title: paletteTitle.value || null,
+      focus: focus || null,
+      contrastMode: contrastMode.value,
+      cvdMode: cvdMode.value,
+      complianceMode: complianceMode.value,
+    });
   }
 
   /**
