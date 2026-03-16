@@ -1,6 +1,19 @@
 import { ref, computed, readonly } from "vue";
 import { defineStore } from "pinia";
 import parsePaletteFromURL from "@/composables/parsePaletteFromURL";
+import { createBrowserUrlAdapter } from "@/adapters/browserUrlAdapter";
+import { createBrowserStorageAdapter } from "@/adapters/browserStorageAdapter";
+
+let _urlPort = createBrowserUrlAdapter();
+let _storagePort = createBrowserStorageAdapter();
+
+/**
+ * Replace browser adapters with test doubles. Call in beforeEach.
+ */
+export function setAdapters(urlPort, storagePort) {
+  _urlPort = urlPort;
+  _storagePort = storagePort;
+}
 import contrastRatio from "@/composables/calculateColourContrast";
 import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
 import apcaContrast from "@/composables/calculateAPCAContrast.js";
@@ -231,7 +244,7 @@ export const useColourStore = defineStore("colourStore", () => {
    */
   function loadPaletteFromQueryString() {
     const { colours, title, focusColour: focus, contrastMode: cm, cvdMode: cvd, complianceMode: compliance }
-      = parsePaletteFromURL();
+      = parsePaletteFromURL('http://localhost/' + _urlPort.getSearch());
 
     colourSwatches.value = colours;
 
@@ -274,9 +287,11 @@ export const useColourStore = defineStore("colourStore", () => {
    * Loads all saved palettes and the ID counter from browser local storage.
    */
   function loadPalettesFromLocalStorage() {
-    if (localStorage.getItem("palettes") && localStorage.getItem("idCounter")) {
-      palettes.value = JSON.parse(localStorage.getItem("palettes"));
-      paletteIDCounter.value = parseInt(localStorage.getItem("idCounter"), 10);
+    const raw = _storagePort.load("palettes");
+    const counter = _storagePort.load("idCounter");
+    if (raw && counter) {
+      palettes.value = JSON.parse(raw);
+      paletteIDCounter.value = parseInt(counter, 10);
     }
   }
 
@@ -301,8 +316,8 @@ export const useColourStore = defineStore("colourStore", () => {
    * Updates the 'palettes' and 'idCounter' items in browser local storage.
    */
   function updateLocalStorage() {
-    localStorage.setItem("palettes", JSON.stringify(palettes.value));
-    localStorage.setItem("idCounter", paletteIDCounter.value);
+    _storagePort.save("palettes", JSON.stringify(palettes.value));
+    _storagePort.save("idCounter", paletteIDCounter.value);
   }
 
   /**
@@ -351,22 +366,15 @@ export const useColourStore = defineStore("colourStore", () => {
    * Updates the browser's URL query parameters based on the current active palette.
    */
   function updateURLData() {
-    const coloursForURL = formatPaletteQueryString();
-    const url = new URL(window.location);
-    url.searchParams.set("colours", coloursForURL);
-
-    const title = paletteTitle.value;
-    if (title) url.searchParams.set("title", title);
-    else url.searchParams.delete("title");
-
     const focus = focusColour.value.replace("#", "");
-    if (focus) url.searchParams.set("focus", focus);
-    else url.searchParams.delete("focus");
-
-    url.searchParams.set("contrastMode", contrastMode.value);
-    url.searchParams.set("cvdMode", cvdMode.value);
-    url.searchParams.set("complianceMode", complianceMode.value);
-    window.history.replaceState(history.state, "", url);
+    _urlPort.setParams({
+      colours: formatPaletteQueryString(),
+      title: paletteTitle.value || null,
+      focus: focus || null,
+      contrastMode: contrastMode.value,
+      cvdMode: cvdMode.value,
+      complianceMode: complianceMode.value,
+    });
   }
 
   /**
