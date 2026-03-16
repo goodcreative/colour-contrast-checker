@@ -1,12 +1,6 @@
 import { ref, computed, readonly } from "vue";
 import { defineStore } from "pinia";
-import checkHexColourIsValid from "@/composables/checkHexColourIsValid";
-import getColoursFromURL from "@/composables/getColoursFromURL";
-import getTitleFromURL from "@/composables/getTitleFromURL";
-import getFocusColourFromURL from "@/composables/getFocusColourFromURL";
-import getContrastModeFromURL from "@/composables/getContrastModeFromURL";
-import getCVDModeFromURL from "@/composables/getCVDModeFromURL";
-import getComplianceModeFromURL from "@/composables/getComplianceModeFromURL";
+import parsePaletteFromURL from "@/composables/parsePaletteFromURL";
 import contrastRatio from "@/composables/calculateColourContrast";
 import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
 import apcaContrast from "@/composables/calculateAPCAContrast.js";
@@ -236,40 +230,18 @@ export const useColourStore = defineStore("colourStore", () => {
    * Loads colour palette data from the URL query string.
    */
   function loadPaletteFromQueryString() {
-    colourSwatches.value = [];
-    const coloursInURL = getColoursFromURL();
+    const { colours, title, focusColour: focus, contrastMode: cm, cvdMode: cvd, complianceMode: compliance }
+      = parsePaletteFromURL();
 
-    if (coloursInURL) {
-      const coloursToAdd = coloursInURL.split("-");
-      coloursToAdd.forEach((element) => {
-        const formattedHex = "#" + element;
-        if (checkHexColourIsValid(formattedHex)) {
-          colourSwatches.value.push(formattedHex);
-        }
-      });
-    }
+    colourSwatches.value = colours;
 
-    paletteTitle.value = "";
-    const titleInURL = getTitleFromURL();
+    paletteTitle.value = title ?? "";
+    savedTitle.value = title ?? "";
 
-    if (titleInURL) {
-      savedTitle.value = titleInURL;
-      paletteTitle.value = titleInURL;
-    }
-
-    const focusColourInURL = getFocusColourFromURL();
-    if (focusColourInURL) {
-      setFocusColour(focusColourInURL);
-    }
-
-    const modeFromURL = getContrastModeFromURL();
-    if (modeFromURL) contrastMode.value = modeFromURL;
-
-    const cvdFromURL = getCVDModeFromURL();
-    if (cvdFromURL) cvdMode.value = cvdFromURL;
-
-    const complianceModeFromURL = getComplianceModeFromURL();
-    if (complianceModeFromURL) complianceMode.value = complianceModeFromURL;
+    if (focus) setFocusColour(focus);
+    if (cm) contrastMode.value = cm;
+    if (cvd) cvdMode.value = cvd;
+    if (compliance) complianceMode.value = compliance;
   }
 
   /**

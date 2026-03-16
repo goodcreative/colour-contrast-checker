@@ -296,6 +296,18 @@ describe('Colour Store', () => {
       expect(window.location.href).toContain('complianceMode=AA');
     });
 
+    it('loadPaletteFromQueryString applies all parsed fields to store state', () => {
+      window.history.replaceState({}, '', '?colours=ff0000-000000&title=Brand&focus=ff0000&contrastMode=apca&cvdMode=protanopia&complianceMode=AAA');
+      const store = useColourStore();
+      store.loadPaletteFromQueryString();
+      expect(store.colourSwatches).toEqual(['#ff0000', '#000000']);
+      expect(store.paletteTitle).toBe('Brand');
+      expect(store.focusColour).toBe('#ff0000');
+      expect(store.contrastMode).toBe('apca');
+      expect(store.cvdMode).toBe('protanopia');
+      expect(store.complianceMode).toBe('AAA');
+    });
+
     it('loadPaletteFromQueryString reads complianceMode=AAA from URL', () => {
       window.history.replaceState({}, '', '?complianceMode=AAA');
       const store = useColourStore();
