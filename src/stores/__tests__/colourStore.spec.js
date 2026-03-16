@@ -249,6 +249,25 @@ describe('Colour Store', () => {
     });
   });
 
+  describe('CVD bucketing', () => {
+    it('normal mode: red/white ratio is ≈4.0 → largePass in WCAG AA', () => {
+      const store = useColourStore();
+      store.addColour('#ff0000');
+      store.addColour('#ffffff');
+      expect(store.largePassColourCombinations).toHaveLength(1);
+      expect(store.passColourCombinations).toHaveLength(0);
+    });
+
+    it('protanopia: simulated red/white shifts bucket to pass (simulated ratio > 4.5)', () => {
+      const store = useColourStore();
+      store.setCVDMode('protanopia');
+      store.addColour('#ff0000');
+      store.addColour('#ffffff');
+      expect(store.passColourCombinations).toHaveLength(1);
+      expect(store.largePassColourCombinations).toHaveLength(0);
+    });
+  });
+
   describe('clearPalette Action', () => {
     it('resets swatches, title, and focus', () => {
       const store = useColourStore();

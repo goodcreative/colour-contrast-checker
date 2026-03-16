@@ -134,10 +134,12 @@ export const useColourStore = defineStore("colourStore", () => {
 
         if (!seenPairs.has(key)) {
           const pairToPush = focusColour.value ? [firstColour, secondColour] : sortedPair;
+          const simFirst = simulatedSwatchMap.value.get(pairToPush[0]) ?? pairToPush[0];
+          const simSecond = simulatedSwatchMap.value.get(pairToPush[1]) ?? pairToPush[1];
           const calcFn = contrastMode.value === 'apca' ? apcaContrast : contrastRatio;
           const ratio = contrastMode.value === 'apca'
-            ? calcFn(firstColour, secondColour)
-            : Math.round(calcFn(firstColour, secondColour) * 100) / 100;
+            ? calcFn(simFirst, simSecond)
+            : Math.round(calcFn(simFirst, simSecond) * 100) / 100;
 
           combinations.push([...pairToPush, ratio]);
           seenPairs.set(key, true);

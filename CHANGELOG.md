@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased] — 2026-03-16 · Issue #2: Fix CVD bucketing bug
+
+### Bug Fix
+- **`colourStore` CVD bucketing** — `uniqueColourCombinations` now uses simulated hex values (via `simulatedSwatchMap`) for ratio calculation; previously CVD mode was applied to display colours but not to pass/fail bucketing, so categories were wrong in CVD mode
+
+### Tests (200 passing, up from 198)
+- **New**: `colourStore` CVD bucketing — verifies normal mode bucket and that protanopia shifts red/white from largePass → pass
+
 ## [Unreleased] — 2026-03-05 · Code Review: Bugs, Tests & Optimisations
 
 ### Bug Fixes
