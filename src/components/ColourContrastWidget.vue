@@ -44,7 +44,7 @@
           <span class="b_contrast__panelOn">on {{ contrastColour }}</span>
         </div>
         <div class="b_contrast__panelMeta">
-          <span class="b_contrast__panelLc">Lc {{ displayRatio }}</span>
+          <span class="b_contrast__panelLc">Lc {{ displayRatioFormatted }}</span>
           <span class="b_contrast__panelUseCase" :class="`b_contrast__panelUseCase--${primaryUseCase.toLowerCase()}`">{{ primaryUseCase }}</span>
         </div>
       </div>
@@ -113,6 +113,8 @@ const displayRatio = computed(() => {
   return Math.round(calcContrastRatio(activeColour1.value, activeColour2.value) * 100) / 100;
 });
 
+const displayRatioFormatted = computed(() => displayRatio.value.toFixed(1));
+
 const reverseRatio = computed(() =>
   isAPCA.value ? apcaContrast(activeColour2.value, activeColour1.value) : null
 );
@@ -130,8 +132,8 @@ const reverseUseCase = computed(() =>
 
 const contrastLabel = computed(() =>
   colourStore.contrastMode === 'apca'
-    ? `Lc ${displayRatio.value}`
-    : `${displayRatio.value}:1`
+    ? `Lc ${displayRatioFormatted.value}`
+    : `${displayRatioFormatted.value}:1`
 );
 
 const contrastRating = computed(() => {
