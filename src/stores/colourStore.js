@@ -14,11 +14,10 @@ export function setAdapters(urlPort, storagePort) {
   _urlPort = urlPort;
   _storagePort = storagePort;
 }
-import contrastRatio from "@/composables/calculateColourContrast";
 import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
-import apcaContrast from "@/composables/calculateAPCAContrast.js";
 import simulateCVD from "@/composables/simulateCVD.js";
 import { contrastConfig } from "@/config/contrastConfig.js";
+import { buildCategorizedCombinations } from "@/composables/buildCategorizedCombinations.js";
 
 /**
  * Pinia store for managing colour palettes, compliance modes, and contrast calculations.
@@ -113,90 +112,22 @@ export const useColourStore = defineStore("colourStore", () => {
   );
 
   /**
-   * Computes all unique colour combinations from `colourSwatches` and their base contrast ratios.
-   * If `focusColour` is set, only combinations involving the focus colour are returned.
-   * Each combination is an array: `[colour1, colour2, baseRatio]` where baseRatio is CVD-independent.
-   * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
-   */
-  const uniqueColourCombinations = computed(() => {
-    const combinations = [];
-    const seenPairs = new Map();
-    const colours = [...colourSwatches.value];
-
-    let primaryColourSet = focusColour.value ? [focusColour.value] : colours;
-
-    primaryColourSet.forEach((firstColour) => {
-      colours.forEach((secondColour) => {
-        if (firstColour === secondColour) return;
-
-        const sortedPair = [firstColour, secondColour].sort();
-        const key = sortedPair.join('-');
-
-        if (!seenPairs.has(key)) {
-          const pairToPush = focusColour.value ? [firstColour, secondColour] : sortedPair;
-          const simFirst = simulatedSwatchMap.value.get(pairToPush[0]) ?? pairToPush[0];
-          const simSecond = simulatedSwatchMap.value.get(pairToPush[1]) ?? pairToPush[1];
-          const calcFn = contrastMode.value === 'apca' ? apcaContrast : contrastRatio;
-          const ratio = contrastMode.value === 'apca'
-            ? calcFn(simFirst, simSecond)
-            : Math.round(calcFn(simFirst, simSecond) * 100) / 100;
-
-          combinations.push([...pairToPush, ratio]);
-          seenPairs.set(key, true);
-        }
-      });
-    });
-
-    return combinations;
-  });
-
-  /**
-   * Categorizes all unique colour combinations into 'pass', 'largePass', and 'fail'
-   * based on the current compliance mode. This avoids re-iterating over the combinations.
+   * Categorized colour combinations (pass/largePass/fail) computed via the
+   * extracted buildCategorizedCombinations composable.
    * @type {import('vue').ComputedRef<{pass: Array, largePass: Array, fail: Array}>}
    */
-  const categorizedCombinations = computed(() => {
-    const categories = {
-      pass: [],
-      largePass: [],
-      fail: [],
-    };
+  const categorizedCombinations = computed(() =>
+    buildCategorizedCombinations({
+      swatches: colourSwatches.value,
+      contrastMode: contrastMode.value,
+      complianceLevel: complianceMode.value,
+      cvdMode: cvdMode.value,
+      focusColour: focusColour.value || null,
+    })
+  );
 
-    uniqueColourCombinations.value.forEach((item) => {
-      const ratio = item[2];
-      if (ratio >= complianceRatios.value.max) {
-        categories.pass.push(item);
-      } else if (ratio >= complianceRatios.value.min) {
-        categories.largePass.push(item);
-      } else {
-        categories.fail.push(item);
-      }
-    });
-
-    // Sort each category
-    categories.pass.sort(compare);
-    categories.largePass.sort(compare);
-    categories.fail.sort(compare);
-
-    return categories;
-  });
-
-  /**
-   * Computed property returning colour combinations that fully pass the current compliance mode.
-   * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
-   */
   const passColourCombinations = computed(() => categorizedCombinations.value.pass);
-
-  /**
-   * Computed property returning colour combinations that partially pass (large text).
-   * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
-   */
   const largePassColourCombinations = computed(() => categorizedCombinations.value.largePass);
-
-  /**
-   * Computed property returning colour combinations that fail the current compliance mode.
-   * @type {import('vue').ComputedRef<Array<[string, string, number]>>}
-   */
   const failColourCombinations = computed(() => categorizedCombinations.value.fail);
 
   /**
@@ -399,10 +330,6 @@ export const useColourStore = defineStore("colourStore", () => {
    * @param {Array} b - The second colour combination array.
    * @returns {number}
    */
-  function compare(a, b) {
-    return b[2] - a[2];
-  }
-
   // Expose the store's state, getters, and actions
   return {
     // State
@@ -423,7 +350,6 @@ export const useColourStore = defineStore("colourStore", () => {
     paletteCanBeArchived,
     complianceRatios,
     simulatedSwatchMap,
-    uniqueColourCombinations,
     passColourCombinations,
     largePassColourCombinations,
     failColourCombinations,

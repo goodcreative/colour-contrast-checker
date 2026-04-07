@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased] — 2026-04-06 · Issue #9: Extract combination logic into composable
+
+### Refactor
+- **`buildCategorizedCombinations.js`** — new composable; pure function owning pair generation, dedup, CVD simulation, contrast calculation, threshold bucketing, and sorting
+- **`colourStore.js`** — replaced ~80 lines of computed logic with single `buildCategorizedCombinations()` call; removed `uniqueColourCombinations` from public API; removed `compare` helper and unused `contrastRatio`/`apcaContrast` imports
+
+### Tests (166 passing, up from 146)
+- **New**: 20 boundary tests for `buildCategorizedCombinations` — WCAG AA/AAA bucketing, APCA bucketing, dedup, focus filtering, CVD simulation, sorting, rounding, edge cases
+- **Migrated**: 4 store tests updated to use `passColourCombinations`/`failColourCombinations` instead of removed `uniqueColourCombinations`
+
 ## [Unreleased] — 2026-03-16 · Issue #2: Fix CVD bucketing bug
 
 ### Bug Fix

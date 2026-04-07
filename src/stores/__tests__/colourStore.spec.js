@@ -41,8 +41,8 @@ describe('Colour Store', () => {
       const store = useColourStore();
       store.addColour('#FFFFFF');
       store.addColour('#000000');
-      expect(store.uniqueColourCombinations).toHaveLength(1);
-      const combination = store.uniqueColourCombinations[0];
+      expect(store.passColourCombinations).toHaveLength(1);
+      const combination = store.passColourCombinations[0];
       expect(combination[0]).toBe('#000000');
       expect(combination[1]).toBe('#FFFFFF');
       expect(combination[2]).toBe(21);
@@ -73,7 +73,8 @@ describe('Colour Store', () => {
       store.addColour('#000000');
       store.addColour('#FF0000');
       store.removeColour('#FF0000');
-      expect(store.uniqueColourCombinations).toHaveLength(1);
+      const total = store.passColourCombinations.length + store.largePassColourCombinations.length + store.failColourCombinations.length;
+      expect(total).toBe(1);
     });
   });
 
@@ -100,8 +101,9 @@ describe('Colour Store', () => {
       store.addColour('#000000');
       store.addColour('#FF0000');
       store.setFocusColour('#FFFFFF');
-      expect(store.uniqueColourCombinations).toHaveLength(2);
-      expect(store.uniqueColourCombinations.every(combo => combo.includes('#FFFFFF'))).toBe(true);
+      const all = [...store.passColourCombinations, ...store.largePassColourCombinations, ...store.failColourCombinations];
+      expect(all).toHaveLength(2);
+      expect(all.every(combo => combo.includes('#FFFFFF'))).toBe(true);
     });
   });
 
@@ -167,7 +169,7 @@ describe('Colour Store', () => {
       store.setContrastMode('apca');
       store.addColour('#000000');
       store.addColour('#ffffff');
-      const combo = store.uniqueColourCombinations[0];
+      const combo = store.passColourCombinations[0];
       expect(combo[2]).toBeGreaterThan(100);
     });
 
