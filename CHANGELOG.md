@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] — 2026-04-06 · Issue #10: Encapsulate persistence inside colourStore
+
+### Refactor
+- **`colourStore.js`** — added `swatchOrderChanged()`, `paletteOrderChanged()`, `init()`; removed `updateURLData` and `updateLocalStorage` from public API
+- **`SwatchList.vue`** — calls `swatchOrderChanged()` instead of `updateURLData()` after drag-reorder
+- **`PaletteSelector.vue`** — calls `paletteOrderChanged()` instead of `updateLocalStorage()` after archive reorder
+- **`App.vue`** — `onMounted` now calls single `init()` instead of two separate load functions
+
+### Tests
+- No changes required — no tests referenced the removed public functions by name
+
 ## [Unreleased] — 2026-04-06 · Issue #9: Extract combination logic into composable
 
 ### Refactor

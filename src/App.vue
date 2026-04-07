@@ -69,8 +69,7 @@ watch(showCVD, (val) => {
 });
 
 onMounted(() => {
-  colourStore.loadPaletteFromQueryString();
-  colourStore.loadPalettesFromLocalStorage();
+  colourStore.init();
 });
 </script>
 

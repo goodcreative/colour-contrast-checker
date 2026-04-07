@@ -69,7 +69,7 @@ import { storeToRefs } from "pinia";
 const colourStore = useColourStore();
 
 const { palettes } = storeToRefs(colourStore);
-const { updateLocalStorage } = colourStore;
+const { paletteOrderChanged } = colourStore;
 
 // Data
 const state = reactive({
@@ -99,7 +99,7 @@ const toggleArchive = async () => {
 };
 
 const palettesOrderUpdated = function () {
-  updateLocalStorage();
+  paletteOrderChanged();
 };
 
 // Functions

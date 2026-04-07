@@ -324,12 +324,19 @@ export const useColourStore = defineStore("colourStore", () => {
     updateURLData();
   }
 
-  /**
-   * Comparison function for sorting colour combinations based on their WCAG contrast ratio (descending).
-   * @param {Array} a - The first colour combination array.
-   * @param {Array} b - The second colour combination array.
-   * @returns {number}
-   */
+  function swatchOrderChanged() {
+    updateURLData();
+  }
+
+  function paletteOrderChanged() {
+    updateLocalStorage();
+  }
+
+  function init() {
+    loadPaletteFromQueryString();
+    loadPalettesFromLocalStorage();
+  }
+
   // Expose the store's state, getters, and actions
   return {
     // State
@@ -364,13 +371,14 @@ export const useColourStore = defineStore("colourStore", () => {
     addPaletteToLocalStorage,
     addColour,
     removeColour,
-    updateURLData,
-    updateLocalStorage,
+    swatchOrderChanged,
+    paletteOrderChanged,
     clearPalette,
     closeSample,
     updatePaletteTitle,
     loadPalettesFromLocalStorage,
     loadLocalPalette,
     deleteLocalPalette,
+    init,
   };
 });

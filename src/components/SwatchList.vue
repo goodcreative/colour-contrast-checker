@@ -24,10 +24,10 @@ import { storeToRefs } from "pinia";
 const colourStore = useColourStore();
 
 const { colourSwatches } = storeToRefs(colourStore);
-const { updateURLData } = colourStore;
+const { swatchOrderChanged } = colourStore;
 
 const listOrderUpdated = function () {
-  updateURLData();
+  swatchOrderChanged();
 };
 </script>
 
