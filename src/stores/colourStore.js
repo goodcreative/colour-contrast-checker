@@ -1,6 +1,6 @@
 import { ref, computed, readonly } from "vue";
 import { defineStore } from "pinia";
-import parsePaletteFromURL from "@/composables/parsePaletteFromURL";
+import { encodePaletteToParams, decodePaletteFromSearch } from "@/composables/paletteUrlCodec";
 import { createBrowserUrlAdapter } from "@/adapters/browserUrlAdapter";
 import { createBrowserStorageAdapter } from "@/adapters/browserStorageAdapter";
 
@@ -182,7 +182,7 @@ export const useColourStore = defineStore("colourStore", () => {
    */
   function loadPaletteFromQueryString() {
     const { colours, title, focusColour: focus, contrastMode: cm, cvdMode: cvd, complianceMode: compliance }
-      = parsePaletteFromURL('http://localhost/' + _urlPort.getSearch());
+      = decodePaletteFromSearch(_urlPort.getSearch());
 
     colourSwatches.value = colours;
 
@@ -293,26 +293,17 @@ export const useColourStore = defineStore("colourStore", () => {
   }
 
   /**
-   * Formats the current `colourSwatches` into a URL-friendly query string.
-   * @returns {string} The formatted colour string for URL.
-   */
-  function formatPaletteQueryString() {
-    return colourSwatches.value.map(c => c.replace("#", "")).join("-");
-  }
-
-  /**
    * Updates the browser's URL query parameters based on the current active palette.
    */
   function updateURLData() {
-    const focus = focusColour.value.replace("#", "");
-    _urlPort.setParams({
-      colours: formatPaletteQueryString(),
-      title: paletteTitle.value || null,
-      focus: focus || null,
-      contrastMode: contrastMode.value,
-      cvdMode: cvdMode.value,
+    _urlPort.setParams(encodePaletteToParams({
+      colours:        colourSwatches.value,
+      title:          paletteTitle.value,
+      focusColour:    focusColour.value,
+      contrastMode:   contrastMode.value,
+      cvdMode:        cvdMode.value,
       complianceMode: complianceMode.value,
-    });
+    }));
   }
 
   /**

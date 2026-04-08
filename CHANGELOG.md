@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased] — 2026-04-08 · Issue #12: Centralise URL palette encoding/decoding into paletteUrlCodec
+
+### Refactor
+- **`paletteUrlCodec.js`** — new composable with `encodePaletteToParams` and `decodePaletteFromSearch`; encode/decode format owned in one place
+- **`colourStore.js`** — `updateURLData` delegates to `encodePaletteToParams`; `loadPaletteFromQueryString` uses `decodePaletteFromSearch` directly from `_urlPort.getSearch()`; `formatPaletteQueryString` removed; fake-origin `'http://localhost/' +` hack eliminated
+- **Deleted**: `parsePaletteFromURL.js` and its spec (absorbed into codec)
+
+### Tests (188 passing, up from 166)
+- **New**: `paletteUrlCodec.spec.js` — 10 encode tests + 27 decode tests (migrated from `parsePaletteFromURL.spec.js`) + round-trip test
+- **Deleted**: `parsePaletteFromURL.spec.js`
+- **Unchanged**: all store tests
+
 ## [Unreleased] — 2026-04-08 · Issue #11: Split combination scoring and bucketing stages
 
 ### Refactor
