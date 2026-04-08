@@ -1,4 +1,5 @@
 import hexToRGB from '@/composables/hexToRGB.js';
+import { CVD_MODES } from '@/config/modes.js';
 
 // Colour-vision deficiency simulation matrices from:
 // Machado et al. 2009 "A Physiologically-based Model for Simulation of Color Vision Deficiency"
@@ -49,10 +50,9 @@ function toHex(n) {
  * @returns {string} Simulated hex colour
  */
 export default function simulateCVD(hex, cvdType) {
-  // "normal" is a passthrough — no simulation needed
-  if (cvdType === 'normal') return hex;
+  if (!CVD_MODES.includes(cvdType) || cvdType === 'normal') return hex;
   const matrix = CVD_MATRICES[cvdType];
-  if (!matrix) return hex;
+  if (!matrix) return hex; // safety net if CVD_MODES/CVD_MATRICES drift
 
   // Step 1: hex → 8-bit RGB channels
   const [r, g, b] = hexToRGB(hex);

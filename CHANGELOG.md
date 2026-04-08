@@ -5,6 +5,8 @@
 ### Refactor
 - **`src/config/modes.js`** — new config file; exports `CONTRAST_MODES`, `CVD_MODES`, `COMPLIANCE_MODES`
 - **`paletteUrlCodec.js`** — imports from `modes.js`; three inline `VALID_*` constants removed
+- **`contrastConfig.js`** — imports `CONTRAST_MODES`/`COMPLIANCE_MODES`; object keys are computed from `modes.js`
+- **`simulateCVD.js`** — imports `CVD_MODES`; used as primary input guard before matrix lookup
 
 ### Tests
 - No changes required — constants were internal; all 188 existing tests continue to pass
