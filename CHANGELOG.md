@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased] — 2026-04-08 · Fix: jsdom environment not declared in vitest config
+
+### Bug Fix
+- **`vite.config.js`** — added `test: { environment: "jsdom" }`; previously jsdom was only passed as a CLI flag so component and adapter tests failed when run via `npx vitest run` directly
+
+### Tests (262 passing, up from 188)
+- **Fixed**: 74 component tests (`ColourSwatch`, `CombinationsList`, `CVDModeSelector`, `ColourContrastWidget`) — `document is not defined` resolved
+- **Fixed**: 9 browser adapter tests — `window`/`localStorage is not defined` resolved
+
 ## [Unreleased] — 2026-04-08 · Issue #13: Centralise mode validation arrays into modes.js
 
 ### Refactor
