@@ -1,8 +1,5 @@
 import checkHexColourIsValid from "@/composables/checkHexColourIsValid";
-
-const VALID_CONTRAST_MODES   = ["wcag", "apca"];
-const VALID_CVD_MODES        = ["normal", "protanopia", "deuteranopia", "tritanopia"];
-const VALID_COMPLIANCE_MODES = ["AA", "AAA"];
+import { CONTRAST_MODES, CVD_MODES, COMPLIANCE_MODES } from "@/config/modes";
 
 /**
  * Encodes active palette state into a raw params object ready for
@@ -59,13 +56,13 @@ export function decodePaletteFromSearch(search) {
   const focusColour = focusRaw ? "#" + focusRaw : null;
 
   const contrastRaw = params.get("contrastMode");
-  const contrastMode = VALID_CONTRAST_MODES.includes(contrastRaw) ? contrastRaw : null;
+  const contrastMode = CONTRAST_MODES.includes(contrastRaw) ? contrastRaw : null;
 
   const cvdRaw = params.get("cvdMode");
-  const cvdMode = VALID_CVD_MODES.includes(cvdRaw) ? cvdRaw : null;
+  const cvdMode = CVD_MODES.includes(cvdRaw) ? cvdRaw : null;
 
   const complianceRaw = params.get("complianceMode");
-  const complianceMode = VALID_COMPLIANCE_MODES.includes(complianceRaw) ? complianceRaw : null;
+  const complianceMode = COMPLIANCE_MODES.includes(complianceRaw) ? complianceRaw : null;
 
   return { colours, title, focusColour, contrastMode, cvdMode, complianceMode };
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased] — 2026-04-08 · Issue #13: Centralise mode validation arrays into modes.js
+
+### Refactor
+- **`src/config/modes.js`** — new config file; exports `CONTRAST_MODES`, `CVD_MODES`, `COMPLIANCE_MODES`
+- **`paletteUrlCodec.js`** — imports from `modes.js`; three inline `VALID_*` constants removed
+
+### Tests
+- No changes required — constants were internal; all 188 existing tests continue to pass
+
 ## [Unreleased] — 2026-04-08 · Issue #12: Centralise URL palette encoding/decoding into paletteUrlCodec
 
 ### Refactor
