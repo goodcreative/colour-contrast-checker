@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] — 2026-04-08 · Issue #11: Split combination scoring and bucketing stages
+
+### Refactor
+- **`buildCategorizedCombinations.js`** — extracted `buildScoredPairs` and `categorizeScoredPairs` as named exports; wrapper delegates to both (signature unchanged)
+- **`colourStore.js`** — two-stage computed chain: `scoredPairs` (O(N²), cached) + `categorizedCombinations` (O(N) bucketing); `complianceMode` toggles no longer trigger contrast recalculation
+
+### Tests (90 passing, up from 59)
+- **New**: 15 tests for `buildScoredPairs` — pair generation, dedup, focus filtering, CVD, rounding
+- **New**: 16 tests for `categorizeScoredPairs` — synthetic scored pairs, WCAG/APCA AA/AAA boundaries, sort order; no colour math
+- **Unchanged**: all 20 `buildCategorizedCombinations` tests and 39 store tests
+
 ## [Unreleased] — 2026-04-06 · Issue #10: Encapsulate persistence inside colourStore
 
 ### Refactor

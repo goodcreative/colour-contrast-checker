@@ -17,7 +17,7 @@ export function setAdapters(urlPort, storagePort) {
 import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
 import simulateCVD from "@/composables/simulateCVD.js";
 import { contrastConfig } from "@/config/contrastConfig.js";
-import { buildCategorizedCombinations } from "@/composables/buildCategorizedCombinations.js";
+import { buildScoredPairs, categorizeScoredPairs } from "@/composables/buildCategorizedCombinations.js";
 
 /**
  * Pinia store for managing colour palettes, compliance modes, and contrast calculations.
@@ -111,18 +111,23 @@ export const useColourStore = defineStore("colourStore", () => {
     new Map(colourSwatches.value.map(h => [h, simulateCVD(h, cvdMode.value)]))
   );
 
-  /**
-   * Categorized colour combinations (pass/largePass/fail) computed via the
-   * extracted buildCategorizedCombinations composable.
-   * @type {import('vue').ComputedRef<{pass: Array, largePass: Array, fail: Array}>}
-   */
-  const categorizedCombinations = computed(() =>
-    buildCategorizedCombinations({
+  // Stage 1: O(N²) scoring — cached by Vue until swatches/contrastMode/cvdMode/focusColour change.
+  // complianceMode is intentionally absent so compliance toggles don't invalidate this cache.
+  const scoredPairs = computed(() =>
+    buildScoredPairs({
       swatches: colourSwatches.value,
       contrastMode: contrastMode.value,
-      complianceLevel: complianceMode.value,
       cvdMode: cvdMode.value,
       focusColour: focusColour.value || null,
+    })
+  );
+
+  // Stage 2: O(N) bucketing — reruns only when scoredPairs or complianceMode changes.
+  const categorizedCombinations = computed(() =>
+    categorizeScoredPairs({
+      scoredPairs: scoredPairs.value,
+      contrastMode: contrastMode.value,
+      complianceLevel: complianceMode.value,
     })
   );
 
