@@ -23,6 +23,46 @@ A Vue 3 tool for testing colour contrast ratios across a palette against WCAG 2.
 - **apca-w3**, **colorjs.io**, **colorparsley** — contrast calculations
 - **vuedraggable**, **@vuelidate**
 
+## Architecture
+
+### Layout
+
+`App.vue` uses a two-column CSS Grid: a fixed 340px sidebar for swatch management and palette controls, and a `1fr` main panel for mode toggles and the combinations list.
+
+### State
+
+All app state lives in `src/stores/colourStore.js` (Pinia). Computed properties derive the full pairwise combination matrix — categorized by pass / partial / fail — whenever swatches or mode settings change. Components hold no local data state.
+
+### Data flow
+
+Swatches → store computes `simulatedSwatchMap` (CVD-adjusted colours) → `buildCategorizedCombinations` runs the selected contrast algorithm against every pair → `CombinationsList` renders the bucketed results.
+
+### Composables
+
+Small, single-responsibility functions in `src/composables/`:
+
+| File | Responsibility |
+|---|---|
+| `calculateColourContrast.js` | WCAG 2.0 relative luminance and contrast ratio |
+| `calculateAPCAContrast.js` | APCA Lc value |
+| `simulateCVD.js` | Machado 2009 matrix transform in linear RGB |
+| `buildCategorizedCombinations.js` | Score every pair and bucket into pass / partial / fail |
+| `paletteUrlCodec.js` | Encode/decode palette state to/from URL query params |
+
+### Config
+
+`src/config/contrastConfig.js` is the single source of truth for all WCAG/APCA thresholds. `src/config/modes.js` centralises valid mode value arrays for validation and UI enumeration.
+
+### Adapter pattern
+
+Browser globals (URL, LocalStorage) are injected into the store via `src/adapters/`. Tests call `setAdapters()` with test doubles, keeping the store and composables unit-testable without a real browser.
+
+### Styling
+
+Components use BEM-style class names with SCSS scoped per component; all values reference global design tokens.
+
+---
+
 ## Project Setup
 
 ```sh
@@ -65,8 +105,11 @@ All threshold values are defined in `src/config/contrastConfig.js`.
 |---|---|
 | `src/stores/colourStore.js` | All app state, computed combos, palette ops |
 | `src/config/contrastConfig.js` | WCAG/APCA thresholds — single source of truth |
+| `src/config/modes.js` | Valid mode arrays for contrast, CVD, and compliance |
 | `src/composables/calculateColourContrast.js` | WCAG 2.0 contrast ratio logic |
 | `src/composables/simulateCVD.js` | CVD simulation (Machado 2009 matrices) |
+| `src/composables/buildCategorizedCombinations.js` | Combination scoring and pass/partial/fail bucketing |
+| `src/composables/paletteUrlCodec.js` | URL palette encoding/decoding — single source of truth |
 | `src/components/CombinationsList.vue` | Pass/partial/fail contrast combination display |
 | `src/assets/scss/` | Tokenized design system (tokens, base, utilities, functions) |
 | `src/adapters/` | Injectable ports for browser URL and Storage APIs |

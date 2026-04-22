@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased] — 2026-04-22 · CVDModeSelector: move description text to hover tooltips
+
+### Changed
+- **`CVDModeSelector.vue`** — removed side-panel description text; each pill button now shows a hover tooltip above it with rounded corners, drop shadow, and a downward arrow marker
+
+## [Unreleased] — 2026-04-22 · Expand README architecture and design system docs
+
+### Docs
+- **`README.md`** — added Architecture section (layout, state, data flow, composables, config, adapter pattern) and Design System section (token files, SCSS functions/utilities, import order, naming conventions)
+
+## [Unreleased] — 2026-04-08 · Update README key source files
+
+### Docs
+- **`README.md`** — added `src/config/modes.js`, `src/composables/buildCategorizedCombinations.js`, and `src/composables/paletteUrlCodec.js` to Key Source Files table
+
 ## [Unreleased] — 2026-04-08 · Fix: jsdom environment not declared in vitest config
 
 ### Bug Fix

@@ -129,7 +129,6 @@ body {
     flex-direction: column;
     background: var(--clr-grey-800);
     border-radius: var(--size-s) 0 0 0;
-    overflow: hidden;
     position: sticky;
     top:0;
     z-index: 300;
