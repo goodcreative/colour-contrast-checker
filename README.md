@@ -25,41 +25,80 @@ A Vue 3 tool for testing colour contrast ratios across a palette against WCAG 2.
 
 ## Architecture
 
-### Layout
+### Component layout
 
-`App.vue` uses a two-column CSS Grid: a fixed 340px sidebar for swatch management and palette controls, and a `1fr` main panel for mode toggles and the combinations list.
+`App.vue` is a two-column CSS Grid. The left sidebar (340px, sticky) contains palette management — `PaletteSelector`, `PaletteTitle`, `FormAddColour`, `SwatchList`, and `PaletteControls`. The right main panel (`1fr`) contains the mode controls and results — `ContrastModeToggle`, `ComplianceModeToggle`, a `PillToggle` that reveals `CVDModeSelector`, and `CombinationsList`.
 
-### State
+### State management
 
-All app state lives in `src/stores/colourStore.js` (Pinia). Computed properties derive the full pairwise combination matrix — categorized by pass / partial / fail — whenever swatches or mode settings change. Components hold no local data state.
+All application state lives in a single Pinia store (`src/stores/colourStore.js`). Components hold no local data state. Key state refs:
 
-### Data flow
+| Ref | Purpose |
+|---|---|
+| `colourSwatches` | Array of hex strings forming the active palette |
+| `contrastMode` | `'wcag'` or `'apca'` |
+| `complianceMode` | `'AA'` or `'AAA'` |
+| `cvdMode` | `'normal'`, `'protanopia'`, `'deuteranopia'`, `'tritanopia'` |
+| `focusColour` | Hex string; when set, limits pairs to one colour vs all others |
+| `palettes` | Saved palettes array, persisted to LocalStorage |
+| `paletteTitle` | Current palette name |
 
-Swatches → store computes `simulatedSwatchMap` (CVD-adjusted colours) → `buildCategorizedCombinations` runs the selected contrast algorithm against every pair → `CombinationsList` renders the bucketed results.
+### Computed pipeline
+
+Contrast results flow through a two-stage computed chain, deliberately split to minimise re-computation:
+
+**Stage 1 — `scoredPairs`** (`buildScoredPairs` in `src/composables/buildCategorizedCombinations.js`): generates all unique colour pairs (O(N²), reduced to O(N) when `focusColour` is set), runs `simulateCVD` on each hex, then calculates the contrast ratio via `calculateColourContrast` (WCAG) or `calculateAPCAContrast` (APCA). `complianceMode` is intentionally excluded from this computed's dependencies — toggling AA/AAA does not invalidate scored pairs.
+
+**Stage 2 — `categorizedCombinations`** (`categorizeScoredPairs`): a cheap O(N) pass over the scored pairs that buckets each into `pass`, `largePass` (large text only), or `fail` using the thresholds from `src/config/contrastConfig.js`. Depends on `scoredPairs` and `complianceMode`. Each bucket is sorted descending by ratio.
+
+`passColourCombinations`, `largePassColourCombinations`, and `failColourCombinations` are derived from `categorizedCombinations` and consumed by `CombinationsList`.
+
+### Persistence
+
+**URL** — `src/composables/paletteUrlCodec.js` is the single codec for URL serialisation. `encodePaletteToParams` converts the active palette state (colours, title, focus, modes) to query params, stripping `#` from hex values and returning `null` for empty fields so the adapter deletes those params. `decodePaletteFromSearch` parses the query string and validates every field against mode enums (`src/config/modes.js`) and `checkHexColourIsValid` before returning. The store keeps URL and state in sync via `updateURLData()` (called after every mutation) and `loadPaletteFromQueryString()` (called on init).
+
+**LocalStorage** — Saved palettes are serialised to LocalStorage as a JSON array. `addPaletteToLocalStorage`, `loadLocalPalette`, `deleteLocalPalette`, and `paletteOrderChanged` manage the palette library; `paletteIDCounter` provides stable IDs.
+
+**Initialisation** — `colourStore.init()` is called in `App.vue`'s `onMounted`. It loads URL state first, then LocalStorage.
+
+### Ports and adapters
+
+Browser globals are isolated behind two injectable interfaces in `src/adapters/`, following the hexagonal architecture (ports and adapters) pattern:
+
+| Port | Production adapter | Test double |
+|---|---|---|
+| `UrlPort` | `createBrowserUrlAdapter()` — wraps `window.location` and `history.replaceState` | `createInMemoryUrlAdapter()` — in-memory URLSearchParams with a call log |
+| `StoragePort` | `createBrowserStorageAdapter()` — wraps `localStorage` | `createInMemoryStorageAdapter()` — in-memory object store with a call log |
+
+The store exports `setAdapters(urlPort, storagePort)`. Tests inject doubles in `beforeEach`; production uses the browser adapters by default. Both test doubles expose `snapshot()` and `callsTo(name)` for assertions.
+
+### Configuration
+
+`src/config/contrastConfig.js` is the single source of truth for all contrast thresholds:
+
+| Algorithm | Level | Pass (full) | Partial pass (large text) |
+|---|---|---|---|
+| WCAG 2.0 | AA | ≥ 4.5:1 | ≥ 3:1 |
+| WCAG 2.0 | AAA | ≥ 7:1 | ≥ 4.5:1 |
+| APCA | AA | Lc ≥ 60 | Lc ≥ 45 |
+| APCA | AAA | Lc ≥ 75 | Lc ≥ 60 |
+
+`src/config/modes.js` exports `CONTRAST_MODES`, `CVD_MODES`, and `COMPLIANCE_MODES` — used for URL validation in the codec and for UI enumeration in toggle components.
 
 ### Composables
-
-Small, single-responsibility functions in `src/composables/`:
 
 | File | Responsibility |
 |---|---|
 | `calculateColourContrast.js` | WCAG 2.0 relative luminance and contrast ratio |
-| `calculateAPCAContrast.js` | APCA Lc value |
+| `calculateAPCAContrast.js` | APCA Lc value via apca-w3 |
 | `simulateCVD.js` | Machado 2009 matrix transform in linear RGB |
-| `buildCategorizedCombinations.js` | Score every pair and bucket into pass / partial / fail |
-| `paletteUrlCodec.js` | Encode/decode palette state to/from URL query params |
-
-### Config
-
-`src/config/contrastConfig.js` is the single source of truth for all WCAG/APCA thresholds. `src/config/modes.js` centralises valid mode value arrays for validation and UI enumeration.
-
-### Adapter pattern
-
-Browser globals (URL, LocalStorage) are injected into the store via `src/adapters/`. Tests call `setAdapters()` with test doubles, keeping the store and composables unit-testable without a real browser.
+| `buildCategorizedCombinations.js` | Two-stage scored-pairs pipeline |
+| `paletteUrlCodec.js` | URL encode/decode with validation |
+| `hexToRGB.js`, `checkHexColourIsValid.js` | Colour format utilities |
 
 ### Styling
 
-Components use BEM-style class names with SCSS scoped per component; all values reference global design tokens.
+Components use BEM-style class names with SCSS scoped per component; all values reference global design tokens (`src/assets/scss/tokens/`).
 
 ---
 
@@ -98,21 +137,6 @@ Palette state is serialised to URL query params for sharing:
 | APCA | AAA | Lc ≥ 75 | Lc ≥ 60 |
 
 All threshold values are defined in `src/config/contrastConfig.js`.
-
-## Key Source Files
-
-| File | Purpose |
-|---|---|
-| `src/stores/colourStore.js` | All app state, computed combos, palette ops |
-| `src/config/contrastConfig.js` | WCAG/APCA thresholds — single source of truth |
-| `src/config/modes.js` | Valid mode arrays for contrast, CVD, and compliance |
-| `src/composables/calculateColourContrast.js` | WCAG 2.0 contrast ratio logic |
-| `src/composables/simulateCVD.js` | CVD simulation (Machado 2009 matrices) |
-| `src/composables/buildCategorizedCombinations.js` | Combination scoring and pass/partial/fail bucketing |
-| `src/composables/paletteUrlCodec.js` | URL palette encoding/decoding — single source of truth |
-| `src/components/CombinationsList.vue` | Pass/partial/fail contrast combination display |
-| `src/assets/scss/` | Tokenized design system (tokens, base, utilities, functions) |
-| `src/adapters/` | Injectable ports for browser URL and Storage APIs |
 
 ## Testing
 
