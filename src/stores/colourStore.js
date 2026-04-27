@@ -1,19 +1,9 @@
-import { ref, computed, readonly } from "vue";
+import { ref, computed, readonly, inject } from "vue";
 import { defineStore } from "pinia";
 import { encodePaletteToParams, decodePaletteFromSearch } from "@/composables/paletteUrlCodec";
 import { createBrowserUrlAdapter } from "@/adapters/browserUrlAdapter";
 import { createBrowserStorageAdapter } from "@/adapters/browserStorageAdapter";
-
-let _urlPort = createBrowserUrlAdapter();
-let _storagePort = createBrowserStorageAdapter();
-
-/**
- * Replace browser adapters with test doubles. Call in beforeEach.
- */
-export function setAdapters(urlPort, storagePort) {
-  _urlPort = urlPort;
-  _storagePort = storagePort;
-}
+import { URL_PORT_KEY, STORAGE_PORT_KEY } from "@/adapters/injectionKeys";
 import simulateCVD from "@/composables/simulateCVD.js";
 import { contrastConfig } from "@/config/contrastConfig.js";
 import { scoreAllPairs, categorizePairs } from "@/composables/contrastEngine.js";
@@ -22,6 +12,9 @@ import { scoreAllPairs, categorizePairs } from "@/composables/contrastEngine.js"
  * Pinia store for managing colour palettes, compliance modes, and contrast calculations.
  */
 export const useColourStore = defineStore("colourStore", () => {
+  const _urlPort = inject(URL_PORT_KEY, () => createBrowserUrlAdapter(), true);
+  const _storagePort = inject(STORAGE_PORT_KEY, () => createBrowserStorageAdapter(), true);
+
   // --- STATE ---
 
   /**

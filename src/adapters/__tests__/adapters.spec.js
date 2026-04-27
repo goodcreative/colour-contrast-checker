@@ -95,12 +95,6 @@ describe('createInMemoryUrlAdapter', () => {
     expect(adapter.snapshot()).not.toContain('title');
   });
 
-  it('callsTo tracks setParams calls', () => {
-    const adapter = createInMemoryUrlAdapter();
-    adapter.setParams({ colours: 'ff0000' });
-    adapter.setParams({ complianceMode: 'AA' });
-    expect(adapter.callsTo('setParams')).toHaveLength(2);
-  });
 });
 
 describe('createInMemoryStorageAdapter', () => {
@@ -126,11 +120,4 @@ describe('createInMemoryStorageAdapter', () => {
     expect('key' in adapter.snapshot()).toBe(false);
   });
 
-  it('callsTo tracks save calls with args', () => {
-    const adapter = createInMemoryStorageAdapter();
-    adapter.save('a', '1');
-    adapter.save('b', '2');
-    expect(adapter.callsTo('save')).toHaveLength(2);
-    expect(adapter.callsTo('save')[0].args).toEqual(['a', '1']);
-  });
 });

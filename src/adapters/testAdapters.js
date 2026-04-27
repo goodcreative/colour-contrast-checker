@@ -1,14 +1,30 @@
+import { createApp } from 'vue';
+import { createPinia, setActivePinia } from 'pinia';
+import { URL_PORT_KEY, STORAGE_PORT_KEY } from './injectionKeys';
+
+/**
+ * Creates an isolated Pinia instance with the given adapters provided via Vue inject.
+ * Use in test beforeEach instead of setActivePinia + setAdapters.
+ */
+export function createTestPinia(urlAdapter, storageAdapter) {
+  const app = createApp({});
+  const pinia = createPinia();
+  app.provide(URL_PORT_KEY, urlAdapter);
+  app.provide(STORAGE_PORT_KEY, storageAdapter);
+  app.use(pinia);
+  setActivePinia(pinia);
+  return pinia;
+}
+
 /**
  * In-memory UrlPort for tests. Injectable — no window.location access.
  * @param {string} initialSearch  e.g. '?colours=ff0000&complianceMode=AAA'
  */
 export function createInMemoryUrlAdapter(initialSearch = '') {
   const params = new URLSearchParams(initialSearch.replace(/^\?/, ''));
-  const log = [];
 
   return {
     getParam(key) {
-      log.push({ method: 'getParam', args: [key] });
       return params.get(key);
     },
     getSearch() {
@@ -16,7 +32,6 @@ export function createInMemoryUrlAdapter(initialSearch = '') {
       return s ? '?' + s : '';
     },
     setParams(updates) {
-      log.push({ method: 'setParams', args: [{ ...updates }] });
       for (const [key, value] of Object.entries(updates)) {
         if (value === null || value === undefined) {
           params.delete(key);
@@ -29,9 +44,6 @@ export function createInMemoryUrlAdapter(initialSearch = '') {
       const s = params.toString();
       return s ? '?' + s : '';
     },
-    callsTo(name) {
-      return log.filter(e => e.method === name);
-    },
   };
 }
 
@@ -41,26 +53,19 @@ export function createInMemoryUrlAdapter(initialSearch = '') {
  */
 export function createInMemoryStorageAdapter(seed = {}) {
   const store = { ...seed };
-  const log = [];
 
   return {
     load(key) {
-      log.push({ method: 'load', args: [key] });
       return key in store ? store[key] : null;
     },
     save(key, value) {
-      log.push({ method: 'save', args: [key, value] });
       store[key] = value;
     },
     remove(key) {
-      log.push({ method: 'remove', args: [key] });
       delete store[key];
     },
     snapshot() {
       return { ...store };
-    },
-    callsTo(name) {
-      return log.filter(e => e.method === name);
     },
   };
 }

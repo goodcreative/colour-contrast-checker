@@ -1,17 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createPinia, setActivePinia } from 'pinia';
-import { useColourStore, setAdapters } from '../colourStore';
-import { createInMemoryUrlAdapter, createInMemoryStorageAdapter } from '@/adapters/testAdapters';
+import { useColourStore } from '../colourStore';
+import { createInMemoryUrlAdapter, createInMemoryStorageAdapter, createTestPinia } from '@/adapters/testAdapters';
 
 describe('Colour Store', () => {
   let urlAdapter;
   let storageAdapter;
 
   beforeEach(() => {
-    setActivePinia(createPinia());
     urlAdapter = createInMemoryUrlAdapter();
     storageAdapter = createInMemoryStorageAdapter();
-    setAdapters(urlAdapter, storageAdapter);
+    createTestPinia(urlAdapter, storageAdapter);
   });
 
   it('initializes with correct default values', () => {
@@ -128,7 +126,7 @@ describe('Colour Store', () => {
       const largePass = store.largePassColourCombinations.filter(c => [c.fgHex, c.bgHex].includes('#FFFFFF') && [c.fgHex, c.bgHex].includes('#757575'));
       expect(largePass).toHaveLength(1);
     });
-    
+
     it('correctly categorizes failing combinations for AA', () => {
       store.setComplianceMode('AA');
       const failing = store.failColourCombinations.filter(c => [c.fgHex, c.bgHex].includes('#FFFFFF') && [c.fgHex, c.bgHex].includes('#AAAAAA'));
@@ -325,7 +323,7 @@ describe('Colour Store', () => {
     });
 
     it('loadPaletteFromQueryString applies all parsed fields to store state', () => {
-      setAdapters(
+      createTestPinia(
         createInMemoryUrlAdapter('?colours=ff0000-000000&title=Brand&focus=ff0000&contrastMode=apca&cvdMode=protanopia&complianceMode=AAA'),
         storageAdapter,
       );
@@ -340,14 +338,14 @@ describe('Colour Store', () => {
     });
 
     it('loadPaletteFromQueryString reads complianceMode=AAA from URL', () => {
-      setAdapters(createInMemoryUrlAdapter('?complianceMode=AAA'), storageAdapter);
+      createTestPinia(createInMemoryUrlAdapter('?complianceMode=AAA'), storageAdapter);
       const store = useColourStore();
       store.loadPaletteFromQueryString();
       expect(store.complianceMode).toBe('AAA');
     });
 
     it('loadPaletteFromQueryString ignores invalid complianceMode', () => {
-      setAdapters(createInMemoryUrlAdapter('?complianceMode=invalid'), storageAdapter);
+      createTestPinia(createInMemoryUrlAdapter('?complianceMode=invalid'), storageAdapter);
       const store = useColourStore();
       store.loadPaletteFromQueryString();
       expect(store.complianceMode).toBe('AA');
@@ -383,5 +381,35 @@ describe('Colour Store', () => {
       expect(store.colourSwatches).toHaveLength(0);
       expect(store.paletteCanBeArchived).toBe(false);
     });
+  });
+});
+
+describe('provide/inject adapter wiring', () => {
+  it('loadPaletteFromQueryString reads colours from injected URL adapter', () => {
+    const url = createInMemoryUrlAdapter('?colours=ff0000-000000');
+    createTestPinia(url, createInMemoryStorageAdapter());
+    const store = useColourStore();
+    store.loadPaletteFromQueryString();
+    expect(store.colourSwatches).toEqual(['#ff0000', '#000000']);
+  });
+
+  it('addColour writes colours param to injected URL adapter', () => {
+    const url = createInMemoryUrlAdapter();
+    createTestPinia(url, createInMemoryStorageAdapter());
+    const store = useColourStore();
+    store.addColour('#abcdef');
+    expect(url.snapshot()).toContain('abcdef');
+  });
+
+  it('loadPalettesFromLocalStorage reads palettes from injected storage adapter', () => {
+    const seed = {
+      palettes: JSON.stringify([{ id: 0, title: 'Seed', colours: ['#ffffff'] }]),
+      idCounter: '1',
+    };
+    createTestPinia(createInMemoryUrlAdapter(), createInMemoryStorageAdapter(seed));
+    const store = useColourStore();
+    store.loadPalettesFromLocalStorage();
+    expect(store.palettes).toHaveLength(1);
+    expect(store.palettes[0].title).toBe('Seed');
   });
 });

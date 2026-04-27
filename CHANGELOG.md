@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.0] — 2026-04-27 · Replace module-global adapter injection with Vue provide/inject (closes #16)
+
+### Added
+- **`src/adapters/injectionKeys.js`** — `URL_PORT_KEY` / `STORAGE_PORT_KEY` symbols shared by store, main, and tests
+- **`createTestPinia(urlAdapter, storageAdapter)`** helper in `testAdapters.js` — wires adapters via Vue provide before activating Pinia; replaces `setAdapters` + `setActivePinia` pair in all tests
+
+### Changed
+- **`colourStore.js`** — adapters resolved via `inject()` with lazy browser-adapter fallbacks; `setAdapters` export deleted; no module-global mutation
+- **`main.js`** — `app.provide(URL_PORT_KEY, ...)` / `app.provide(STORAGE_PORT_KEY, ...)` before `app.use(createPinia())`
+- **`colourStore.spec.js`** — all `beforeEach` and inline `setAdapters` calls replaced with `createTestPinia`; 3 new inject-wiring boundary tests added
+
+### Removed
+- `callsTo()` / `log` array from both in-memory adapters in `testAdapters.js` — never asserted on in any test
+- `callsTo` tests deleted from `adapters.spec.js`
+
 ## [1.5.0] — 2026-04-27 · Remove shallow single-use utility composables (closes #15)
 
 ### Removed
