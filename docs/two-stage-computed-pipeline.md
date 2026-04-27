@@ -6,28 +6,28 @@ The contrast checker computes ratios for every unique pair of colours in a palet
 
 ## Implementation in this codebase
 
-The pipeline lives in the **state management layer**: `colourStore.js` wires two `computed()` calls in sequence, backed by two pure functions in `buildCategorizedCombinations.js`.
+The pipeline lives in the **state management layer**: `colourStore.js` wires two `computed()` calls in sequence, backed by three pure functions in `contrastEngine.js` — `scoreColourPair` (the core atom), `scoreAllPairs` (stage 1), and `categorizePairs` (stage 2).
 
-**Stage 1 — scoring** (`buildScoredPairs`): iterates every unique pair, applies CVD simulation, and calls the contrast algorithm. Returns a flat array of `[colA, colB, ratio]` tuples. It depends on `swatches`, `contrastMode`, `cvdMode`, and `focusColour` — but deliberately *not* `complianceMode`.
+**Stage 1 — scoring** (`scoreAllPairs`): iterates every unique pair and calls `scoreColourPair` for each. Returns a flat array of `{ fgHex, bgHex, score, simulatedFg, simulatedBg }` objects. It depends on `swatches`, `contrastMode`, `cvdMode`, and `focusColour` — but deliberately *not* `complianceMode`.
 
 ```js
-// src/composables/buildCategorizedCombinations.js
-export function buildScoredPairs({ swatches, contrastMode, cvdMode, focusColour }) {
-  // ...builds simMap, deduplicates pairs, calls calcFn for each...
-  scored.push([pair[0], pair[1], ratio]);
-  return scored;
+// src/composables/contrastEngine.js
+export function scoreAllPairs(swatches, opts = {}) {
+  const { mode = 'wcag', cvdMode = 'normal', focusColour = null } = opts;
+  // ...deduplicates pairs, calls scoreColourPair for each...
+  result.push({ fgHex, bgHex, score, simulatedFg, simulatedBg });
+  return result;
 }
 ```
 
-**Stage 2 — bucketing** (`categorizeScoredPairs`): receives the scored array and splits it into `{ pass, largePass, fail }` using threshold values from `contrastConfig`. Runs no colour math. Depends on `complianceMode` (indirectly, via the thresholds lookup).
+**Stage 2 — bucketing** (`categorizePairs`): receives the scored array and splits it into `{ pass, partial, fail }` using threshold values from `contrastConfig`. Runs no colour math. Depends on `complianceMode` (indirectly, via the thresholds lookup).
 
 ```js
-export function categorizeScoredPairs({ scoredPairs, contrastMode, complianceLevel }) {
-  for (const combo of scoredPairs) {
-    const ratio = combo[2];
-    if (ratio >= thresholds.max)      categories.pass.push(combo);
-    else if (ratio >= thresholds.min) categories.largePass.push(combo);
-    else                              categories.fail.push(combo);
+export function categorizePairs(scoredPairs, opts = {}) {
+  for (const pair of scoredPairs) {
+    if (pair.score >= thresholds.max)      categories.pass.push(pair);
+    else if (pair.score >= thresholds.min) categories.partial.push(pair);
+    else                                   categories.fail.push(pair);
   }
   // ...sort each bucket...
   return categories;
@@ -37,20 +37,18 @@ export function categorizeScoredPairs({ scoredPairs, contrastMode, complianceLev
 The store wires them as **two separate `computed()` calls**, which is the key to the caching benefit:
 
 ```js
-// src/stores/colourStore.js  lines 116–136
+// src/stores/colourStore.js  lines 108–122
 const scoredPairs = computed(() =>
-  buildScoredPairs({
-    swatches: colourSwatches.value,
-    contrastMode: contrastMode.value,
+  scoreAllPairs(colourSwatches.value, {
+    mode: contrastMode.value,
     cvdMode: cvdMode.value,
     focusColour: focusColour.value || null,
   })
 );
 
 const categorizedCombinations = computed(() =>
-  categorizeScoredPairs({
-    scoredPairs: scoredPairs.value,
-    contrastMode: contrastMode.value,
+  categorizePairs(scoredPairs.value, {
+    mode: contrastMode.value,
     complianceLevel: complianceMode.value,  // ← only here
   })
 );
@@ -58,25 +56,22 @@ const categorizedCombinations = computed(() =>
 
 Vue's reactivity system tracks which reactive values each `computed()` reads. Because `complianceMode` is only read by the second computed, toggling AA ↔ AAA only invalidates `categorizedCombinations` — `scoredPairs` stays cached. Adding or removing a colour invalidates `scoredPairs`, which cascades to `categorizedCombinations`.
 
-A convenience wrapper `buildCategorizedCombinations` exists for callers that don't need the split caching (e.g., tests), but the store never uses it.
+`scoreColourPair` is also used directly by `ColourContrastWidget` for single-pair display, ensuring the widget and the list always compute the same score under CVD.
 
 ## Advantages
 
 - **Compliance toggles are instant** — no colour math runs on AA/AAA switch regardless of palette size.
 - **Dependency graph is explicit** — the comment on `scoredPairs` documents that `complianceMode` is intentionally absent. The reason is visible at the call site.
-- **Pure functions are easy to test** — `buildScoredPairs` and `categorizeScoredPairs` take plain objects and return plain objects. No Vue reactivity, no store, no globals.
+- **Pure functions are easy to test** — `scoreAllPairs` and `categorizePairs` take plain values and return plain objects. No Vue reactivity, no store, no globals.
 - **Stages compose cleanly** — a future stage (e.g., sorting by luminance) slots in between without touching the others.
 
 ## Disadvantages
 
 - **Two call sites to keep in sync** — if someone adds a new input to the pipeline (say, a new simulation mode), they must add it to the right stage and understand which computed to invalidate.
-- **Indirect dependency** — `categorizedCombinations` passes `contrastMode` to `categorizeScoredPairs` for the threshold lookup, even though stage 2 does no contrast calculation. This is a config-key dependency, not a math dependency, which can be confusing at first read.
-- **Convenience wrapper can mislead** — `buildCategorizedCombinations` does both stages in one call. A developer who discovers it and uses it in the store would silently collapse the two-level cache.
+- **Indirect dependency** — `categorizedCombinations` passes `mode` to `categorizePairs` for the threshold lookup, even though stage 2 does no contrast calculation. This is a config-key dependency, not a math dependency, which can be confusing at first read.
 
 ## Key files
 
-- [`src/composables/buildCategorizedCombinations.js`](../src/composables/buildCategorizedCombinations.js) — `buildScoredPairs`, `categorizeScoredPairs`, and the combined convenience wrapper
-- [`src/stores/colourStore.js`](../src/stores/colourStore.js) — wires the two computed layers; lines 116–136 are the critical section
+- [`src/composables/contrastEngine.js`](../src/composables/contrastEngine.js) — `scoreColourPair`, `scoreAllPairs`, and `categorizePairs`
+- [`src/stores/colourStore.js`](../src/stores/colourStore.js) — wires the two computed layers; lines 108–122 are the critical section
 - [`src/config/contrastConfig.js`](../src/config/contrastConfig.js) — threshold values consumed by stage 2
-- [`src/composables/calculateColourContrast.js`](../src/composables/calculateColourContrast.js) — WCAG ratio function called by stage 1
-- [`src/composables/calculateAPCAContrast.js`](../src/composables/calculateAPCAContrast.js) — APCA contrast function called by stage 1
