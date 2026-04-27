@@ -78,8 +78,7 @@ import { computed, ref } from "vue";
 import IconResultPass from "@/components/icons/IconResultPass.vue";
 import IconResultPassLarge from "@/components/icons/IconResultPassLarge.vue";
 import IconResultFail from "@/components/icons/IconResultFail.vue";
-import apcaContrast from "@/composables/calculateAPCAContrast.js";
-import calcContrastRatio from "@/composables/calculateColourContrast.js";
+import { scoreColourPair } from "@/composables/contrastEngine.js";
 import { useColourStore } from "@/stores/colourStore";
 const colourStore = useColourStore();
 
@@ -98,26 +97,27 @@ const isAPCA = computed(() => colourStore.contrastMode === 'apca');
 
 const isHovered = ref(false);
 
-const simulatedPrimary = computed(() =>
-  colourStore.simulatedSwatchMap.get(props.primaryColour) ?? props.primaryColour
+const activeResult = computed(() =>
+  scoreColourPair(props.primaryColour, props.contrastColour, {
+    mode: colourStore.contrastMode,
+    cvdMode: isHovered.value ? 'normal' : colourStore.cvdMode,
+  })
 );
-const simulatedContrast = computed(() =>
-  colourStore.simulatedSwatchMap.get(props.contrastColour) ?? props.contrastColour
+
+const reverseResult = computed(() =>
+  isAPCA.value
+    ? scoreColourPair(props.contrastColour, props.primaryColour, {
+        mode: colourStore.contrastMode,
+        cvdMode: isHovered.value ? 'normal' : colourStore.cvdMode,
+      })
+    : null
 );
 
-const activeColour1 = computed(() => isHovered.value ? props.primaryColour : simulatedPrimary.value);
-const activeColour2 = computed(() => isHovered.value ? props.contrastColour : simulatedContrast.value);
-
-const displayRatio = computed(() => {
-  if (isAPCA.value) return apcaContrast(activeColour1.value, activeColour2.value);
-  return Math.round(calcContrastRatio(activeColour1.value, activeColour2.value) * 100) / 100;
-});
-
+const activeColour1 = computed(() => activeResult.value.simulatedFg);
+const activeColour2 = computed(() => activeResult.value.simulatedBg);
+const displayRatio = computed(() => activeResult.value.score);
 const displayRatioFormatted = computed(() => displayRatio.value.toFixed(1));
-
-const reverseRatio = computed(() =>
-  isAPCA.value ? apcaContrast(activeColour2.value, activeColour1.value) : null
-);
+const reverseRatio = computed(() => reverseResult.value?.score ?? null);
 
 function getUseCaseLabel(ratio) {
   if (ratio >= colourStore.complianceRatios.max) return 'Body';

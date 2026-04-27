@@ -43,9 +43,9 @@ describe('Colour Store', () => {
       store.addColour('#000000');
       expect(store.passColourCombinations).toHaveLength(1);
       const combination = store.passColourCombinations[0];
-      expect(combination[0]).toBe('#000000');
-      expect(combination[1]).toBe('#FFFFFF');
-      expect(combination[2]).toBe(21);
+      expect(combination.fgHex).toBe('#000000');
+      expect(combination.bgHex).toBe('#FFFFFF');
+      expect(combination.score).toBe(21);
     });
   });
 
@@ -103,7 +103,7 @@ describe('Colour Store', () => {
       store.setFocusColour('#FFFFFF');
       const all = [...store.passColourCombinations, ...store.largePassColourCombinations, ...store.failColourCombinations];
       expect(all).toHaveLength(2);
-      expect(all.every(combo => combo.includes('#FFFFFF'))).toBe(true);
+      expect(all.every(combo => combo.fgHex === '#FFFFFF' || combo.bgHex === '#FFFFFF')).toBe(true);
     });
   });
 
@@ -119,19 +119,19 @@ describe('Colour Store', () => {
 
     it('correctly categorizes passing combinations for AAA', () => {
       store.setComplianceMode('AAA');
-      const passing = store.passColourCombinations.filter(c => c.includes('#FFFFFF') && c.includes('#000000'));
+      const passing = store.passColourCombinations.filter(c => [c.fgHex, c.bgHex].includes('#FFFFFF') && [c.fgHex, c.bgHex].includes('#000000'));
       expect(passing).toHaveLength(1);
     });
 
     it('correctly categorizes large text pass combinations for AAA', () => {
       store.setComplianceMode('AAA');
-      const largePass = store.largePassColourCombinations.filter(c => c.includes('#FFFFFF') && c.includes('#757575'));
+      const largePass = store.largePassColourCombinations.filter(c => [c.fgHex, c.bgHex].includes('#FFFFFF') && [c.fgHex, c.bgHex].includes('#757575'));
       expect(largePass).toHaveLength(1);
     });
     
     it('correctly categorizes failing combinations for AA', () => {
       store.setComplianceMode('AA');
-      const failing = store.failColourCombinations.filter(c => c.includes('#FFFFFF') && c.includes('#AAAAAA'));
+      const failing = store.failColourCombinations.filter(c => [c.fgHex, c.bgHex].includes('#FFFFFF') && [c.fgHex, c.bgHex].includes('#AAAAAA'));
       expect(failing).toHaveLength(1);
     });
   });
@@ -170,7 +170,7 @@ describe('Colour Store', () => {
       store.addColour('#000000');
       store.addColour('#ffffff');
       const combo = store.passColourCombinations[0];
-      expect(combo[2]).toBeGreaterThan(100);
+      expect(combo.score).toBeGreaterThan(100);
     });
 
     it('APCA AA: categorizes black/white as pass, mid-gray as largePass, light-gray as fail', () => {
@@ -183,13 +183,13 @@ describe('Colour Store', () => {
       store.addColour('#bbbbbb'); // Lc 36.7 → fail (<45)
 
       const hasBlackWhiteInPass = store.passColourCombinations.some(
-        c => c.includes('#000000') && c.includes('#ffffff')
+        c => [c.fgHex, c.bgHex].includes('#000000') && [c.fgHex, c.bgHex].includes('#ffffff')
       );
       const hasGrayInLargePass = store.largePassColourCombinations.some(
-        c => c.includes('#999999') && c.includes('#ffffff')
+        c => [c.fgHex, c.bgHex].includes('#999999') && [c.fgHex, c.bgHex].includes('#ffffff')
       );
       const hasLightGrayInFail = store.failColourCombinations.some(
-        c => c.includes('#bbbbbb') && c.includes('#ffffff')
+        c => [c.fgHex, c.bgHex].includes('#bbbbbb') && [c.fgHex, c.bgHex].includes('#ffffff')
       );
       expect(hasBlackWhiteInPass).toBe(true);
       expect(hasGrayInLargePass).toBe(true);

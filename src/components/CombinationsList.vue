@@ -17,10 +17,10 @@
     >
       <ColourContrastWidget
         v-for="pair in passList"
-        :primaryColour="pair[0]"
-        :contrastColour="pair[1]"
+        :primaryColour="pair.fgHex"
+        :contrastColour="pair.bgHex"
 
-        :key="`${pair[0]}-${pair[1]}`"
+        :key="`${pair.fgHex}-${pair.bgHex}`"
       ></ColourContrastWidget>
     </div>
 
@@ -41,10 +41,10 @@
     >
       <ColourContrastWidget
         v-for="pair in largePassList"
-        :primaryColour="pair[0]"
-        :contrastColour="pair[1]"
+        :primaryColour="pair.fgHex"
+        :contrastColour="pair.bgHex"
 
-        :key="`${pair[0]}-${pair[1]}`"
+        :key="`${pair.fgHex}-${pair.bgHex}`"
       ></ColourContrastWidget>
     </div>
 
@@ -65,10 +65,10 @@
     >
       <ColourContrastWidget
         v-for="pair in failList"
-        :primaryColour="pair[0]"
-        :contrastColour="pair[1]"
+        :primaryColour="pair.fgHex"
+        :contrastColour="pair.bgHex"
 
-        :key="`${pair[0]}-${pair[1]}`"
+        :key="`${pair.fgHex}-${pair.bgHex}`"
       ></ColourContrastWidget>
     </div>
   </div>
