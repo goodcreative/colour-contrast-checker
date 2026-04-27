@@ -14,7 +14,6 @@ export function setAdapters(urlPort, storagePort) {
   _urlPort = urlPort;
   _storagePort = storagePort;
 }
-import searchArrayByProperty from "@/composables/SearchArrayByItemPropertyValue";
 import simulateCVD from "@/composables/simulateCVD.js";
 import { contrastConfig } from "@/config/contrastConfig.js";
 import { scoreAllPairs, categorizePairs } from "@/composables/contrastEngine.js";
@@ -198,7 +197,7 @@ export const useColourStore = defineStore("colourStore", () => {
    * @param {number} id - The ID of the palette to load.
    */
   function loadLocalPalette(id) {
-    const localPalette = searchArrayByProperty(palettes.value, "id", id);
+    const localPalette = palettes.value.find(p => p.id === id) ?? null;
     if (!localPalette) return;
     colourSwatches.value = [...localPalette.colours];
     paletteTitle.value = localPalette.title;
@@ -212,7 +211,7 @@ export const useColourStore = defineStore("colourStore", () => {
    * @param {number} id - The ID of the palette to delete.
    */
   function deleteLocalPalette(id) {
-    const palette = searchArrayByProperty(palettes.value, "id", id);
+    const palette = palettes.value.find(p => p.id === id) ?? null;
     if (!palette) return;
     const idx = palettes.value.indexOf(palette);
     palettes.value.splice(idx, 1);

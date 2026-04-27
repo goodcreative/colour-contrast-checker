@@ -1,5 +1,6 @@
-import checkHexColourIsValid from "@/composables/checkHexColourIsValid";
 import { CONTRAST_MODES, CVD_MODES, COMPLIANCE_MODES } from "@/config/modes";
+
+const isValidHex = hex => /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(hex);
 
 /**
  * Encodes active palette state into a raw params object ready for
@@ -46,7 +47,7 @@ export function decodePaletteFromSearch(search) {
 
   const coloursRaw = params.get("colours");
   const colours = coloursRaw
-    ? coloursRaw.split("-").map(seg => "#" + seg).filter(checkHexColourIsValid)
+    ? coloursRaw.split("-").map(seg => "#" + seg).filter(isValidHex)
     : [];
 
   const titleRaw = params.get("title");

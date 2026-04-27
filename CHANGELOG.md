@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0] — 2026-04-27 · Remove shallow single-use utility composables (closes #15)
+
+### Removed
+- **`SearchArrayByItemPropertyValue.js`** — deleted; both call sites in `colourStore.js` inlined to `.find(p => p.id === id) ?? null`
+- **`checkHexColourIsValid.js`** — deleted; moved as private `isValidHex` arrow function inside `paletteUrlCodec.js`
+- Both files' spec files deleted; coverage retained via existing `paletteUrlCodec.spec.js` and `colourStore.spec.js`
+
 ## [1.5.0] — 2026-04-22 · Expand README Architecture section; remove Key Source Files
 
 ### Docs
