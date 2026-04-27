@@ -55,7 +55,8 @@ describe('CVDModeSelector', () => {
 
   it('does NOT render prevalence para when modelValue is "normal"', () => {
     const wrapper = mountSelector('normal');
-    expect(wrapper.find('.b_cvdSelector__infoStat').exists()).toBe(false);
+    const normalPillWrapper = wrapper.findAll('.b_cvdSelector__pillWrapper')[0];
+    expect(normalPillWrapper.find('.b_cvdSelector__infoStat').exists()).toBe(false);
   });
 
   it('renders prevalence para for protanopia', () => {
@@ -67,14 +68,14 @@ describe('CVDModeSelector', () => {
 
   it('renders prevalence para for deuteranopia', () => {
     const wrapper = mountSelector('deuteranopia');
-    const stat = wrapper.find('.b_cvdSelector__infoStat');
+    const stat = wrapper.findAll('.b_cvdSelector__pillWrapper')[2].find('.b_cvdSelector__infoStat');
     expect(stat.exists()).toBe(true);
     expect(stat.text()).toContain('8%');
   });
 
   it('renders prevalence para for tritanopia', () => {
     const wrapper = mountSelector('tritanopia');
-    const stat = wrapper.find('.b_cvdSelector__infoStat');
+    const stat = wrapper.findAll('.b_cvdSelector__pillWrapper')[3].find('.b_cvdSelector__infoStat');
     expect(stat.exists()).toBe(true);
     expect(stat.text()).toContain('30,000');
   });
