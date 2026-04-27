@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0] — 2026-04-27 · Make URL persistence contract explicit with PaletteUrlState schema (closes #17)
+
+### Added
+- **`defaultPaletteUrlState()`** exported factory in `paletteUrlCodec.js` — single source of truth for field names, types, and defaults
+- **`PaletteUrlState` JSDoc typedef** in `paletteUrlCodec.js`
+- **3 new boundary tests** in `paletteUrlCodec.spec.js`: empty search equals defaults, partial input uses defaults, invalid field falls back without affecting siblings
+
+### Changed
+- **`decodePaletteFromSearch`** always returns a complete `PaletteUrlState`; missing/invalid fields fall back to defaults rather than returning `null`
+- **`loadPaletteFromQueryString`** in `colourStore.js` — unconditional assignment, null guards removed
+- **`updateURLData`** in `colourStore.js` — builds explicit annotated state object
+- **8 existing `paletteUrlCodec.spec.js` tests** updated from asserting `null` to asserting default values
+
 ## [1.5.0] — 2026-04-27 · Replace module-global adapter injection with Vue provide/inject (closes #16)
 
 ### Added

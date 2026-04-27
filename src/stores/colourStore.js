@@ -171,18 +171,15 @@ export const useColourStore = defineStore("colourStore", () => {
    * Loads colour palette data from the URL query string.
    */
   function loadPaletteFromQueryString() {
-    const { colours, title, focusColour: focus, contrastMode: cm, cvdMode: cvd, complianceMode: compliance }
-      = decodePaletteFromSearch(_urlPort.getSearch());
+    const state = decodePaletteFromSearch(_urlPort.getSearch());
 
-    colourSwatches.value = colours;
-
-    paletteTitle.value = title ?? "";
-    savedTitle.value = title ?? "";
-
-    if (focus) setFocusColour(focus);
-    if (cm) contrastMode.value = cm;
-    if (cvd) cvdMode.value = cvd;
-    if (compliance) complianceMode.value = compliance;
+    colourSwatches.value  = state.colours;
+    paletteTitle.value    = state.title;
+    savedTitle.value      = state.title;
+    focusColour.value     = state.focusColour ?? "";
+    contrastMode.value    = state.contrastMode;
+    cvdMode.value         = state.cvdMode;
+    complianceMode.value  = state.complianceMode;
   }
 
   /**
@@ -286,14 +283,16 @@ export const useColourStore = defineStore("colourStore", () => {
    * Updates the browser's URL query parameters based on the current active palette.
    */
   function updateURLData() {
-    _urlPort.setParams(encodePaletteToParams({
+    /** @type {import('@/composables/paletteUrlCodec').PaletteUrlState} */
+    const state = {
       colours:        colourSwatches.value,
       title:          paletteTitle.value,
-      focusColour:    focusColour.value,
+      focusColour:    focusColour.value || null,
       contrastMode:   contrastMode.value,
       cvdMode:        cvdMode.value,
       complianceMode: complianceMode.value,
-    }));
+    };
+    _urlPort.setParams(encodePaletteToParams(state));
   }
 
   /**

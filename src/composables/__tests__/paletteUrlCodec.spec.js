@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { encodePaletteToParams, decodePaletteFromSearch } from "../paletteUrlCodec.js";
+import { encodePaletteToParams, decodePaletteFromSearch, defaultPaletteUrlState } from "../paletteUrlCodec.js";
 
 // ─── encodePaletteToParams ────────────────────────────────────────────────────
 
@@ -102,14 +102,14 @@ describe("decodePaletteFromSearch", () => {
       expect(title).toBe("My Palette");
     });
 
-    it("returns null when title param absent", () => {
+    it("returns empty string when title param absent", () => {
       const { title } = decodePaletteFromSearch("");
-      expect(title).toBeNull();
+      expect(title).toBe("");
     });
 
-    it("returns null when title param is empty string", () => {
+    it("returns empty string when title param is empty string", () => {
       const { title } = decodePaletteFromSearch("?title=");
-      expect(title).toBeNull();
+      expect(title).toBe("");
     });
   });
 
@@ -136,14 +136,14 @@ describe("decodePaletteFromSearch", () => {
       expect(contrastMode).toBe("apca");
     });
 
-    it("returns null for invalid contrastMode", () => {
+    it("returns 'wcag' for invalid contrastMode", () => {
       const { contrastMode } = decodePaletteFromSearch("?contrastMode=invalid");
-      expect(contrastMode).toBeNull();
+      expect(contrastMode).toBe("wcag");
     });
 
-    it("returns null when contrastMode absent", () => {
+    it("returns 'wcag' when contrastMode absent", () => {
       const { contrastMode } = decodePaletteFromSearch("");
-      expect(contrastMode).toBeNull();
+      expect(contrastMode).toBe("wcag");
     });
   });
 
@@ -156,14 +156,14 @@ describe("decodePaletteFromSearch", () => {
       }
     );
 
-    it("returns null for invalid cvdMode", () => {
+    it("returns 'normal' for invalid cvdMode", () => {
       const { cvdMode } = decodePaletteFromSearch("?cvdMode=monochromacy");
-      expect(cvdMode).toBeNull();
+      expect(cvdMode).toBe("normal");
     });
 
-    it("returns null when cvdMode absent", () => {
+    it("returns 'normal' when cvdMode absent", () => {
       const { cvdMode } = decodePaletteFromSearch("");
-      expect(cvdMode).toBeNull();
+      expect(cvdMode).toBe("normal");
     });
   });
 
@@ -178,14 +178,37 @@ describe("decodePaletteFromSearch", () => {
       expect(complianceMode).toBe("AAA");
     });
 
-    it("returns null for invalid complianceMode", () => {
+    it("returns 'AA' for invalid complianceMode", () => {
       const { complianceMode } = decodePaletteFromSearch("?complianceMode=A");
-      expect(complianceMode).toBeNull();
+      expect(complianceMode).toBe("AA");
     });
 
-    it("returns null when complianceMode absent", () => {
+    it("returns 'AA' when complianceMode absent", () => {
       const { complianceMode } = decodePaletteFromSearch("");
-      expect(complianceMode).toBeNull();
+      expect(complianceMode).toBe("AA");
+    });
+  });
+
+  describe("defaults contract", () => {
+    it("empty search returns defaultPaletteUrlState exactly", () => {
+      expect(decodePaletteFromSearch("")).toEqual(defaultPaletteUrlState());
+    });
+
+    it("partial input: only specified fields set, unspecified fields are defaults", () => {
+      const result = decodePaletteFromSearch("?contrastMode=apca");
+      const defaults = defaultPaletteUrlState();
+      expect(result.contrastMode).toBe("apca");
+      expect(result.colours).toEqual(defaults.colours);
+      expect(result.title).toBe(defaults.title);
+      expect(result.focusColour).toBe(defaults.focusColour);
+      expect(result.cvdMode).toBe(defaults.cvdMode);
+      expect(result.complianceMode).toBe(defaults.complianceMode);
+    });
+
+    it("invalid field falls back to default, valid siblings unaffected", () => {
+      const result = decodePaletteFromSearch("?contrastMode=invalid&complianceMode=AAA");
+      expect(result.contrastMode).toBe("wcag");
+      expect(result.complianceMode).toBe("AAA");
     });
   });
 
