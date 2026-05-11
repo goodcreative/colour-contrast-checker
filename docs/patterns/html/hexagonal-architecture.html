@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hexagonal Architecture — Pattern</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --surface-alt: #f4f4f2;
+    --border: #e5e4e0;
+    --border-strong: #d4d2cc;
+    --text: #1a1a18;
+    --text-muted: #5a5a55;
+    --text-faint: #8a8a82;
+    --accent: #3a5cff;
+    --accent-soft: #eaf0ff;
+    --good: #1f7a3a;
+    --good-soft: #e7f5ec;
+    --bad: #b1432a;
+    --bad-soft: #fbece5;
+    --hex-core: #fff5e1;
+    --hex-core-border: #d4a142;
+    --hex-port: #eaf0ff;
+    --hex-port-border: #3a5cff;
+    --hex-adapter-prod: #e7f5ec;
+    --hex-adapter-prod-border: #1f7a3a;
+    --hex-adapter-test: #f3e8ff;
+    --hex-adapter-test-border: #7c3aed;
+    --code-bg: #16181d;
+    --code-fg: #e5e5e0;
+    --code-comment: #7e8aa1;
+    --code-string: #c5d99d;
+    --code-keyword: #c697e6;
+    --code-fn: #8ec7ff;
+    --code-prop: #ffd28a;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px rgba(20, 20, 18, 0.04);
+    --shadow-md: 0 4px 14px rgba(20, 20, 18, 0.06);
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .page {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 48px;
+    padding: 48px 32px;
+  }
+
+  @media (max-width: 900px) {
+    .page { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px; }
+    .toc { position: static !important; }
+  }
+
+  .toc {
+    position: sticky;
+    top: 32px;
+    align-self: start;
+    font-size: 14px;
+  }
+  .toc-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-faint);
+    margin: 0 0 12px;
+  }
+  .toc ol { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 2px 0; }
+  .toc a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--text-muted);
+    border-left: 2px solid transparent;
+  }
+  .toc a:hover { background: var(--surface-alt); text-decoration: none; color: var(--text); }
+  .toc a.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    padding: 4px 10px 4px 6px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .back-link:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+    text-decoration: none;
+  }
+  .back-link .arrow { display: inline-block; transition: transform 0.15s; }
+  .back-link:hover .arrow { transform: translateX(-2px); }
+
+  .hero { margin-bottom: 48px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+  }
+  .lede {
+    font-size: 19px;
+    color: var(--text-muted);
+    margin: 0 0 24px;
+    max-width: 62ch;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .chip code { font-size: 12px; background: transparent; padding: 0; color: var(--text); }
+
+  section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  h2 {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    margin: 0 0 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 24px 0 10px;
+  }
+  p { margin: 0 0 16px; }
+  p code, li code, td code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    margin: 20px 0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Ports table */
+  .ports-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 16px 0 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .ports-table th, .ports-table td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14.5px;
+  }
+  .ports-table tr:last-child td { border-bottom: 0; }
+  .ports-table th {
+    background: var(--surface-alt);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+  }
+  .ports-table td.name { font-family: var(--mono); font-weight: 600; color: var(--accent); white-space: nowrap; }
+  .ports-table td.sig { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+
+  /* Code blocks */
+  .code {
+    position: relative;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    border-radius: var(--radius);
+    margin: 16px 0 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #aab1c2;
+  }
+  .code-header .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+    background: #4a5060;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #aab1c2;
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .copy-btn.copied { color: #8ec78e; border-color: #2f6b3a; }
+  pre {
+    margin: 0;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  pre code { font-family: inherit; }
+
+  .tk-kw   { color: var(--code-keyword); }
+  .tk-fn   { color: var(--code-fn); }
+  .tk-str  { color: var(--code-string); }
+  .tk-cmt  { color: var(--code-comment); font-style: italic; }
+  .tk-prop { color: var(--code-prop); }
+  .tk-num  { color: #f5a97f; }
+  .tk-op   { color: #b8becc; }
+
+  /* Code tabs */
+  .tabs { display: flex; gap: 2px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .tab-btn {
+    background: transparent;
+    color: #aab1c2;
+    border: 0;
+    padding: 6px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .tab-btn.active { background: rgba(58, 92, 255, 0.18); color: #e5e5e0; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Pros / cons */
+  .pc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 700px) { .pc-grid { grid-template-columns: 1fr; } }
+  .pc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+  }
+  .pc-card.pros { border-top: 3px solid var(--good); }
+  .pc-card.cons { border-top: 3px solid var(--bad); }
+  .pc-card h3 {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .pc-card.pros h3 { color: var(--good); }
+  .pc-card.cons h3 { color: var(--bad); }
+  .pc-card ul { margin: 0; padding-left: 0; list-style: none; }
+  .pc-card li {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+  .pc-card li:last-child { border-bottom: 0; }
+  .pc-card li strong { color: var(--text); }
+  .badge-icon {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    color: #fff;
+  }
+  .pros .badge-icon { background: var(--good); }
+  .cons .badge-icon { background: var(--bad); }
+
+  /* Hex diagram */
+  .hex-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px;
+    margin: 16px 0 24px;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+  }
+  .hex-diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    border: 1.5px solid;
+  }
+
+  /* Files */
+  .files {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; gap: 10px;
+  }
+  .files li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .files li:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .files .file-path {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .files .file-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .files .file-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+  }
+  .file-icon.prod { background: var(--hex-adapter-prod); color: var(--good); }
+  .file-icon.test { background: var(--hex-adapter-test); color: #7c3aed; }
+  .file-icon.core { background: var(--hex-core); color: #966100; }
+  .file-icon.port { background: var(--hex-port); color: var(--accent); }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <aside class="toc">
+    <p class="toc-eyebrow">On this page</p>
+    <ol id="toc-list">
+      <li><a href="#problem">Problem statement</a></li>
+      <li><a href="#diagram">The hexagon</a></li>
+      <li><a href="#ports">The ports</a></li>
+      <li><a href="#implementation">Implementation</a></li>
+      <li><a href="#advantages">Trade-offs</a></li>
+      <li><a href="#files">Key files</a></li>
+    </ol>
+  </aside>
+
+  <main>
+
+    <a class="back-link" href="index.html"><span class="arrow">←</span> All patterns</a>
+
+    <header class="hero">
+      <span class="eyebrow">Pattern</span>
+      <h1>Hexagonal Architecture</h1>
+      <p class="lede">
+        Ports &amp; adapters at the store boundary — the store calls injected adapters instead
+        of browser globals, so production wires to <code>window</code> and tests wire to plain
+        JavaScript objects without changing a line of business logic.
+      </p>
+      <div class="meta">
+        <span class="chip">Layer&nbsp;·&nbsp;<code>stores/</code> + <code>adapters/</code></span>
+        <span class="chip">Ports&nbsp;·&nbsp;<code>UrlPort</code>, <code>StoragePort</code></span>
+        <span class="chip">Wiring&nbsp;·&nbsp;Vue <code>provide</code>/<code>inject</code></span>
+      </div>
+    </header>
+
+    <!-- Problem -->
+    <section id="problem">
+      <h2>Problem statement</h2>
+      <p>
+        The store needs to read and write the browser URL and <code>localStorage</code>. If it
+        calls <code>window.location</code> and <code>localStorage</code> directly, tests must
+        either run in a real browser or set up jsdom globals and carefully clean up after every
+        test.
+      </p>
+      <p>
+        More subtly: the store becomes coupled to a specific storage technology. Swapping
+        <code>localStorage</code> for <code>sessionStorage</code>, or adding server-side
+        rendering where neither exists, requires hunting for every direct call. The goal is a
+        store that does its job without knowing or caring which technology sits behind "save
+        this" or "read the URL" — testable with plain objects, retargetable without touching
+        business logic.
+      </p>
+    </section>
+
+    <!-- Diagram -->
+    <section id="diagram">
+      <h2>The hexagon</h2>
+      <p>
+        The store core sits at the centre. Around its edge are two ports — the interfaces the
+        store calls. Outside the hexagon, two sets of adapters implement those interfaces:
+        production adapters that talk to the browser, test adapters that hold state in memory.
+      </p>
+
+      <div class="hex-diagram">
+        <svg viewBox="0 0 820 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hexagonal architecture diagram">
+          <defs>
+            <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#5a5a55"/>
+            </marker>
+            <style>
+              .hex-fill-core    { fill: #fff5e1; stroke: #d4a142; stroke-width: 2; }
+              .hex-fill-port    { fill: #eaf0ff; stroke: #3a5cff; stroke-width: 1.5; }
+              .adapter-prod     { fill: #e7f5ec; stroke: #1f7a3a; stroke-width: 1.5; }
+              .adapter-test     { fill: #f3e8ff; stroke: #7c3aed; stroke-width: 1.5; }
+              .lbl-title        { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 15px; fill: #1a1a18; font-weight: 700; }
+              .lbl-sub          { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #5a5a55; }
+              .lbl-port         { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13px; fill: #3a5cff; font-weight: 700; }
+              .lbl-grp          { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; fill: #8a8a82; font-weight: 600; }
+              .link             { stroke: #5a5a55; stroke-width: 1.5; fill: none; stroke-dasharray: 4 4; }
+            </style>
+          </defs>
+
+          <!-- Group labels -->
+          <text class="lbl-grp" x="120" y="30" text-anchor="middle">Production</text>
+          <text class="lbl-grp" x="700" y="30" text-anchor="middle">Tests</text>
+
+          <!-- Core hexagon -->
+          <polygon class="hex-fill-core" points="410,160 530,220 530,340 410,400 290,340 290,220"/>
+          <text class="lbl-title" x="410" y="275" text-anchor="middle">colourStore</text>
+          <text class="lbl-sub" x="410" y="296" text-anchor="middle">business logic</text>
+          <text class="lbl-sub" x="410" y="312" text-anchor="middle">uses inject()</text>
+
+          <!-- Port: URL (overlapping top point) -->
+          <rect class="hex-fill-port" x="320" y="110" width="180" height="65" rx="8"/>
+          <text class="lbl-port" x="410" y="133" text-anchor="middle">UrlPort</text>
+          <text class="lbl-sub" x="410" y="151" text-anchor="middle">getSearch · setParams</text>
+          <text class="lbl-sub" x="410" y="166" text-anchor="middle">getParam</text>
+
+          <!-- Port: Storage (overlapping bottom point) -->
+          <rect class="hex-fill-port" x="320" y="385" width="180" height="65" rx="8"/>
+          <text class="lbl-port" x="410" y="408" text-anchor="middle">StoragePort</text>
+          <text class="lbl-sub" x="410" y="426" text-anchor="middle">load · save</text>
+          <text class="lbl-sub" x="410" y="441" text-anchor="middle">remove</text>
+
+          <!-- Production adapter: URL (left top) -->
+          <rect class="adapter-prod" x="20" y="160" width="220" height="80" rx="10"/>
+          <text class="lbl-title" x="130" y="195" text-anchor="middle">browserUrlAdapter</text>
+          <text class="lbl-sub" x="130" y="215" text-anchor="middle">window.location</text>
+          <text class="lbl-sub" x="130" y="230" text-anchor="middle">history.replaceState</text>
+
+          <!-- Production adapter: Storage (left bottom) -->
+          <rect class="adapter-prod" x="20" y="320" width="220" height="80" rx="10"/>
+          <text class="lbl-title" x="130" y="355" text-anchor="middle">browserStorageAdapter</text>
+          <text class="lbl-sub" x="130" y="375" text-anchor="middle">localStorage.*</text>
+
+          <!-- Test adapter: URL (right top) -->
+          <rect class="adapter-test" x="580" y="160" width="220" height="80" rx="10"/>
+          <text class="lbl-title" x="690" y="195" text-anchor="middle">inMemoryUrlAdapter</text>
+          <text class="lbl-sub" x="690" y="215" text-anchor="middle">plain JS object</text>
+          <text class="lbl-sub" x="690" y="230" text-anchor="middle">snapshot() helper</text>
+
+          <!-- Test adapter: Storage (right bottom) -->
+          <rect class="adapter-test" x="580" y="320" width="220" height="80" rx="10"/>
+          <text class="lbl-title" x="690" y="355" text-anchor="middle">inMemoryStorageAdapter</text>
+          <text class="lbl-sub" x="690" y="375" text-anchor="middle">plain JS object</text>
+
+          <!-- Connectors: adapters to ports -->
+          <path class="link" d="M240,180 L340,165"/>
+          <path class="link" d="M580,180 L480,165"/>
+          <path class="link" d="M240,380 L340,395"/>
+          <path class="link" d="M580,380 L480,395"/>
+
+          <!-- Wiring note -->
+          <text class="lbl-sub" x="410" y="525" text-anchor="middle">app.provide(URL_PORT_KEY, …) / createTestPinia(…) wires which side connects</text>
+        </svg>
+        <div class="legend">
+          <span><i style="background:var(--hex-core); border-color:var(--hex-core-border)"></i> Store core</span>
+          <span><i style="background:var(--hex-port); border-color:var(--hex-port-border)"></i> Ports</span>
+          <span><i style="background:var(--hex-adapter-prod); border-color:var(--hex-adapter-prod-border)"></i> Production adapters</span>
+          <span><i style="background:var(--hex-adapter-test); border-color:var(--hex-adapter-test-border)"></i> Test adapters</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ports -->
+    <section id="ports">
+      <h2>The ports</h2>
+      <p>
+        Two implicit interfaces — defined by convention, not by a JS construct. The store
+        depends only on these signatures; adapters on either side must satisfy them.
+      </p>
+      <table class="ports-table">
+        <thead>
+          <tr><th>Port</th><th>Method</th><th>Returns / does</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="name" rowspan="3">UrlPort</td><td class="sig">getParam(key)</td><td>Reads a single query parameter</td></tr>
+          <tr><td class="sig">getSearch()</td><td>Returns the raw <code>?…</code> search string</td></tr>
+          <tr><td class="sig">setParams(params)</td><td>Writes/deletes keys; <code>null</code> = delete</td></tr>
+          <tr><td class="name" rowspan="3">StoragePort</td><td class="sig">load(key)</td><td>Reads a stored value or <code>null</code></td></tr>
+          <tr><td class="sig">save(key, value)</td><td>Persists a value</td></tr>
+          <tr><td class="sig">remove(key)</td><td>Deletes a key</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Implementation with tabs -->
+    <section id="implementation">
+      <h2>Implementation in this codebase</h2>
+      <p>
+        The pattern lives at the boundary of the <strong>state management layer</strong>. The
+        store defines what it needs via the two ports above and calls them through injected
+        adapter objects rather than browser globals.
+      </p>
+
+      <div class="code">
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-tab="t-prod-url">browserUrlAdapter.js</button>
+          <button class="tab-btn" data-tab="t-prod-storage">browserStorageAdapter.js</button>
+          <button class="tab-btn" data-tab="t-test">testAdapters.js</button>
+          <button class="tab-btn" data-tab="t-store">colourStore.js</button>
+        </div>
+
+        <div class="tab-panel active" id="t-prod-url">
+          <div class="code-header">
+            <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/adapters/browserUrlAdapter.js</span>
+            <button class="copy-btn" data-copy-target="code-prod-url">Copy</button>
+          </div>
+<pre id="code-prod-url"><code><span class="tk-kw">export function</span> <span class="tk-fn">createBrowserUrlAdapter</span>() {
+  <span class="tk-kw">return</span> {
+    <span class="tk-fn">getSearch</span>() { <span class="tk-kw">return</span> window.location.search; },
+    <span class="tk-fn">setParams</span>(params) {
+      <span class="tk-kw">const</span> url = <span class="tk-kw">new</span> <span class="tk-fn">URL</span>(window.location.href);
+      <span class="tk-kw">for</span> (<span class="tk-kw">const</span> [key, value] <span class="tk-kw">of</span> Object.<span class="tk-fn">entries</span>(params)) {
+        value === <span class="tk-kw">null</span>
+          ? url.searchParams.<span class="tk-fn">delete</span>(key)
+          : url.searchParams.<span class="tk-fn">set</span>(key, value);
+      }
+      window.history.<span class="tk-fn">replaceState</span>(history.state, <span class="tk-str">''</span>, url);
+    },
+    <span class="tk-cmt">// ...</span>
+  };
+}</code></pre>
+        </div>
+
+        <div class="tab-panel" id="t-prod-storage">
+          <div class="code-header">
+            <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/adapters/browserStorageAdapter.js</span>
+            <button class="copy-btn" data-copy-target="code-prod-storage">Copy</button>
+          </div>
+<pre id="code-prod-storage"><code><span class="tk-kw">export function</span> <span class="tk-fn">createBrowserStorageAdapter</span>() {
+  <span class="tk-kw">return</span> {
+    <span class="tk-fn">load</span>(key)        { <span class="tk-kw">return</span> localStorage.<span class="tk-fn">getItem</span>(key); },
+    <span class="tk-fn">save</span>(key, value) { localStorage.<span class="tk-fn">setItem</span>(key, value); },
+    <span class="tk-fn">remove</span>(key)      { localStorage.<span class="tk-fn">removeItem</span>(key); },
+  };
+}</code></pre>
+        </div>
+
+        <div class="tab-panel" id="t-test">
+          <div class="code-header">
+            <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/adapters/testAdapters.js</span>
+            <button class="copy-btn" data-copy-target="code-test">Copy</button>
+          </div>
+<pre id="code-test"><code><span class="tk-kw">export function</span> <span class="tk-fn">createInMemoryStorageAdapter</span>(seed = {}) {
+  <span class="tk-kw">const</span> store = { ...seed };
+  <span class="tk-kw">return</span> {
+    <span class="tk-fn">load</span>(key)        { <span class="tk-kw">return</span> key <span class="tk-kw">in</span> store ? store[key] : <span class="tk-kw">null</span>; },
+    <span class="tk-fn">save</span>(key, value) { store[key] = value; },
+    <span class="tk-fn">remove</span>(key)      { <span class="tk-kw">delete</span> store[key]; },
+    <span class="tk-fn">snapshot</span>()       { <span class="tk-kw">return</span> { ...store }; },
+  };
+}
+
+<span class="tk-kw">export function</span> <span class="tk-fn">createTestPinia</span>(urlAdapter, storageAdapter) {
+  <span class="tk-cmt">// creates a Vue app, provides both adapters under their injection keys,</span>
+  <span class="tk-cmt">// installs Pinia, and returns the pinia instance</span>
+}</code></pre>
+        </div>
+
+        <div class="tab-panel" id="t-store">
+          <div class="code-header">
+            <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/stores/colourStore.js</span>
+            <button class="copy-btn" data-copy-target="code-storeuse">Copy</button>
+          </div>
+<pre id="code-storeuse"><code><span class="tk-kw">const</span> _urlPort     = <span class="tk-fn">inject</span>(URL_PORT_KEY,     () =&gt; <span class="tk-fn">createBrowserUrlAdapter</span>(),     <span class="tk-kw">true</span>);
+<span class="tk-kw">const</span> _storagePort = <span class="tk-fn">inject</span>(STORAGE_PORT_KEY, () =&gt; <span class="tk-fn">createBrowserStorageAdapter</span>(), <span class="tk-kw">true</span>);</code></pre>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Wiring:</strong> Production <code>main.js</code> calls
+        <code>app.provide(URL_PORT_KEY, …)</code> and <code>app.provide(STORAGE_PORT_KEY, …)</code>
+        before mounting. A test's <code>beforeEach</code> calls
+        <code>createTestPinia(createInMemoryUrlAdapter(), createInMemoryStorageAdapter())</code>
+        and the store never touches <code>window</code> or <code>localStorage</code>.
+      </div>
+    </section>
+
+    <!-- Trade-offs -->
+    <section id="advantages">
+      <h2>Trade-offs</h2>
+      <div class="pc-grid">
+        <div class="pc-card pros">
+          <h3><span class="badge-icon">+</span> Advantages</h3>
+          <ul>
+            <li><strong>Testability.</strong> Swap real browser APIs for fast, deterministic in-memory fakes. Tests run in Node without jsdom globals.</li>
+            <li><strong>Replaceability.</strong> Switching <code>localStorage</code> to <code>IndexedDB</code> or a server API means writing one new adapter; the store is untouched.</li>
+            <li><strong>Clarity.</strong> The port definition documents exactly what the store needs from the outside world. Any new I/O must be added to the port contract explicitly.</li>
+            <li><strong>Symmetry.</strong> The same pattern covers both reading (URL params on init) and writing (pushing state back to URL/storage). The store never has two separate strategies for the same boundary.</li>
+            <li><strong>No module-level mutation.</strong> Adapters are injected per store instance via <code>inject()</code>, so tests are naturally isolated without needing a <code>setAdapters</code> reset in every <code>beforeEach</code>.</li>
+          </ul>
+        </div>
+
+        <div class="pc-card cons">
+          <h3><span class="badge-icon">−</span> Disadvantages</h3>
+          <ul>
+            <li><strong>Indirection cost.</strong> A simple <code>localStorage.getItem</code> call is now routed through an adapter. The extra layer is invisible in production but adds a file to open when tracing a data flow.</li>
+            <li><strong>Implicit contracts.</strong> The port interfaces are defined only by convention. Nothing in plain JavaScript prevents an adapter from omitting a method until it's called at runtime.</li>
+            <li><strong>Test setup boilerplate.</strong> Every store test must call <code>createTestPinia</code> with the desired adapters. Forgetting it means <code>inject()</code> returns the lazy browser fallback, which will throw in Node.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Files -->
+    <section id="files">
+      <h2>Key files</h2>
+      <ul class="files">
+        <li>
+          <span class="file-icon prod">JS</span>
+          <div>
+            <div class="file-path">src/adapters/browserUrlAdapter.js</div>
+            <div class="file-desc">Production <strong>UrlPort</strong>; delegates to <code>window.location</code> and <code>window.history</code>.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon prod">JS</span>
+          <div>
+            <div class="file-path">src/adapters/browserStorageAdapter.js</div>
+            <div class="file-desc">Production <strong>StoragePort</strong>; delegates to <code>localStorage</code>.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon port">JS</span>
+          <div>
+            <div class="file-path">src/adapters/injectionKeys.js</div>
+            <div class="file-desc"><code>URL_PORT_KEY</code> and <code>STORAGE_PORT_KEY</code> symbols; shared between <code>main.js</code>, <code>testAdapters.js</code>, and <code>colourStore.js</code>.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon test">JS</span>
+          <div>
+            <div class="file-path">src/adapters/testAdapters.js</div>
+            <div class="file-desc">In-memory UrlPort and StoragePort for tests; includes <code>createTestPinia</code> helper and <code>snapshot()</code> assertion helper.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon core">JS</span>
+          <div>
+            <div class="file-path">src/stores/colourStore.js</div>
+            <div class="file-desc">Consumes both ports via <code>inject()</code> with lazy browser fallbacks.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon core">JS</span>
+          <div>
+            <div class="file-path">src/main.js</div>
+            <div class="file-desc">Provides both production adapters before mounting the app.</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      <span>colour-contrast-checker · patterns</span>
+      <span>Hexagonal Architecture</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+  // Copy-to-clipboard
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const target = document.getElementById(btn.dataset.copyTarget);
+      if (!target) return;
+      try {
+        await navigator.clipboard.writeText(target.innerText);
+        const orig = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove('copied');
+        }, 1400);
+      } catch (e) {
+        btn.textContent = 'Press ⌘C';
+      }
+    });
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      const container = btn.closest('.code');
+      container.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      container.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === tab));
+    });
+  });
+
+  // TOC scroll-spy
+  const tocLinks = Array.from(document.querySelectorAll('.toc a'));
+  const sections = tocLinks
+    .map(a => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+
+  const setActive = (id) => {
+    tocLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+    });
+  };
+
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries
+      .filter(e => e.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (visible[0]) setActive(visible[0].target.id);
+  }, { rootMargin: '-20% 0px -60% 0px', threshold: [0, 0.25, 0.5, 1] });
+
+  sections.forEach(s => observer.observe(s));
+
+  tocLinks.forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#' + id);
+    });
+  });
+</script>
+
+</body>
+</html>

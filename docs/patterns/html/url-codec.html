@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>URL Codec — Pattern</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --surface-alt: #f4f4f2;
+    --border: #e5e4e0;
+    --border-strong: #d4d2cc;
+    --text: #1a1a18;
+    --text-muted: #5a5a55;
+    --text-faint: #8a8a82;
+    --accent: #3a5cff;
+    --accent-soft: #eaf0ff;
+    --good: #1f7a3a;
+    --good-soft: #e7f5ec;
+    --bad: #b1432a;
+    --bad-soft: #fbece5;
+    --code-bg: #16181d;
+    --code-fg: #e5e5e0;
+    --code-comment: #7e8aa1;
+    --code-string: #c5d99d;
+    --code-keyword: #c697e6;
+    --code-fn: #8ec7ff;
+    --code-prop: #ffd28a;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px rgba(20, 20, 18, 0.04);
+    --shadow-md: 0 4px 14px rgba(20, 20, 18, 0.06);
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Layout */
+  .page {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 48px;
+    padding: 48px 32px;
+  }
+
+  @media (max-width: 900px) {
+    .page { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px; }
+    .toc { position: static !important; }
+  }
+
+  /* Sidebar TOC */
+  .toc {
+    position: sticky;
+    top: 32px;
+    align-self: start;
+    font-size: 14px;
+  }
+  .toc-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-faint);
+    margin: 0 0 12px;
+  }
+  .toc ol { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 2px 0; }
+  .toc a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--text-muted);
+    border-left: 2px solid transparent;
+  }
+  .toc a:hover { background: var(--surface-alt); text-decoration: none; color: var(--text); }
+  .toc a.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Back link */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    padding: 4px 10px 4px 6px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .back-link:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+    text-decoration: none;
+  }
+  .back-link .arrow { display: inline-block; transition: transform 0.15s; }
+  .back-link:hover .arrow { transform: translateX(-2px); }
+
+  /* Hero */
+  .hero { margin-bottom: 48px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+  }
+  .lede {
+    font-size: 19px;
+    color: var(--text-muted);
+    margin: 0 0 24px;
+    max-width: 62ch;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .chip code { font-size: 12px; background: transparent; padding: 0; color: var(--text); }
+
+  /* Sections */
+  section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  h2 {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    margin: 0 0 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 24px 0 10px;
+  }
+  p { margin: 0 0 16px; }
+  p code, li code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* Callouts */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    margin: 20px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .callout strong { color: var(--text); }
+
+  /* Code blocks */
+  .code {
+    position: relative;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    border-radius: var(--radius);
+    margin: 16px 0 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #aab1c2;
+  }
+  .code-header .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+    background: #4a5060;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #aab1c2;
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .copy-btn.copied { color: #8ec78e; border-color: #2f6b3a; }
+  pre {
+    margin: 0;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  pre code { font-family: inherit; }
+
+  /* Syntax highlight */
+  .tk-kw   { color: var(--code-keyword); }
+  .tk-fn   { color: var(--code-fn); }
+  .tk-str  { color: var(--code-string); }
+  .tk-cmt  { color: var(--code-comment); font-style: italic; }
+  .tk-prop { color: var(--code-prop); }
+  .tk-num  { color: #f5a97f; }
+  .tk-op   { color: #b8becc; }
+
+  /* Pros / Cons grid */
+  .pc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 700px) { .pc-grid { grid-template-columns: 1fr; } }
+  .pc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+  }
+  .pc-card.pros { border-top: 3px solid var(--good); }
+  .pc-card.cons { border-top: 3px solid var(--bad); }
+  .pc-card h3 {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .pc-card.pros h3 { color: var(--good); }
+  .pc-card.cons h3 { color: var(--bad); }
+  .pc-card ul { margin: 0; padding-left: 0; list-style: none; }
+  .pc-card li {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+  .pc-card li:last-child { border-bottom: 0; }
+  .pc-card li strong { color: var(--text); }
+  .badge-icon {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    color: #fff;
+  }
+  .pros .badge-icon { background: var(--good); }
+  .cons .badge-icon { background: var(--bad); }
+
+  /* Flow diagram */
+  .flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px;
+    margin: 16px 0 24px;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+  }
+  .flow svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+  /* Files list */
+  .files {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .files li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .files li:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .files .file-path {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .files .file-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .files .file-icon {
+    width: 32px; height: 32px;
+    background: var(--accent-soft);
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Inline schema box */
+  .schema {
+    background: var(--surface-alt);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    font-family: var(--mono);
+    font-size: 13px;
+    margin: 12px 0 20px;
+    color: var(--text-muted);
+  }
+  .schema .key { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Sidebar TOC -->
+  <aside class="toc">
+    <p class="toc-eyebrow">On this page</p>
+    <ol id="toc-list">
+      <li><a href="#problem">Problem statement</a></li>
+      <li><a href="#flow">Data flow</a></li>
+      <li><a href="#implementation">Implementation</a></li>
+      <li><a href="#advantages">Advantages</a></li>
+      <li><a href="#disadvantages">Disadvantages</a></li>
+      <li><a href="#files">Key files</a></li>
+    </ol>
+  </aside>
+
+  <!-- Main content -->
+  <main>
+
+    <a class="back-link" href="index.html"><span class="arrow">←</span> All patterns</a>
+
+    <header class="hero">
+      <span class="eyebrow">Pattern</span>
+      <h1>URL Codec</h1>
+      <p class="lede">
+        A pure-function codec that translates the entire palette state to and from
+        URL query parameters — encoding, decoding, and validation in one testable place.
+      </p>
+      <div class="meta">
+        <span class="chip">Layer&nbsp;·&nbsp;<code>composables/</code></span>
+        <span class="chip">Module&nbsp;·&nbsp;<code>paletteUrlCodec.js</code></span>
+        <span class="chip">Type&nbsp;·&nbsp;Pure functions</span>
+      </div>
+    </header>
+
+    <!-- Problem -->
+    <section id="problem">
+      <h2>Problem statement</h2>
+      <p>
+        The app encodes the entire palette state — colours, title, focus colour, contrast mode,
+        CVD mode, compliance level — into URL query parameters so users can share a palette via
+        a link. Without a dedicated module, URL encoding leaks into store actions and decoding
+        gets tangled with validation, making both harder to test and easy to get wrong.
+      </p>
+      <p>
+        Malformed URLs (hand-edited or from external links) must be handled safely: an
+        unrecognised value for <code>contrastMode</code> should be silently ignored, not crash
+        the store. The challenge is keeping all of this — encoding, decoding, and validation —
+        in one testable place that the store can call without touching browser globals.
+      </p>
+    </section>
+
+    <!-- Flow diagram -->
+    <section id="flow">
+      <h2>Data flow</h2>
+      <p>
+        The codec sits between the store and the URL adapter. The store knows app state;
+        the adapter knows <code>window.location</code>; the codec is the pure translation
+        layer between the two — testable on its own with raw strings.
+      </p>
+      <div class="flow">
+        <svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="URL codec data flow diagram">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#5a5a55"/>
+            </marker>
+            <style>
+              .node-rect { fill: #fff; stroke: #d4d2cc; stroke-width: 1.5; }
+              .node-rect.codec { fill: #eaf0ff; stroke: #3a5cff; }
+              .node-rect.url { fill: #f4f4f2; }
+              .node-rect.store { fill: #e7f5ec; stroke: #1f7a3a; }
+              .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; fill: #1a1a18; font-weight: 600; }
+              .sub { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #5a5a55; }
+              .flow-line { stroke: #5a5a55; stroke-width: 1.5; fill: none; }
+              .flow-text { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #3a5cff; }
+            </style>
+          </defs>
+
+          <!-- URL node -->
+          <rect class="node-rect url" x="20" y="100" width="150" height="80" rx="10"/>
+          <text class="label" x="95" y="135" text-anchor="middle">URL</text>
+          <text class="sub" x="95" y="155" text-anchor="middle">?colours=...</text>
+          <text class="sub" x="95" y="170" text-anchor="middle">&amp;contrastMode=...</text>
+
+          <!-- Adapter -->
+          <rect class="node-rect" x="220" y="100" width="160" height="80" rx="10"/>
+          <text class="label" x="300" y="135" text-anchor="middle">URL Adapter</text>
+          <text class="sub" x="300" y="155" text-anchor="middle">getSearch()</text>
+          <text class="sub" x="300" y="170" text-anchor="middle">setParams()</text>
+
+          <!-- Codec -->
+          <rect class="node-rect codec" x="430" y="100" width="170" height="80" rx="10"/>
+          <text class="label" x="515" y="135" text-anchor="middle">paletteUrlCodec</text>
+          <text class="sub" x="515" y="155" text-anchor="middle">encodePaletteToParams</text>
+          <text class="sub" x="515" y="170" text-anchor="middle">decodePaletteFromSearch</text>
+
+          <!-- Store -->
+          <rect class="node-rect store" x="650" y="100" width="130" height="80" rx="10"/>
+          <text class="label" x="715" y="135" text-anchor="middle">colourStore</text>
+          <text class="sub" x="715" y="155" text-anchor="middle">state refs</text>
+          <text class="sub" x="715" y="170" text-anchor="middle">actions</text>
+
+          <!-- Arrows: encode flow (top) -->
+          <path class="flow-line" d="M715,100 Q715,60 515,60 L515,95" marker-end="url(#arr)"/>
+          <text class="flow-text" x="615" y="50" text-anchor="middle">encode state →</text>
+
+          <path class="flow-line" d="M430,140 L385,140" marker-end="url(#arr)"/>
+          <path class="flow-line" d="M220,140 L175,140" marker-end="url(#arr)"/>
+
+          <!-- Arrows: decode flow (bottom) -->
+          <path class="flow-line" d="M170,160 L222,160"/>
+          <path class="flow-line" d="M380,160 L432,160"/>
+          <path class="flow-line" d="M515,180 Q515,225 715,225 L715,182" marker-end="url(#arr)"/>
+          <text class="flow-text" x="615" y="245" text-anchor="middle">← decode + validate</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Implementation -->
+    <section id="implementation">
+      <h2>Implementation in this codebase</h2>
+      <p>
+        The codec lives in the <strong>composable layer</strong> as a single module:
+        <code>src/composables/paletteUrlCodec.js</code>. It exports two pure functions.
+        <em>Pure</em> means: no side effects, no imports of browser globals, no store access.
+        Plain values in, plain values out.
+      </p>
+
+      <div class="callout">
+        <strong>Schema:</strong> A named typedef <code>PaletteUrlState</code> defines the
+        decoder's return shape, and <code>defaultPaletteUrlState()</code> supplies canonical
+        defaults. The decoder always returns a complete <code>PaletteUrlState</code> — missing
+        or invalid fields fall back to these defaults rather than <code>null</code>, so callers
+        can assign directly without null guards.
+      </div>
+
+      <h3>Encoding</h3>
+      <p>
+        <code>encodePaletteToParams</code> takes the current palette state as named arguments
+        and returns a plain object of query parameter key/value pairs. Colours are joined as a
+        hyphen-separated hex string (hashes stripped). Empty values become <code>null</code>,
+        which signals the URL adapter to delete that parameter rather than leave a blank
+        <code>?title=</code> in the URL.
+      </p>
+
+      <div class="code">
+        <div class="code-header">
+          <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/composables/paletteUrlCodec.js</span>
+          <button class="copy-btn" data-copy-target="code-encode">Copy</button>
+        </div>
+<pre id="code-encode"><code><span class="tk-kw">export function</span> <span class="tk-fn">encodePaletteToParams</span>({ colours, title, focusColour, contrastMode, cvdMode, complianceMode }) {
+  <span class="tk-kw">return</span> {
+    <span class="tk-prop">colours</span>:  colours.length ? colours.<span class="tk-fn">map</span>(c =&gt; c.<span class="tk-fn">replace</span>(<span class="tk-str">"#"</span>, <span class="tk-str">""</span>)).<span class="tk-fn">join</span>(<span class="tk-str">"-"</span>) : <span class="tk-kw">null</span>,
+    <span class="tk-prop">title</span>:    title || <span class="tk-kw">null</span>,
+    <span class="tk-prop">focus</span>:    focusColour ? focusColour.<span class="tk-fn">replace</span>(<span class="tk-str">"#"</span>, <span class="tk-str">""</span>) : <span class="tk-kw">null</span>,
+    <span class="tk-prop">contrastMode</span>,
+    <span class="tk-prop">cvdMode</span>,
+    <span class="tk-prop">complianceMode</span>,
+  };
+}</code></pre>
+      </div>
+
+      <h3>Decoding</h3>
+      <p>
+        <code>decodePaletteFromSearch</code> takes the raw URL search string
+        (e.g. <code>?colours=ff0000-000000&amp;contrastMode=apca</code>) and returns a typed,
+        validated <code>PaletteUrlState</code>. Each field is validated before being returned:
+      </p>
+      <ul>
+        <li>Colour segments are validated with a hex regex — invalid hex values are filtered out silently.</li>
+        <li>Mode values (<code>contrastMode</code>, <code>cvdMode</code>, <code>complianceMode</code>) are checked against the canonical arrays in <code>src/config/modes.js</code>; unrecognised values fall back to the <code>defaultPaletteUrlState()</code> value for that field.</li>
+      </ul>
+
+      <div class="code">
+        <div class="code-header">
+          <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;decodePaletteFromSearch</span>
+          <button class="copy-btn" data-copy-target="code-decode">Copy</button>
+        </div>
+<pre id="code-decode"><code><span class="tk-kw">export function</span> <span class="tk-fn">decodePaletteFromSearch</span>(search) {
+  <span class="tk-kw">const</span> defaults = <span class="tk-fn">defaultPaletteUrlState</span>();
+  <span class="tk-kw">const</span> params = <span class="tk-kw">new</span> <span class="tk-fn">URLSearchParams</span>(search.<span class="tk-fn">replace</span>(<span class="tk-str">/^\?/</span>, <span class="tk-str">""</span>));
+
+  <span class="tk-kw">const</span> coloursRaw = params.<span class="tk-fn">get</span>(<span class="tk-str">"colours"</span>);
+  <span class="tk-kw">const</span> colours = coloursRaw
+    ? coloursRaw.<span class="tk-fn">split</span>(<span class="tk-str">"-"</span>).<span class="tk-fn">map</span>(seg =&gt; <span class="tk-str">"#"</span> + seg).<span class="tk-fn">filter</span>(isValidHex)
+    : defaults.colours;
+
+  <span class="tk-kw">const</span> contrastRaw = params.<span class="tk-fn">get</span>(<span class="tk-str">"contrastMode"</span>);
+  <span class="tk-kw">const</span> contrastMode = CONTRAST_MODES.<span class="tk-fn">includes</span>(contrastRaw) ? contrastRaw : defaults.contrastMode;
+  <span class="tk-cmt">// ...same pattern for cvdMode, complianceMode...</span>
+
+  <span class="tk-kw">return</span> { colours, title, focusColour, contrastMode, cvdMode, complianceMode };
+}</code></pre>
+      </div>
+
+      <h3>Store usage</h3>
+      <p>
+        The store calls both functions but never touches <code>URLSearchParams</code> directly:
+      </p>
+
+      <div class="code">
+        <div class="code-header">
+          <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/stores/colourStore.js</span>
+          <button class="copy-btn" data-copy-target="code-store">Copy</button>
+        </div>
+<pre id="code-store"><code><span class="tk-kw">function</span> <span class="tk-fn">updateURLData</span>() {
+  _urlPort.<span class="tk-fn">setParams</span>(<span class="tk-fn">encodePaletteToParams</span>({ colours, title, ... }));
+}
+
+<span class="tk-kw">function</span> <span class="tk-fn">loadPaletteFromQueryString</span>() {
+  <span class="tk-kw">const</span> state = <span class="tk-fn">decodePaletteFromSearch</span>(_urlPort.<span class="tk-fn">getSearch</span>());
+  colourSwatches.value  = state.colours;
+  paletteTitle.value    = state.title;
+  contrastMode.value    = state.contrastMode;
+  <span class="tk-cmt">// ...assign directly, no null guards needed</span>
+}</code></pre>
+      </div>
+
+      <p>
+        This separation means the codec can be unit-tested with raw strings — no browser,
+        no store, no adapter needed.
+      </p>
+    </section>
+
+    <!-- Advantages -->
+    <section id="advantages">
+      <h2>Trade-offs</h2>
+      <div class="pc-grid">
+        <div class="pc-card pros">
+          <h3><span class="badge-icon">+</span> Advantages</h3>
+          <ul>
+            <li><strong>Centralised serialisation.</strong> The mapping between app state and URL shape is defined in exactly one file. Renaming a query parameter requires one change.</li>
+            <li><strong>Validation at the boundary.</strong> Unrecognised or malformed values are rejected before they reach the store. The store never needs to guard against <code>contrastMode === "hack"</code>.</li>
+            <li><strong>Pure functions are easy to test.</strong> Pass in a search string, assert the returned object. No mocking required.</li>
+            <li><strong>Decoupled from the URL adapter.</strong> The codec produces and consumes plain strings and objects; the adapter handles <code>window.location</code>. The codec works equally well under test with no browser present.</li>
+            <li><strong>Complete return value.</strong> <code>decodePaletteFromSearch</code> always returns a full <code>PaletteUrlState</code>. The store assigns fields directly without null checks.</li>
+          </ul>
+        </div>
+
+        <div class="pc-card cons" id="disadvantages">
+          <h3><span class="badge-icon">−</span> Disadvantages</h3>
+          <ul>
+            <li><strong>Encoder→adapter contract is still implicit.</strong> <code>encodePaletteToParams</code> returns <code>{ colours, title, focus, contrastMode, cvdMode, complianceMode }</code>; the adapter must handle all those keys. Nothing in plain JS enforces this at write time. (<code>PaletteUrlState</code> formalises the decoder output, but the encoder output has no equivalent schema.)</li>
+            <li><strong>Silent filtering can hide bugs.</strong> Invalid hex values are silently dropped rather than surfaced to the user. A corrupted shared link will load with fewer colours and no error message.</li>
+            <li><strong>Hex format is fragile.</strong> Colours are serialised by stripping <code>#</code> and joining with <code>-</code>. A hex that somehow contained a <code>-</code> would corrupt the entire colour list. (Impossible with valid hex strings, but the delimiter is load-bearing.)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Files -->
+    <section id="files">
+      <h2>Key files</h2>
+      <ul class="files">
+        <li>
+          <span class="file-icon">JS</span>
+          <div>
+            <div class="file-path">src/composables/paletteUrlCodec.js</div>
+            <div class="file-desc"><code>defaultPaletteUrlState</code>, <code>encodePaletteToParams</code>, and <code>decodePaletteFromSearch</code> — the entire codec.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon">JS</span>
+          <div>
+            <div class="file-path">src/config/modes.js</div>
+            <div class="file-desc">Canonical arrays used for enum validation in the decoder.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon">JS</span>
+          <div>
+            <div class="file-path">src/adapters/browserUrlAdapter.js</div>
+            <div class="file-desc">Production adapter that receives the params object and writes to <code>window.history</code>.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon">JS</span>
+          <div>
+            <div class="file-path">src/adapters/testAdapters.js</div>
+            <div class="file-desc">In-memory URL adapter used in tests.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon">JS</span>
+          <div>
+            <div class="file-path">src/stores/colourStore.js</div>
+            <div class="file-desc">Calls <code>encodePaletteToParams</code> in <code>updateURLData</code> and <code>decodePaletteFromSearch</code> in <code>loadPaletteFromQueryString</code>.</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      <span>colour-contrast-checker · patterns</span>
+      <span>URL Codec</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+  // Copy-to-clipboard for code blocks
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const target = document.getElementById(btn.dataset.copyTarget);
+      if (!target) return;
+      try {
+        await navigator.clipboard.writeText(target.innerText);
+        const orig = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove('copied');
+        }, 1400);
+      } catch (e) {
+        btn.textContent = 'Press ⌘C';
+      }
+    });
+  });
+
+  // Active section highlighting in TOC via IntersectionObserver
+  const tocLinks = Array.from(document.querySelectorAll('.toc a'));
+  const sections = tocLinks
+    .map(a => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+
+  const setActive = (id) => {
+    tocLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+    });
+  };
+
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries
+      .filter(e => e.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (visible[0]) setActive(visible[0].target.id);
+  }, { rootMargin: '-20% 0px -60% 0px', threshold: [0, 0.25, 0.5, 1] });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Smooth scroll on TOC click
+  tocLinks.forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#' + id);
+    });
+  });
+</script>
+
+</body>
+</html>

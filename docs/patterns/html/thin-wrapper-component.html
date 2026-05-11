@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thin-Wrapper Component — Pattern</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --surface-alt: #f4f4f2;
+    --border: #e5e4e0;
+    --border-strong: #d4d2cc;
+    --text: #1a1a18;
+    --text-muted: #5a5a55;
+    --text-faint: #8a8a82;
+    --accent: #3a5cff;
+    --accent-soft: #eaf0ff;
+    --good: #1f7a3a;
+    --good-soft: #e7f5ec;
+    --bad: #b1432a;
+    --bad-soft: #fbece5;
+    --base: #fff5e1;
+    --base-border: #d4a142;
+    --wrap: #eaf0ff;
+    --wrap-border: #3a5cff;
+    --code-bg: #16181d;
+    --code-fg: #e5e5e0;
+    --code-comment: #7e8aa1;
+    --code-string: #c5d99d;
+    --code-keyword: #c697e6;
+    --code-fn: #8ec7ff;
+    --code-prop: #ffd28a;
+    --code-tag: #ff9ec2;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px rgba(20, 20, 18, 0.04);
+    --shadow-md: 0 4px 14px rgba(20, 20, 18, 0.06);
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .page {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 48px;
+    padding: 48px 32px;
+  }
+  @media (max-width: 900px) {
+    .page { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px; }
+    .toc { position: static !important; }
+  }
+
+  .toc { position: sticky; top: 32px; align-self: start; font-size: 14px; }
+  .toc-eyebrow {
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-size: 11px; font-weight: 600; color: var(--text-faint);
+    margin: 0 0 12px;
+  }
+  .toc ol { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 2px 0; }
+  .toc a {
+    display: block; padding: 6px 10px;
+    border-radius: 6px; color: var(--text-muted);
+    border-left: 2px solid transparent;
+  }
+  .toc a:hover { background: var(--surface-alt); text-decoration: none; color: var(--text); }
+  .toc a.active {
+    background: var(--accent-soft); color: var(--accent);
+    border-left-color: var(--accent); font-weight: 500;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    padding: 4px 10px 4px 6px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .back-link:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+    text-decoration: none;
+  }
+  .back-link .arrow { display: inline-block; transition: transform 0.15s; }
+  .back-link:hover .arrow { transform: translateX(-2px); }
+
+  .hero { margin-bottom: 48px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft);
+    padding: 4px 10px; border-radius: 999px; margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: 44px; font-weight: 600;
+    line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0 0 16px;
+  }
+  .lede { font-size: 19px; color: var(--text-muted); margin: 0 0 24px; max-width: 62ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 999px;
+    color: var(--text-muted); font-weight: 500;
+  }
+  .chip code { font-size: 12px; background: transparent; padding: 0; color: var(--text); }
+
+  section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  h2 {
+    font-family: var(--serif);
+    font-size: 28px; font-weight: 600;
+    letter-spacing: -0.005em; margin: 0 0 20px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 16px; font-weight: 600; margin: 24px 0 10px; }
+  p { margin: 0 0 16px; }
+  p code, li code, td code {
+    font-family: var(--mono); font-size: 0.88em;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    margin: 20px 0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Code blocks */
+  .code {
+    position: relative;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    border-radius: var(--radius);
+    margin: 16px 0 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #aab1c2;
+  }
+  .code-header .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+    background: #4a5060;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #aab1c2;
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .copy-btn.copied { color: #8ec78e; border-color: #2f6b3a; }
+  pre {
+    margin: 0;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  pre code { font-family: inherit; }
+
+  .tk-kw   { color: var(--code-keyword); }
+  .tk-fn   { color: var(--code-fn); }
+  .tk-str  { color: var(--code-string); }
+  .tk-cmt  { color: var(--code-comment); font-style: italic; }
+  .tk-prop { color: var(--code-prop); }
+  .tk-tag  { color: var(--code-tag); }
+  .tk-num  { color: #f5a97f; }
+  .tk-op   { color: #b8becc; }
+
+  /* Layered diagram */
+  .layer-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px;
+    margin: 16px 0 24px;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+  }
+  .layer-diagram svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    justify-content: center;
+    margin-top: 16px;
+    font-size: 13px; color: var(--text-muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    border: 1.5px solid;
+  }
+
+  /* Comparison cards */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0 24px;
+  }
+  @media (max-width: 800px) { .compare { grid-template-columns: 1fr; } }
+  .compare .opt {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+  }
+  .compare .opt h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-faint);
+  }
+  .compare .opt.bad   { border-top: 3px solid var(--bad); }
+  .compare .opt.bad h4   { color: var(--bad); }
+  .compare .opt.good  { border-top: 3px solid var(--good); }
+  .compare .opt.good h4  { color: var(--good); }
+  .compare .opt p { font-size: 14px; color: var(--text-muted); margin: 0; }
+
+  /* Pros / cons */
+  .pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .pc-grid { grid-template-columns: 1fr; } }
+  .pc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+  }
+  .pc-card.pros { border-top: 3px solid var(--good); }
+  .pc-card.cons { border-top: 3px solid var(--bad); }
+  .pc-card h3 {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 12px; font-size: 14px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .pc-card.pros h3 { color: var(--good); }
+  .pc-card.cons h3 { color: var(--bad); }
+  .pc-card ul { margin: 0; padding-left: 0; list-style: none; }
+  .pc-card li {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+  .pc-card li:last-child { border-bottom: 0; }
+  .pc-card li strong { color: var(--text); }
+  .badge-icon {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    color: #fff;
+  }
+  .pros .badge-icon { background: var(--good); }
+  .cons .badge-icon { background: var(--bad); }
+
+  /* Files */
+  .files { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .files li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .files li:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .files .file-path {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .files .file-desc { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+  .files .file-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+  }
+  .file-icon.base { background: var(--base); color: #966100; }
+  .file-icon.wrap { background: var(--wrap); color: var(--accent); }
+  .file-icon.alt { background: var(--surface-alt); color: var(--text-muted); }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <aside class="toc">
+    <p class="toc-eyebrow">On this page</p>
+    <ol id="toc-list">
+      <li><a href="#problem">Problem statement</a></li>
+      <li><a href="#approaches">Three approaches</a></li>
+      <li><a href="#diagram">The split</a></li>
+      <li><a href="#implementation">Implementation</a></li>
+      <li><a href="#advantages">Trade-offs</a></li>
+      <li><a href="#files">Key files</a></li>
+    </ol>
+  </aside>
+
+  <main>
+
+    <a class="back-link" href="index.html"><span class="arrow">←</span> All patterns</a>
+
+    <header class="hero">
+      <span class="eyebrow">Pattern</span>
+      <h1>Thin-Wrapper Component</h1>
+      <p class="lede">
+        One self-contained base component owns all rendering and behaviour; a paper-thin wrapper
+        at each use site does nothing but feed it the right props and bind it to the store.
+      </p>
+      <div class="meta">
+        <span class="chip">Layer&nbsp;·&nbsp;<code>components/</code></span>
+        <span class="chip">Base&nbsp;·&nbsp;<code>ModeToggle.vue</code></span>
+        <span class="chip">Wrappers&nbsp;·&nbsp;~10 lines each</span>
+      </div>
+    </header>
+
+    <!-- Problem -->
+    <section id="problem">
+      <h2>Problem statement</h2>
+      <p>
+        A UI widget — here, a binary toggle switch — is needed in two places with almost
+        identical appearance but different labels, different option values, and different
+        store bindings. The obvious approaches both have costs.
+      </p>
+      <p>
+        Duplicating the component means two copies of the same template and CSS to keep in
+        sync. Cramming both use cases into one "smart" component means a tangle of conditional
+        props and internal store imports that make it hard to reuse or test in isolation. The
+        goal is a single source of rendering truth that stays ignorant of the rest of the app,
+        paired with the smallest possible wiring layer at each use site.
+      </p>
+    </section>
+
+    <!-- Three approaches -->
+    <section id="approaches">
+      <h2>Three approaches</h2>
+      <div class="compare">
+        <div class="opt bad">
+          <h4>Duplicate</h4>
+          <p>Two copies of the same template and SCSS. A spacing or colour tweak has to be applied twice — and inevitably won't be.</p>
+        </div>
+        <div class="opt bad">
+          <h4>Smart, conditional</h4>
+          <p>One component with branching props and internal store imports. Reusable in name only; impossible to mount in isolation.</p>
+        </div>
+        <div class="opt good">
+          <h4>Base + thin wrappers</h4>
+          <p>Dumb base owns rendering. A tiny wrapper per use site wires labels, options, and store binding declaratively.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Diagram -->
+    <section id="diagram">
+      <h2>The split</h2>
+      <p>
+        Rendering and the store sit on opposite sides; the wrappers are the only thing that
+        knows about both.
+      </p>
+      <div class="layer-diagram">
+        <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Thin wrapper component diagram">
+          <defs>
+            <marker id="wrap-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#5a5a55"/>
+            </marker>
+            <style>
+              .base-rect { fill: #fff5e1; stroke: #d4a142; stroke-width: 2; }
+              .wrap-rect { fill: #eaf0ff; stroke: #3a5cff; stroke-width: 1.5; }
+              .store-rect { fill: #e7f5ec; stroke: #1f7a3a; stroke-width: 1.5; }
+              .lbl-title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 15px; fill: #1a1a18; font-weight: 700; }
+              .lbl-sub   { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #5a5a55; }
+              .lbl-grp   { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; fill: #8a8a82; font-weight: 600; }
+              .flow-line { stroke: #5a5a55; stroke-width: 1.5; fill: none; }
+              .flow-text { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #3a5cff; }
+            </style>
+          </defs>
+
+          <text class="lbl-grp" x="120" y="30" text-anchor="middle">Store</text>
+          <text class="lbl-grp" x="380" y="30" text-anchor="middle">Thin wrappers</text>
+          <text class="lbl-grp" x="640" y="30" text-anchor="middle">Base component</text>
+
+          <!-- Store -->
+          <rect class="store-rect" x="20" y="120" width="200" height="80" rx="10"/>
+          <text class="lbl-title" x="120" y="155" text-anchor="middle">colourStore</text>
+          <text class="lbl-sub" x="120" y="175" text-anchor="middle">complianceMode</text>
+          <text class="lbl-sub" x="120" y="190" text-anchor="middle">contrastMode</text>
+
+          <!-- Wrappers -->
+          <rect class="wrap-rect" x="280" y="60" width="200" height="90" rx="10"/>
+          <text class="lbl-title" x="380" y="90" text-anchor="middle">ComplianceModeToggle</text>
+          <text class="lbl-sub" x="380" y="110" text-anchor="middle">options=[AA, AAA]</text>
+          <text class="lbl-sub" x="380" y="125" text-anchor="middle">v-model → store</text>
+
+          <rect class="wrap-rect" x="280" y="180" width="200" height="90" rx="10"/>
+          <text class="lbl-title" x="380" y="210" text-anchor="middle">ContrastModeToggle</text>
+          <text class="lbl-sub" x="380" y="230" text-anchor="middle">options=[WCAG, APCA]</text>
+          <text class="lbl-sub" x="380" y="245" text-anchor="middle">v-model → store</text>
+
+          <!-- Base -->
+          <rect class="base-rect" x="540" y="120" width="200" height="80" rx="10"/>
+          <text class="lbl-title" x="640" y="155" text-anchor="middle">ModeToggle</text>
+          <text class="lbl-sub" x="640" y="175" text-anchor="middle">template · SCSS</text>
+          <text class="lbl-sub" x="640" y="190" text-anchor="middle">toggle logic</text>
+
+          <!-- Connectors -->
+          <path class="flow-line" d="M220,150 L280,105" marker-end="url(#wrap-arr)"/>
+          <path class="flow-line" d="M220,170 L280,225" marker-end="url(#wrap-arr)"/>
+          <path class="flow-line" d="M480,105 L540,150" marker-end="url(#wrap-arr)"/>
+          <path class="flow-line" d="M480,225 L540,170" marker-end="url(#wrap-arr)"/>
+
+          <text class="flow-text" x="250" y="298" text-anchor="middle">store ↔ wrappers (via v-model)</text>
+          <text class="flow-text" x="510" y="298" text-anchor="middle">wrappers → base (props down, emits up)</text>
+        </svg>
+        <div class="legend">
+          <span><i style="background:var(--good-soft); border-color:var(--good)"></i> Store</span>
+          <span><i style="background:var(--wrap); border-color:var(--wrap-border)"></i> Thin wrappers</span>
+          <span><i style="background:var(--base); border-color:var(--base-border)"></i> Base component</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Implementation -->
+    <section id="implementation">
+      <h2>Implementation in this codebase</h2>
+      <p>
+        The pattern splits responsibility across two layers in the
+        <strong>component layer</strong>.
+      </p>
+
+      <h3>Base component</h3>
+      <p>
+        <code>ModeToggle.vue</code> owns all template markup, all SCSS, and all toggle logic.
+        It accepts a generic <code>options</code> array and a <code>modelValue</code> string,
+        emits <code>update:modelValue</code> (Vue's v-model contract), and has no knowledge of
+        the store. Fully self-contained — could be dropped into a different project unchanged.
+      </p>
+
+      <div class="code">
+        <div class="code-header">
+          <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/components/ModeToggle.vue</span>
+          <button class="copy-btn" data-copy-target="code-base">Copy</button>
+        </div>
+<pre id="code-base"><code><span class="tk-tag">&lt;script setup&gt;</span>
+<span class="tk-kw">const</span> props = <span class="tk-fn">defineProps</span>({
+  <span class="tk-prop">title</span>:      { type: String, required: <span class="tk-kw">true</span> },
+  <span class="tk-prop">options</span>:    { type: Array,  required: <span class="tk-kw">true</span> },   <span class="tk-cmt">// [{ label, value }, { label, value }]</span>
+  <span class="tk-prop">modelValue</span>: { type: String, required: <span class="tk-kw">true</span> },
+  <span class="tk-prop">justify</span>:    { type: String, default: <span class="tk-str">"flex-start"</span> },
+});
+<span class="tk-kw">const</span> emit = <span class="tk-fn">defineEmits</span>([<span class="tk-str">"update:modelValue"</span>]);
+
+<span class="tk-kw">const</span> isRight = <span class="tk-fn">computed</span>(() =&gt; props.modelValue === props.options[<span class="tk-num">1</span>].value);
+<span class="tk-kw">const</span> toggle  = () =&gt; <span class="tk-fn">emit</span>(<span class="tk-str">"update:modelValue"</span>,
+  props.modelValue === props.options[<span class="tk-num">0</span>].value
+    ? props.options[<span class="tk-num">1</span>].value
+    : props.options[<span class="tk-num">0</span>].value
+);
+<span class="tk-tag">&lt;/script&gt;</span></code></pre>
+      </div>
+
+      <h3>Thin wrappers</h3>
+      <p>
+        <code>ComplianceModeToggle.vue</code> and <code>ContrastModeToggle.vue</code> are ~10
+        lines each. Each one: imports the store, imports <code>ModeToggle</code>, hard-codes
+        the two option objects, and forwards store state and the store action through
+        <code>modelValue</code> / <code>@update:modelValue</code>. No logic, no CSS.
+      </p>
+
+      <div class="code">
+        <div class="code-header">
+          <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/components/ComplianceModeToggle.vue</span>
+          <button class="copy-btn" data-copy-target="code-wrap">Copy</button>
+        </div>
+<pre id="code-wrap"><code><span class="tk-tag">&lt;template&gt;</span>
+  <span class="tk-tag">&lt;ModeToggle</span>
+    <span class="tk-prop">:title</span>=<span class="tk-str">"label"</span>
+    <span class="tk-prop">:options</span>=<span class="tk-str">"[{ label: 'AA', value: 'AA' }, { label: 'AAA', value: 'AAA' }]"</span>
+    <span class="tk-prop">:modelValue</span>=<span class="tk-str">"colourStore.complianceMode"</span>
+    <span class="tk-prop">justify</span>=<span class="tk-str">"flex-end"</span>
+    <span class="tk-prop">@update:modelValue</span>=<span class="tk-str">"colourStore.setComplianceMode($event)"</span>
+  <span class="tk-tag">/&gt;</span>
+<span class="tk-tag">&lt;/template&gt;</span></code></pre>
+      </div>
+
+      <div class="callout">
+        <strong>Note what is <em>not</em> here:</strong> no <code>&lt;script setup&gt;</code>
+        logic beyond importing the store, no SCSS, no emit definitions. The wrapper is
+        declarative configuration, not a component in any meaningful sense.
+      </div>
+
+      <h3>When not to use the base</h3>
+      <p>
+        <code>CVDModeSelector.vue</code> is a four-option pill segmented control — a different
+        widget entirely. It does not wrap <code>ModeToggle</code>, and shouldn't. The pattern
+        applies only when the UI shape genuinely matches the base component.
+      </p>
+    </section>
+
+    <!-- Trade-offs -->
+    <section id="advantages">
+      <h2>Trade-offs</h2>
+      <div class="pc-grid">
+        <div class="pc-card pros">
+          <h3><span class="badge-icon">+</span> Advantages</h3>
+          <ul>
+            <li><strong>Single source of truth for appearance.</strong> All toggle styling lives in <code>ModeToggle.vue</code>. A spacing or colour change applies everywhere automatically.</li>
+            <li><strong>Base component is independently testable.</strong> Mount <code>ModeToggle</code> with any options array and assert toggle behaviour without involving the store.</li>
+            <li><strong>Wrappers are trivially readable.</strong> The entire contract between store and toggle is visible in ~5 lines of template. No hunting through conditional logic.</li>
+            <li><strong>Adding a third toggle is cheap.</strong> Copy a wrapper file, change the option values and store binding, done.</li>
+          </ul>
+        </div>
+
+        <div class="pc-card cons">
+          <h3><span class="badge-icon">−</span> Disadvantages</h3>
+          <ul>
+            <li><strong>One extra file per use case.</strong> For very simple apps, a wrapper file can feel like overhead. The payoff grows with the number of instances.</li>
+            <li><strong>Props must stay stable.</strong> If <code>ModeToggle</code> ever needs a new required prop, all wrapper files must be updated. With two wrappers this is trivial; with ten it becomes a refactor.</li>
+            <li><strong>Pattern relies on convention.</strong> Nothing in Vue enforces that wrappers stay thin. A developer under time pressure might add logic directly to a wrapper, eroding the separation.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Files -->
+    <section id="files">
+      <h2>Key files</h2>
+      <ul class="files">
+        <li>
+          <span class="file-icon base">JS</span>
+          <div>
+            <div class="file-path">src/components/ModeToggle.vue</div>
+            <div class="file-desc">Base component; all rendering and toggle logic live here.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon wrap">JS</span>
+          <div>
+            <div class="file-path">src/components/ComplianceModeToggle.vue</div>
+            <div class="file-desc">Thin wrapper for AA/AAA compliance toggle.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon wrap">JS</span>
+          <div>
+            <div class="file-path">src/components/ContrastModeToggle.vue</div>
+            <div class="file-desc">Thin wrapper for WCAG/APCA contrast mode toggle.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon alt">JS</span>
+          <div>
+            <div class="file-path">src/components/CVDModeSelector.vue</div>
+            <div class="file-desc">Four-option pill selector; intentionally does <em>not</em> use the base toggle.</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      <span>colour-contrast-checker · patterns</span>
+      <span>Thin-Wrapper Component</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const target = document.getElementById(btn.dataset.copyTarget);
+      if (!target) return;
+      try {
+        await navigator.clipboard.writeText(target.innerText);
+        const orig = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove('copied');
+        }, 1400);
+      } catch (e) {
+        btn.textContent = 'Press ⌘C';
+      }
+    });
+  });
+
+  const tocLinks = Array.from(document.querySelectorAll('.toc a'));
+  const sections = tocLinks
+    .map(a => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+  const setActive = (id) => {
+    tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+  };
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (visible[0]) setActive(visible[0].target.id);
+  }, { rootMargin: '-20% 0px -60% 0px', threshold: [0, 0.25, 0.5, 1] });
+  sections.forEach(s => observer.observe(s));
+  tocLinks.forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#' + id);
+    });
+  });
+</script>
+
+</body>
+</html>

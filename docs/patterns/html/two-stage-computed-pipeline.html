@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Two-Stage Computed Pipeline — Pattern</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --surface-alt: #f4f4f2;
+    --border: #e5e4e0;
+    --border-strong: #d4d2cc;
+    --text: #1a1a18;
+    --text-muted: #5a5a55;
+    --text-faint: #8a8a82;
+    --accent: #3a5cff;
+    --accent-soft: #eaf0ff;
+    --good: #1f7a3a;
+    --good-soft: #e7f5ec;
+    --bad: #b1432a;
+    --bad-soft: #fbece5;
+    --warn: #b27800;
+    --warn-soft: #fff5e1;
+    --stage1: #eaf0ff;
+    --stage1-border: #3a5cff;
+    --stage2: #f3e8ff;
+    --stage2-border: #7c3aed;
+    --code-bg: #16181d;
+    --code-fg: #e5e5e0;
+    --code-comment: #7e8aa1;
+    --code-string: #c5d99d;
+    --code-keyword: #c697e6;
+    --code-fn: #8ec7ff;
+    --code-prop: #ffd28a;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px rgba(20, 20, 18, 0.04);
+    --shadow-md: 0 4px 14px rgba(20, 20, 18, 0.06);
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .page {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 48px;
+    padding: 48px 32px;
+  }
+  @media (max-width: 900px) {
+    .page { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px; }
+    .toc { position: static !important; }
+  }
+
+  .toc { position: sticky; top: 32px; align-self: start; font-size: 14px; }
+  .toc-eyebrow {
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-size: 11px; font-weight: 600; color: var(--text-faint);
+    margin: 0 0 12px;
+  }
+  .toc ol { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 2px 0; }
+  .toc a {
+    display: block; padding: 6px 10px;
+    border-radius: 6px; color: var(--text-muted);
+    border-left: 2px solid transparent;
+  }
+  .toc a:hover { background: var(--surface-alt); text-decoration: none; color: var(--text); }
+  .toc a.active {
+    background: var(--accent-soft); color: var(--accent);
+    border-left-color: var(--accent); font-weight: 500;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    padding: 4px 10px 4px 6px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .back-link:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+    text-decoration: none;
+  }
+  .back-link .arrow { display: inline-block; transition: transform 0.15s; }
+  .back-link:hover .arrow { transform: translateX(-2px); }
+
+  .hero { margin-bottom: 48px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft);
+    padding: 4px 10px; border-radius: 999px; margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: 44px; font-weight: 600;
+    line-height: 1.15; letter-spacing: -0.01em;
+    margin: 0 0 16px;
+  }
+  .lede { font-size: 19px; color: var(--text-muted); margin: 0 0 24px; max-width: 62ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 999px;
+    color: var(--text-muted); font-weight: 500;
+  }
+  .chip code { font-size: 12px; background: transparent; padding: 0; color: var(--text); }
+
+  section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  h2 {
+    font-family: var(--serif);
+    font-size: 28px; font-weight: 600;
+    letter-spacing: -0.005em; margin: 0 0 20px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 16px; font-weight: 600; margin: 24px 0 10px; }
+  p { margin: 0 0 16px; }
+  p code, li code, td code {
+    font-family: var(--mono); font-size: 0.88em;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    margin: 20px 0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Stage cards */
+  .stages {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0 24px;
+  }
+  @media (max-width: 800px) { .stages { grid-template-columns: 1fr; } }
+  .stage-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .stage-card.one { border-top: 3px solid var(--stage1-border); }
+  .stage-card.two { border-top: 3px solid var(--stage2-border); }
+  .stage-card .stage-num {
+    position: absolute;
+    top: -14px; right: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    color: var(--text-muted);
+  }
+  .stage-card.one .stage-num { color: var(--stage1-border); border-color: var(--stage1-border); }
+  .stage-card.two .stage-num { color: var(--stage2-border); border-color: var(--stage2-border); }
+  .stage-card h4 {
+    margin: 0 0 6px;
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    color: var(--text);
+  }
+  .stage-card .desc { font-size: 14px; color: var(--text-muted); margin: 6px 0 12px; }
+  .stage-card .deps { font-size: 12px; color: var(--text-faint); }
+  .stage-card .deps span { display: inline-block; margin-right: 6px; }
+  .stage-card .deps .pill {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--accent-soft);
+    margin: 2px 4px 2px 0;
+    display: inline-block;
+  }
+  .stage-card .deps .pill.absent {
+    background: var(--bad-soft);
+    color: var(--bad);
+    border-color: var(--bad-soft);
+    text-decoration: line-through;
+  }
+
+  /* Reactivity diagram */
+  .reactivity {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px;
+    margin: 16px 0 24px;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+  }
+  .reactivity svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    justify-content: center;
+    margin-top: 16px;
+    font-size: 13px; color: var(--text-muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    border: 1.5px solid;
+  }
+
+  /* Code blocks */
+  .code {
+    position: relative;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    border-radius: var(--radius);
+    margin: 16px 0 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #aab1c2;
+  }
+  .code-header .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+    background: #4a5060;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #aab1c2;
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .copy-btn.copied { color: #8ec78e; border-color: #2f6b3a; }
+  pre {
+    margin: 0;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  pre code { font-family: inherit; }
+
+  .tk-kw   { color: var(--code-keyword); }
+  .tk-fn   { color: var(--code-fn); }
+  .tk-str  { color: var(--code-string); }
+  .tk-cmt  { color: var(--code-comment); font-style: italic; }
+  .tk-prop { color: var(--code-prop); }
+  .tk-num  { color: #f5a97f; }
+  .tk-op   { color: #b8becc; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .tab-btn {
+    background: transparent;
+    color: #aab1c2;
+    border: 0;
+    padding: 6px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .tab-btn.active { background: rgba(58, 92, 255, 0.18); color: #e5e5e0; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Pros / cons */
+  .pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .pc-grid { grid-template-columns: 1fr; } }
+  .pc-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+  }
+  .pc-card.pros { border-top: 3px solid var(--good); }
+  .pc-card.cons { border-top: 3px solid var(--bad); }
+  .pc-card h3 {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 12px; font-size: 14px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .pc-card.pros h3 { color: var(--good); }
+  .pc-card.cons h3 { color: var(--bad); }
+  .pc-card ul { margin: 0; padding-left: 0; list-style: none; }
+  .pc-card li {
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 14.5px;
+    color: var(--text-muted);
+  }
+  .pc-card li:last-child { border-bottom: 0; }
+  .pc-card li strong { color: var(--text); }
+  .badge-icon {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    color: #fff;
+  }
+  .pros .badge-icon { background: var(--good); }
+  .cons .badge-icon { background: var(--bad); }
+
+  /* Files */
+  .files { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .files li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .files li:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .files .file-path {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .files .file-desc { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+  .files .file-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <aside class="toc">
+    <p class="toc-eyebrow">On this page</p>
+    <ol id="toc-list">
+      <li><a href="#problem">Problem statement</a></li>
+      <li><a href="#stages">Two stages</a></li>
+      <li><a href="#reactivity">Reactivity</a></li>
+      <li><a href="#implementation">Implementation</a></li>
+      <li><a href="#advantages">Trade-offs</a></li>
+      <li><a href="#files">Key files</a></li>
+    </ol>
+  </aside>
+
+  <main>
+
+    <a class="back-link" href="index.html"><span class="arrow">←</span> All patterns</a>
+
+    <header class="hero">
+      <span class="eyebrow">Pattern</span>
+      <h1>Two-Stage Computed Pipeline</h1>
+      <p class="lede">
+        Split expensive math from cheap bucketing into two cascading
+        <code>computed()</code> calls so Vue's reactivity only re-runs what changed —
+        toggling AA ↔ AAA never re-runs contrast math.
+      </p>
+      <div class="meta">
+        <span class="chip">Layer&nbsp;·&nbsp;<code>stores/</code> + <code>composables/</code></span>
+        <span class="chip">Engine&nbsp;·&nbsp;<code>contrastEngine.js</code></span>
+        <span class="chip">Complexity&nbsp;·&nbsp;O(N²) → cached</span>
+      </div>
+    </header>
+
+    <!-- Problem -->
+    <section id="problem">
+      <h2>Problem statement</h2>
+      <p>
+        The contrast checker computes ratios for every unique pair of colours in a palette —
+        O(N²) work. It also buckets those pairs into pass / partial-pass / fail based on the
+        active compliance level (AA or AAA).
+      </p>
+      <p>
+        If both operations live in a single computed property, every time the user toggles
+        AA ↔ AAA the app re-runs all the contrast math, even though compliance thresholds have
+        nothing to do with the raw ratios. On a large palette this makes the UI feel sluggish
+        on a toggle that should be instant. The challenge is keeping the math and the bucketing
+        separate without losing the convenience of a single result to render.
+      </p>
+    </section>
+
+    <!-- Stages -->
+    <section id="stages">
+      <h2>Two stages</h2>
+      <p>
+        Two pure functions, two <code>computed()</code> calls. The first does the expensive
+        work and depends only on inputs that genuinely affect ratios. The second is a cheap
+        threshold lookup that depends on compliance level — but not on swatches.
+      </p>
+      <div class="stages">
+        <div class="stage-card one">
+          <span class="stage-num">1</span>
+          <h4>scoreAllPairs()</h4>
+          <p class="desc">
+            Iterates every unique pair, calls <code>scoreColourPair</code> for each.
+            Returns a flat array of <code>{ fgHex, bgHex, score, simulatedFg, simulatedBg }</code>.
+            O(N²). The expensive stage.
+          </p>
+          <div class="deps">
+            <span>Depends on:</span>
+            <span class="pill">swatches</span>
+            <span class="pill">contrastMode</span>
+            <span class="pill">cvdMode</span>
+            <span class="pill">focusColour</span>
+            <span class="pill absent">complianceMode</span>
+          </div>
+        </div>
+        <div class="stage-card two">
+          <span class="stage-num">2</span>
+          <h4>categorizePairs()</h4>
+          <p class="desc">
+            Receives the scored array and splits into <code>{ pass, partial, fail }</code>
+            using threshold values from <code>contrastConfig</code>. Runs no colour math.
+            O(N²) in pair count but with no per-pair work — basically free.
+          </p>
+          <div class="deps">
+            <span>Depends on:</span>
+            <span class="pill">scoredPairs</span>
+            <span class="pill">complianceMode</span>
+            <span class="pill">contrastMode</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reactivity diagram -->
+    <section id="reactivity">
+      <h2>Reactivity</h2>
+      <p>
+        Vue's reactivity system tracks which reactive values each <code>computed()</code>
+        reads. Because <code>complianceMode</code> is only read by the second computed,
+        toggling AA ↔ AAA only invalidates <code>categorizedCombinations</code> —
+        <code>scoredPairs</code> stays cached. Adding or removing a colour invalidates
+        <code>scoredPairs</code>, which cascades to <code>categorizedCombinations</code>.
+      </p>
+
+      <div class="reactivity">
+        <svg viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reactivity graph for two-stage pipeline">
+          <defs>
+            <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#5a5a55"/>
+            </marker>
+            <style>
+              .input-rect    { fill: #fff; stroke: #d4d2cc; stroke-width: 1.5; }
+              .stage1-rect   { fill: #eaf0ff; stroke: #3a5cff; stroke-width: 2; }
+              .stage2-rect   { fill: #f3e8ff; stroke: #7c3aed; stroke-width: 2; }
+              .out-rect      { fill: #e7f5ec; stroke: #1f7a3a; stroke-width: 1.5; }
+              .lbl-title     { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; fill: #1a1a18; font-weight: 700; }
+              .lbl-input     { font-family: ui-monospace, Menlo, monospace; font-size: 12px; fill: #1a1a18; font-weight: 600; }
+              .lbl-sub       { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #5a5a55; }
+              .lbl-grp       { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; fill: #8a8a82; font-weight: 600; }
+              .link-1        { stroke: #3a5cff; stroke-width: 1.5; fill: none; }
+              .link-2        { stroke: #7c3aed; stroke-width: 1.5; fill: none; }
+              .link-out      { stroke: #1f7a3a; stroke-width: 1.5; fill: none; }
+            </style>
+          </defs>
+
+          <text class="lbl-grp" x="100" y="30" text-anchor="middle">Reactive inputs</text>
+          <text class="lbl-grp" x="400" y="30" text-anchor="middle">Cached stages</text>
+          <text class="lbl-grp" x="700" y="30" text-anchor="middle">Render</text>
+
+          <!-- Inputs -->
+          <rect class="input-rect" x="20" y="55"  width="160" height="36" rx="6"/>
+          <text class="lbl-input" x="100" y="78" text-anchor="middle">colourSwatches</text>
+
+          <rect class="input-rect" x="20" y="100" width="160" height="36" rx="6"/>
+          <text class="lbl-input" x="100" y="123" text-anchor="middle">contrastMode</text>
+
+          <rect class="input-rect" x="20" y="145" width="160" height="36" rx="6"/>
+          <text class="lbl-input" x="100" y="168" text-anchor="middle">cvdMode</text>
+
+          <rect class="input-rect" x="20" y="190" width="160" height="36" rx="6"/>
+          <text class="lbl-input" x="100" y="213" text-anchor="middle">focusColour</text>
+
+          <rect class="input-rect" x="20" y="265" width="160" height="36" rx="6"/>
+          <text class="lbl-input" x="100" y="288" text-anchor="middle">complianceMode</text>
+
+          <!-- Stage 1 -->
+          <rect class="stage1-rect" x="290" y="100" width="220" height="80" rx="10"/>
+          <text class="lbl-title" x="400" y="130" text-anchor="middle">scoredPairs</text>
+          <text class="lbl-sub" x="400" y="150" text-anchor="middle">computed() → scoreAllPairs</text>
+          <text class="lbl-sub" x="400" y="166" text-anchor="middle">expensive · O(N²)</text>
+
+          <!-- Stage 2 -->
+          <rect class="stage2-rect" x="290" y="220" width="220" height="80" rx="10"/>
+          <text class="lbl-title" x="400" y="250" text-anchor="middle">categorizedCombinations</text>
+          <text class="lbl-sub" x="400" y="270" text-anchor="middle">computed() → categorizePairs</text>
+          <text class="lbl-sub" x="400" y="286" text-anchor="middle">cheap · threshold lookup</text>
+
+          <!-- Render -->
+          <rect class="out-rect" x="620" y="220" width="160" height="80" rx="10"/>
+          <text class="lbl-title" x="700" y="255" text-anchor="middle">CombinationsList</text>
+          <text class="lbl-sub" x="700" y="275" text-anchor="middle">{pass, partial, fail}</text>
+
+          <!-- Edges: inputs → stage 1 -->
+          <path class="link-1" d="M180,73  Q230,73  290,135"  marker-end="url(#arr3)"/>
+          <path class="link-1" d="M180,118 Q230,118 290,140"  marker-end="url(#arr3)"/>
+          <path class="link-1" d="M180,163 Q230,163 290,145"  marker-end="url(#arr3)"/>
+          <path class="link-1" d="M180,208 Q230,208 290,150"  marker-end="url(#arr3)"/>
+
+          <!-- Edge: complianceMode → stage 2 only -->
+          <path class="link-2" d="M180,283 Q235,283 290,260" marker-end="url(#arr3)"/>
+
+          <!-- Edge: stage 1 → stage 2 -->
+          <path class="link-2" d="M400,180 L400,220" marker-end="url(#arr3)"/>
+
+          <!-- contrastMode also feeds stage 2 (threshold lookup) -->
+          <path class="link-2" d="M180,118 Q230,118 290,240" stroke-dasharray="4 4" marker-end="url(#arr3)"/>
+          <text class="lbl-sub" x="265" y="208" text-anchor="middle" style="fill:#7c3aed">threshold key</text>
+
+          <!-- Stage 2 → render -->
+          <path class="link-out" d="M510,260 L620,260" marker-end="url(#arr3)"/>
+        </svg>
+        <div class="legend">
+          <span><i style="background:#fff; border-color:#d4d2cc"></i> Reactive inputs</span>
+          <span><i style="background:var(--stage1); border-color:var(--stage1-border)"></i> Stage 1 (expensive)</span>
+          <span><i style="background:var(--stage2); border-color:var(--stage2-border)"></i> Stage 2 (cheap)</span>
+          <span><i style="background:var(--good-soft); border-color:var(--good)"></i> Consumer</span>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>Key invariant:</strong> <code>complianceMode</code> is read by stage 2 only.
+        Toggling AA ↔ AAA invalidates stage 2's cache; stage 1's cache survives. The expensive
+        O(N²) loop does not re-run.
+      </div>
+    </section>
+
+    <!-- Implementation -->
+    <section id="implementation">
+      <h2>Implementation in this codebase</h2>
+      <p>
+        The pipeline lives in the <strong>state management layer</strong>:
+        <code>colourStore.js</code> wires two <code>computed()</code> calls in sequence, backed
+        by three pure functions in <code>contrastEngine.js</code> —
+        <code>scoreColourPair</code> (the core atom), <code>scoreAllPairs</code> (stage 1),
+        and <code>categorizePairs</code> (stage 2).
+      </p>
+
+      <div class="code">
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-tab="t-stage1">Stage 1 · scoreAllPairs</button>
+          <button class="tab-btn" data-tab="t-stage2">Stage 2 · categorizePairs</button>
+          <button class="tab-btn" data-tab="t-wire">Store wiring</button>
+        </div>
+
+        <div class="tab-panel active" id="t-stage1">
+          <div class="code-header">
+            <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/composables/contrastEngine.js</span>
+            <button class="copy-btn" data-copy-target="code-stage1">Copy</button>
+          </div>
+<pre id="code-stage1"><code><span class="tk-kw">export function</span> <span class="tk-fn">scoreAllPairs</span>(swatches, opts = {}) {
+  <span class="tk-kw">const</span> { mode = <span class="tk-str">'wcag'</span>, cvdMode = <span class="tk-str">'normal'</span>, focusColour = <span class="tk-kw">null</span> } = opts;
+  <span class="tk-cmt">// ...deduplicates pairs, calls scoreColourPair for each...</span>
+  result.<span class="tk-fn">push</span>({ fgHex, bgHex, score, simulatedFg, simulatedBg });
+  <span class="tk-kw">return</span> result;
+}</code></pre>
+        </div>
+
+        <div class="tab-panel" id="t-stage2">
+          <div class="code-header">
+            <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/composables/contrastEngine.js</span>
+            <button class="copy-btn" data-copy-target="code-stage2">Copy</button>
+          </div>
+<pre id="code-stage2"><code><span class="tk-kw">export function</span> <span class="tk-fn">categorizePairs</span>(scoredPairs, opts = {}) {
+  <span class="tk-kw">for</span> (<span class="tk-kw">const</span> pair <span class="tk-kw">of</span> scoredPairs) {
+    <span class="tk-kw">if</span>      (pair.score &gt;= thresholds.max) categories.pass.<span class="tk-fn">push</span>(pair);
+    <span class="tk-kw">else if</span> (pair.score &gt;= thresholds.min) categories.partial.<span class="tk-fn">push</span>(pair);
+    <span class="tk-kw">else</span>                                  categories.fail.<span class="tk-fn">push</span>(pair);
+  }
+  <span class="tk-cmt">// ...sort each bucket...</span>
+  <span class="tk-kw">return</span> categories;
+}</code></pre>
+        </div>
+
+        <div class="tab-panel" id="t-wire">
+          <div class="code-header">
+            <span><span class="dot"></span><span class="dot" style="background:#5a4060"></span><span class="dot" style="background:#406050"></span>&nbsp;&nbsp;src/stores/colourStore.js · lines 108–122</span>
+            <button class="copy-btn" data-copy-target="code-wire">Copy</button>
+          </div>
+<pre id="code-wire"><code><span class="tk-kw">const</span> scoredPairs = <span class="tk-fn">computed</span>(() =&gt;
+  <span class="tk-fn">scoreAllPairs</span>(colourSwatches.value, {
+    <span class="tk-prop">mode</span>: contrastMode.value,
+    <span class="tk-prop">cvdMode</span>: cvdMode.value,
+    <span class="tk-prop">focusColour</span>: focusColour.value || <span class="tk-kw">null</span>,
+  })
+);
+
+<span class="tk-kw">const</span> categorizedCombinations = <span class="tk-fn">computed</span>(() =&gt;
+  <span class="tk-fn">categorizePairs</span>(scoredPairs.value, {
+    <span class="tk-prop">mode</span>: contrastMode.value,
+    <span class="tk-prop">complianceLevel</span>: complianceMode.value,  <span class="tk-cmt">// ← only here</span>
+  })
+);</code></pre>
+        </div>
+      </div>
+
+      <p>
+        <code>scoreColourPair</code> is also used directly by <code>ColourContrastWidget</code>
+        for single-pair display, ensuring the widget and the list always compute the same score
+        under CVD.
+      </p>
+    </section>
+
+    <!-- Trade-offs -->
+    <section id="advantages">
+      <h2>Trade-offs</h2>
+      <div class="pc-grid">
+        <div class="pc-card pros">
+          <h3><span class="badge-icon">+</span> Advantages</h3>
+          <ul>
+            <li><strong>Compliance toggles are instant.</strong> No colour math runs on AA/AAA switch regardless of palette size.</li>
+            <li><strong>Dependency graph is explicit.</strong> The comment on <code>scoredPairs</code> documents that <code>complianceMode</code> is intentionally absent. The reason is visible at the call site.</li>
+            <li><strong>Pure functions are easy to test.</strong> <code>scoreAllPairs</code> and <code>categorizePairs</code> take plain values and return plain objects. No Vue reactivity, no store, no globals.</li>
+            <li><strong>Stages compose cleanly.</strong> A future stage (e.g. sorting by luminance) slots in between without touching the others.</li>
+          </ul>
+        </div>
+
+        <div class="pc-card cons">
+          <h3><span class="badge-icon">−</span> Disadvantages</h3>
+          <ul>
+            <li><strong>Two call sites to keep in sync.</strong> If someone adds a new input to the pipeline (say, a new simulation mode), they must add it to the right stage and understand which computed to invalidate.</li>
+            <li><strong>Indirect dependency.</strong> <code>categorizedCombinations</code> passes <code>mode</code> to <code>categorizePairs</code> for the threshold lookup, even though stage 2 does no contrast calculation. This is a config-key dependency, not a math dependency, which can be confusing at first read.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Files -->
+    <section id="files">
+      <h2>Key files</h2>
+      <ul class="files">
+        <li>
+          <span class="file-icon">JS</span>
+          <div>
+            <div class="file-path">src/composables/contrastEngine.js</div>
+            <div class="file-desc"><code>scoreColourPair</code>, <code>scoreAllPairs</code>, and <code>categorizePairs</code>.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon">JS</span>
+          <div>
+            <div class="file-path">src/stores/colourStore.js</div>
+            <div class="file-desc">Wires the two computed layers; lines 108–122 are the critical section.</div>
+          </div>
+        </li>
+        <li>
+          <span class="file-icon">JS</span>
+          <div>
+            <div class="file-path">src/config/contrastConfig.js</div>
+            <div class="file-desc">Threshold values consumed by stage 2.</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      <span>colour-contrast-checker · patterns</span>
+      <span>Two-Stage Computed Pipeline</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const target = document.getElementById(btn.dataset.copyTarget);
+      if (!target) return;
+      try {
+        await navigator.clipboard.writeText(target.innerText);
+        const orig = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove('copied');
+        }, 1400);
+      } catch (e) {
+        btn.textContent = 'Press ⌘C';
+      }
+    });
+  });
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      const container = btn.closest('.code');
+      container.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      container.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === tab));
+    });
+  });
+
+  const tocLinks = Array.from(document.querySelectorAll('.toc a'));
+  const sections = tocLinks
+    .map(a => document.querySelector(a.getAttribute('href')))
+    .filter(Boolean);
+  const setActive = (id) => {
+    tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+  };
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (visible[0]) setActive(visible[0].target.id);
+  }, { rootMargin: '-20% 0px -60% 0px', threshold: [0, 0.25, 0.5, 1] });
+  sections.forEach(s => observer.observe(s));
+  tocLinks.forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (!el) return;
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '#' + id);
+    });
+  });
+</script>
+
+</body>
+</html>

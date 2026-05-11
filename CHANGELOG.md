@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased] — 2026-05-11 · HTML artifacts for pattern docs
+
+### Added
+- **`docs/patterns/html/url-codec.html`** — single-file HTML version of the URL Codec pattern doc with sticky TOC, syntax-highlighted code blocks, copy-to-clipboard, SVG data-flow diagram, pros/cons cards, and key-files list (inline CSS + JS, no external deps)
+- **`docs/patterns/html/hexagonal-architecture.html`** — single-file HTML version of the Hexagonal Architecture pattern doc; same shell as above plus tabbed code blocks (production/test adapters, store usage), ports table, and hexagon SVG diagram with ports overlapping the hexagon's top/bottom vertices
+- **`docs/patterns/html/thin-wrapper-component.html`** — single-file HTML version of the Thin-Wrapper Component pattern doc; adds a three-approach comparison row and an SVG diagram showing store ↔ wrappers ↔ base component
+- **`docs/patterns/html/two-stage-computed-pipeline.html`** — single-file HTML version of the Two-Stage Computed Pipeline pattern doc; adds stage cards with input-dependency pills (showing `complianceMode` deliberately absent from stage 1), tabbed code blocks, and an SVG reactivity-graph diagram
+- **`docs/patterns/html/index.html`** — landing page for the pattern HTML artifacts; hero, intro block, and a 2×2 grid of pattern cards with per-pattern accent colours, inline SVG icons, tags, summaries, and hover-lift links to each artifact
+
 ## [1.5.0] — 2026-04-27 · Make URL persistence contract explicit with PaletteUrlState schema (closes #17)
 
 ### Added
