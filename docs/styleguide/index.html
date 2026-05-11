@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Colour Contrast Checker — Design Tokens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&family=Inter:wght@200..700&display=swap" rel="stylesheet">
+  <style>
+
+/* ================================================================
+   DESIGN TOKENS
+   Resolved from src/assets/scss/tokens/
+   ================================================================ */
+:root {
+  /* Greyscale */
+  --clr-grey-000: #000;
+  --clr-grey-100: #1a1a1a;
+  --clr-grey-200: #45454b;
+  --clr-grey-300: #5a5a61;
+  --clr-grey-600: #808080;
+  --clr-grey-700: #a7a7a7;
+  --clr-grey-800: #e4e4e4;
+  --clr-grey-900: #F2F2F2;
+  --clr-grey-1000: #ffffff;
+
+  /* Blue */
+  --clr-blue-100: #005687;
+  --clr-blue-200: #007ac1;
+  --clr-blue-300: #00A3FF;
+  --clr-blue-400: #7CD0FF;
+  --clr-blue-500: #8ed4fd;
+  --clr-blue-700: #D0EEFF;
+  --clr-blue-900: #f0f9fe;
+
+  /* Red */
+  --clr-red-300: #b02435;
+  --clr-red-400: #ee495b;
+  --clr-red-900: #fff0f4;
+
+  /* Green */
+  --clr-green-100: #1e6806;
+  --clr-green-400: #33a50d;
+
+  /* Purple */
+  --clr-purple-900: #DDCDFE;
+
+  /* Semantic aliases */
+  --clr-accent: var(--clr-blue-300);
+  --clr-border: var(--clr-grey-800);
+  --clr-alt-back: var(--clr-grey-1000);
+  --clr-body: var(--clr-blue-700);
+  --clr-text-heading: var(--clr-grey-100);
+  --clr-text-body: var(--clr-grey-100);
+  --clr-theme-background-light: var(--clr-grey-1000);
+  --clr-theme-foreground-light: var(--clr-grey-100);
+  --clr-theme-background-dark: var(--clr-grey-200);
+  --clr-theme-foreground-dark: var(--clr-grey-900);
+  --clr-form-field-border: var(--clr-grey-800);
+
+  /* Badge */
+  --clr-badge-text: var(--clr-grey-1000);
+  --clr-badge-body: #3D930F;
+  --clr-badge-large: #3392E9;
+  --clr-badge-decorative: #EE495B;
+
+  /* Typography */
+  --fontFamily-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --fontFamily-code: 'Fira Code', monospace;
+
+  /* Font sizes — clamped(min, max, 320px, 1200px) resolved */
+  --font-size-1200: clamp(2.5rem, 1.59vw + 2.18rem, 3.38rem);
+  --font-size-1000: clamp(1.5rem, 0.91vw + 1.32rem, 2rem);
+  --font-size-800:  clamp(1.25rem, 0.45vw + 1.16rem, 1.5rem);
+  --font-size-700:  1.125rem;
+  --font-size-400:  1rem;
+  --font-size-300:  0.875rem;
+  --font-size-200:  0.75rem;
+
+  /* Font shorthands: weight size/line-height family */
+  --heading-1200: 300 var(--font-size-1200)/1 var(--fontFamily-base);
+  --heading-1000: 700 var(--font-size-1000)/1 var(--fontFamily-base);
+  --heading-800:  700 var(--font-size-800)/1  var(--fontFamily-base);
+  --heading-700:  700 var(--font-size-700)/1  var(--fontFamily-base);
+  --body-400:     400 var(--font-size-400)/1  var(--fontFamily-base);
+  --body-300:     400 var(--font-size-300)/1  var(--fontFamily-base);
+  --body-200:     400 var(--font-size-200)/1  var(--fontFamily-base);
+  --text-code-400: 500 var(--font-size-400)/1 var(--fontFamily-code);
+  --text-code-300: 500 var(--font-size-300)/1 var(--fontFamily-code);
+  --text-code-200: 500 var(--font-size-200)/1 var(--fontFamily-code);
+  --text-token-value: var(--text-code-400);
+
+  /* Sizing — base unit 8px */
+  --size-unit:   8px;
+  --size-xsmall: 0.25em;
+  --size-small:  0.5rem;
+  --size-medium: 24px;
+  --size-large:  2rem;
+  --size-xl:     56px;
+  --size-xs:     calc(var(--size-unit) * 0.75);   /* 6px  */
+  --size-s:      var(--size-unit);                /* 8px  */
+  --size-m:      calc(var(--size-unit) * 3);      /* 24px */
+  --size-l:      calc(var(--size-unit) * 5);      /* 40px */
+  --main-spacing: var(--size-l);
+  --size-icon-large: calc(var(--size-medium) * 2);
+  /* Fluid */
+  --size-xs-l: clamp(0.5rem, 3.64vw + -0.23rem, 2.5rem);
+  --size-s-l:  clamp(1rem,   2.73vw +  0.45rem, 2.5rem);
+  --size-m-l:  clamp(1.5rem, 1.82vw +  1.14rem, 2.5rem);
+  --size-l-xl: clamp(1.5rem, 1.82vw +  1.14rem, 2.5rem);
+
+  /* Borders */
+  --border-rad-inner:  3px;
+  --border-rad-outer:  5px;
+  --border-rad-small:  calc(var(--size-unit) / 2); /* 4px */
+  --border-rad-normal: var(--size-small);           /* 8px */
+  --border-rad-large:  var(--size-medium);          /* 24px — pill */
+
+  /* Shadows */
+  --shadow-double-light: 0px 0px 0px 2px var(--clr-grey-1000), 0px 0px 0px 4px var(--clr-grey-800);
+  --shadow-subtle:  0px 2px 10px rgba(0,0,0,0.15), 0px 1px 5px rgba(0,0,0,0.15);
+  --shadow-default: 1px 2px 6px rgba(0,0,0,0.18), 0 0 1px 1px rgba(0,0,0,0.05);
+  --shadow-card:    0px 2px 2px rgba(0,0,0,0.06), 0 0 10px rgba(0,0,0,0.1);
+
+  /* Animation */
+  --trans-short: 0.15s ease-out;
+  --trans-long:  0.3s ease-out;
+}
+
+/* ================================================================
+   STYLE GUIDE LAYOUT
+   ================================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--fontFamily-base);
+  background: var(--clr-grey-900);
+  color: var(--clr-grey-100);
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+/* ---- Sidebar ---- */
+.sg-nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--clr-grey-100);
+  color: var(--clr-grey-900);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 32px;
+}
+
+.sg-nav__brand {
+  padding: 28px 24px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sg-nav__title {
+  font: var(--heading-700);
+  color: var(--clr-grey-1000);
+  line-height: 1.2;
+}
+
+.sg-nav__subtitle {
+  font: var(--body-200);
+  color: var(--clr-grey-700);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.sg-nav ul { list-style: none; padding: 8px 0; }
+
+.sg-nav__section-label {
+  padding: 16px 24px 4px;
+  font: var(--body-200);
+  color: var(--clr-grey-600);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.sg-nav li a {
+  display: block;
+  padding: 7px 24px;
+  font: var(--body-300);
+  color: var(--clr-grey-700);
+  text-decoration: none;
+  transition: all var(--trans-short);
+  border-left: 2px solid transparent;
+}
+
+.sg-nav li a:hover,
+.sg-nav li a.active {
+  color: var(--clr-grey-1000);
+  border-left-color: var(--clr-blue-300);
+  background: rgba(255,255,255,0.05);
+}
+
+/* ---- Main ---- */
+.sg-main {
+  padding: 56px 56px 80px;
+  max-width: 1040px;
+}
+
+.sg-hero {
+  margin-bottom: 64px;
+}
+
+.sg-hero h1 {
+  font: var(--heading-1200);
+  color: var(--clr-grey-100);
+  margin-bottom: 12px;
+}
+
+.sg-hero p {
+  font: var(--body-400);
+  color: var(--clr-grey-300);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+.sg-section {
+  margin-bottom: 88px;
+  scroll-margin-top: 32px;
+}
+
+.sg-section__header { margin-bottom: 32px; }
+
+.sg-section h2 {
+  font: var(--heading-1000);
+  color: var(--clr-grey-100);
+  margin-bottom: 6px;
+}
+
+.sg-section__desc {
+  font: var(--body-300);
+  color: var(--clr-grey-300);
+  line-height: 1.6;
+}
+
+.sg-subsection { margin-bottom: 36px; }
+
+.sg-subsection h3 {
+  font: var(--heading-700);
+  color: var(--clr-grey-200);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--clr-grey-800);
+}
+
+/* ================================================================
+   CODE BLOCKS
+   ================================================================ */
+.sg-code {
+  position: relative;
+  background: var(--clr-grey-100);
+  border-radius: var(--border-rad-normal);
+  padding: 18px 20px;
+  margin: 20px 0 0;
+  overflow-x: auto;
+}
+
+.sg-code pre {
+  font: var(--text-code-300);
+  color: #a7c9ff;
+  line-height: 1.8;
+}
+
+.sg-code .tok-comment { color: #5a5a61; }
+.sg-code .tok-prop    { color: #7CD0FF; }
+.sg-code .tok-val     { color: #33a50d; }
+.sg-code .tok-sel     { color: #ee495b; }
+
+.sg-code__copy {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,0.08);
+  color: var(--clr-grey-700);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--border-rad-small);
+  padding: 3px 10px;
+  font: var(--text-code-200);
+  cursor: pointer;
+  transition: all var(--trans-short);
+}
+
+.sg-code__copy:hover { background: var(--clr-blue-200); color: white; border-color: transparent; }
+.sg-code__copy.copied { background: var(--clr-badge-body); color: white; border-color: transparent; }
+
+/* ================================================================
+   COLOUR TOKENS
+   ================================================================ */
+.sg-colour-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sg-swatch {
+  border-radius: var(--border-rad-normal);
+  overflow: hidden;
+  background: var(--clr-grey-1000);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform var(--trans-short), box-shadow var(--trans-short);
+  user-select: none;
+}
+
+.sg-swatch:hover { transform: translateY(-2px); box-shadow: var(--shadow-default); }
+
+.sg-swatch__colour {
+  height: 68px;
+  width: 100%;
+  position: relative;
+}
+
+.sg-swatch__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+  color: white;
+  font: var(--text-code-200);
+  opacity: 0;
+  transition: opacity var(--trans-short);
+  font-size: 11px;
+}
+
+.sg-swatch:hover .sg-swatch__overlay { opacity: 1; }
+
+.sg-swatch.sg-swatch--copied .sg-swatch__overlay {
+  opacity: 1;
+  background: rgba(61,147,15,0.8);
+}
+
+.sg-swatch__info {
+  padding: 8px 10px 10px;
+}
+
+.sg-swatch__token {
+  font: var(--text-code-200);
+  color: var(--clr-grey-300);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+}
+
+.sg-swatch__value {
+  font: var(--body-200);
+  color: var(--clr-grey-600);
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+/* Alias / semantic tokens */
+.sg-alias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.sg-alias {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-normal);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: box-shadow var(--trans-short);
+}
+
+.sg-alias:hover { box-shadow: var(--shadow-default); }
+
+.sg-alias__dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sg-alias__token {
+  font: var(--text-code-200);
+  color: var(--clr-grey-200);
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sg-alias__desc {
+  font: var(--body-200);
+  color: var(--clr-grey-600);
+  margin-top: 3px;
+  font-size: 11px;
+}
+
+/* ================================================================
+   TYPOGRAPHY
+   ================================================================ */
+.sg-font-families {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.sg-font-card {
+  padding: 24px;
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-normal);
+  box-shadow: var(--shadow-card);
+}
+
+.sg-font-card__label {
+  font: var(--body-200);
+  color: var(--clr-grey-600);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.sg-font-card__sample {
+  color: var(--clr-grey-100);
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+
+.sg-font-card__token {
+  font: var(--text-code-200);
+  color: var(--clr-blue-200);
+  margin-top: 14px;
+}
+
+.sg-type-scale { display: flex; flex-direction: column; gap: 10px; }
+
+.sg-type-row {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 16px;
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-normal);
+  box-shadow: var(--shadow-card);
+}
+
+.sg-type-row__meta strong {
+  display: block;
+  font: var(--text-code-200);
+  color: var(--clr-blue-200);
+  margin-bottom: 4px;
+}
+
+.sg-type-row__meta {
+  font: var(--body-200);
+  color: var(--clr-grey-600);
+  line-height: 1.5;
+}
+
+/* ================================================================
+   SPACING
+   ================================================================ */
+.sg-spacing-list { display: flex; flex-direction: column; gap: 8px; }
+
+.sg-spacing-row {
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-small);
+  box-shadow: var(--shadow-card);
+}
+
+.sg-spacing-row__token {
+  font: var(--text-code-300);
+  color: var(--clr-blue-200);
+}
+
+.sg-spacing-bar-wrap {
+  background: var(--clr-grey-900);
+  border-radius: 3px;
+  height: 18px;
+  overflow: hidden;
+}
+
+.sg-spacing-bar {
+  height: 100%;
+  background: var(--clr-blue-400);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.sg-spacing-row__value {
+  font: var(--text-code-200);
+  color: var(--clr-grey-600);
+  white-space: nowrap;
+  min-width: 120px;
+  text-align: right;
+}
+
+/* ================================================================
+   BORDERS
+   ================================================================ */
+.sg-border-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.sg-border-card {
+  padding: 20px;
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-normal);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.sg-border-swatch {
+  width: 80px;
+  height: 44px;
+  background: var(--clr-blue-700);
+  border: 2px solid var(--clr-blue-300);
+}
+
+.sg-border-card__token {
+  font: var(--text-code-200);
+  color: var(--clr-grey-300);
+  text-align: center;
+  font-size: 10px;
+}
+
+.sg-border-card__value {
+  font: var(--body-200);
+  color: var(--clr-grey-600);
+  font-size: 11px;
+}
+
+/* ================================================================
+   SHADOWS
+   ================================================================ */
+.sg-shadow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 24px;
+}
+
+.sg-shadow-card {
+  padding: 28px 24px 22px;
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-normal);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sg-shadow-card__token {
+  font: var(--text-code-300);
+  color: var(--clr-blue-200);
+}
+
+.sg-shadow-card__desc {
+  font: var(--body-200);
+  color: var(--clr-grey-600);
+  line-height: 1.6;
+}
+
+/* ================================================================
+   ANIMATION
+   ================================================================ */
+.sg-trans-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.sg-trans-card {
+  padding: 24px;
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-normal);
+  box-shadow: var(--shadow-card);
+}
+
+.sg-trans-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 18px;
+}
+
+.sg-trans-header__token { font: var(--text-code-300); color: var(--clr-blue-200); }
+.sg-trans-header__val   { font: var(--body-200); color: var(--clr-grey-600); }
+
+.sg-trans-demo {
+  height: 46px;
+  background: var(--clr-blue-900);
+  border-radius: var(--border-rad-inner);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--clr-blue-700);
+}
+
+.sg-trans-demo__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--clr-blue-200);
+  transform: translateX(-100%);
+}
+
+.sg-trans-demo:hover .sg-trans-demo__fill { transform: translateX(0); }
+
+.sg-trans-demo--short .sg-trans-demo__fill { transition: transform var(--trans-short); }
+.sg-trans-demo--long  .sg-trans-demo__fill { transition: transform var(--trans-long);  }
+
+.sg-trans-hint {
+  font: var(--body-200);
+  color: var(--clr-grey-600);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+/* ================================================================
+   COMPONENT WRAPPER
+   ================================================================ */
+.sg-component {
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-normal);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.sg-component__header {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--clr-grey-800);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sg-component__title { font: var(--heading-700); color: var(--clr-grey-100); }
+
+.sg-component__tag {
+  font: var(--text-code-200);
+  color: var(--clr-grey-600);
+  background: var(--clr-grey-900);
+  padding: 2px 8px;
+  border-radius: var(--border-rad-small);
+}
+
+.sg-component__demo {
+  padding: 32px 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  background: var(--clr-grey-900);
+}
+
+.sg-demo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sg-demo-label {
+  font: var(--body-200);
+  color: var(--clr-grey-600);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ================================================================
+   BUTTON COMPONENT — b_action
+   ================================================================ */
+.b_action__button {
+  padding: 0.6em 1em;
+  border: none;
+  background: var(--formAction-background, var(--clr-blue-200));
+  color: var(--formAction-text, var(--clr-grey-1000));
+  cursor: pointer;
+  line-height: 1;
+  transition: all var(--trans-short);
+  border-radius: var(--formAction-bordrad, var(--border-rad-inner));
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--fontFamily-base);
+  font-size: var(--font-size-400);
+  font-weight: 500;
+}
+
+.b_action__button:hover {
+  background: var(--formAction-background-hov, var(--clr-blue-100));
+}
+
+.b_action--negative .b_action__button {
+  --formAction-background: var(--clr-red-400);
+  --formAction-background-hov: var(--clr-red-300);
+}
+
+.b_action--utility .b_action__button {
+  --formAction-background: var(--clr-grey-800);
+  --formAction-background-hov: var(--clr-grey-700);
+  --formAction-text: var(--clr-grey-100);
+}
+
+.b_action--icon .b_action__button {
+  width: 34px;
+  height: 34px;
+  padding: 9px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.b_action--disabled .b_action__button {
+  opacity: 0.5;
+  cursor: not-allowed;
+  --formAction-background: var(--clr-grey-800);
+  --formAction-background-hov: var(--clr-grey-800);
+  --formAction-text: var(--clr-grey-300);
+}
+
+/* ================================================================
+   TOGGLE — b_modeToggle
+   ================================================================ */
+.b_modeToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 20px;
+  background: var(--clr-grey-800);
+  border-radius: var(--border-rad-normal);
+}
+
+.b_modeToggle__title {
+  font: var(--heading-700);
+  color: var(--clr-grey-100);
+}
+
+.b_modeToggle__control {
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  background: var(--clr-grey-1000);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: var(--border-rad-large);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--trans-short);
+}
+
+.b_modeToggle__control:hover { box-shadow: var(--shadow-default); }
+
+.b_modeToggle__label {
+  font: var(--heading-700);
+  color: var(--clr-blue-200);
+}
+
+.b_modeToggle__switch {
+  width: 50px;
+  height: 30px;
+  border-radius: 20px;
+  background: var(--clr-grey-900);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.b_modeToggle__switch::after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: var(--clr-blue-200);
+  border-radius: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  left: var(--switch-pill-left, 4px);
+  transition: all var(--trans-short);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+.b_modeToggle__control.is-right .b_modeToggle__switch {
+  --switch-pill-left: calc(100% - 26px);
+}
+
+/* ================================================================
+   SEGMENTED PILLS — b_cvdSelector
+   ================================================================ */
+.b_cvdSelector {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 20px;
+  background: var(--clr-grey-800);
+  border-radius: var(--border-rad-normal);
+}
+
+.b_cvdSelector__title {
+  font: var(--heading-700);
+  color: var(--clr-grey-100);
+  white-space: nowrap;
+}
+
+.b_cvdSelector__control {
+  display: flex;
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-large);
+  box-shadow: var(--shadow-card);
+  padding: 8px;
+  gap: 2px;
+}
+
+.b_cvdSelector__pill {
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: var(--border-rad-large);
+  font: var(--heading-700);
+  color: var(--clr-blue-200);
+  transition: background var(--trans-short), color var(--trans-short);
+}
+
+.b_cvdSelector__pill:hover:not(.b_cvdSelector__pill--active) {
+  background: var(--clr-grey-800);
+}
+
+.b_cvdSelector__pill--active {
+  background: var(--clr-blue-200);
+  color: var(--clr-grey-1000);
+}
+
+/* ================================================================
+   FORM FIELD — b_textfield
+   ================================================================ */
+.b_textfield {
+  display: grid;
+  gap: 0.3em;
+}
+
+.b_textfield__label {
+  font: var(--heading-700);
+  font-weight: 500;
+  color: var(--clr-grey-700);
+}
+
+.b_textfield__field {
+  border: 1px solid var(--clr-form-field-border);
+  border-radius: var(--border-rad-outer);
+  overflow: hidden;
+  display: flex;
+}
+
+.b_textfield__fieldIcon {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background: var(--clr-grey-1000);
+  color: var(--clr-grey-300);
+  font: var(--text-code-400);
+  border-right: 1px solid var(--clr-grey-800);
+  flex-shrink: 0;
+}
+
+.b_textfield__input {
+  background: var(--clr-grey-1000);
+  font: var(--text-code-400);
+  padding: 0.45em 0.85em;
+  width: 100%;
+  border: none;
+  outline: none;
+  color: var(--clr-grey-100);
+  transition: background var(--trans-short);
+}
+
+.b_textfield__input::placeholder { color: var(--clr-grey-700); }
+.b_textfield__input:focus { background: var(--clr-blue-900); }
+
+.b_textfield--error .b_textfield__field {
+  border-color: var(--clr-red-400);
+  box-shadow: 0 0 0 3px rgba(238,73,91,0.15);
+}
+
+/* ================================================================
+   BADGES
+   ================================================================ */
+.badge {
+  display: inline-block;
+  font-family: var(--fontFamily-base);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--border-rad-inner);
+  padding: 2px 8px;
+  color: var(--clr-badge-text);
+}
+
+.badge--body       { background: var(--clr-badge-body); }
+.badge--large      { background: var(--clr-badge-large); }
+.badge--decorative { background: var(--clr-badge-decorative); }
+
+/* ================================================================
+   CONTRAST CARD — b_contrast
+   ================================================================ */
+.b_contrast {
+  display: grid;
+  justify-items: center;
+  background: var(--clr-grey-1000);
+  border-radius: var(--border-rad-outer);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  width: 200px;
+}
+
+.b_contrast__pair {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  padding: 8px;
+  gap: 4px;
+}
+
+.b_contrast__colour {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+.b_contrast__sample {
+  height: 48px;
+  width: 100%;
+  border-radius: 3px;
+}
+
+.b_contrast__hex {
+  font-family: var(--fontFamily-code);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--clr-grey-200);
+}
+
+.b_contrast__details {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 14px;
+}
+
+.b_contrast__result {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 12px 4px 6px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 45px;
+  border: 1px solid rgba(0,0,0,0.12);
+  font-family: var(--fontFamily-base);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--clr-grey-200);
+}
+
+.b_contrast__icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+  color: white;
+}
+
+.b_contrast__icon--pass       { background: var(--clr-badge-body); }
+.b_contrast__icon--partial    { background: var(--clr-badge-large); }
+.b_contrast__icon--fail       { background: var(--clr-badge-decorative); }
+
+/* ================================================================
+   COLOUR SWATCH — b_swatch (the app component)
+   ================================================================ */
+.b_swatch {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  padding: 8px 12px 8px 8px;
+  background: var(--sg-swatch-back, var(--clr-grey-1000));
+  box-shadow: var(--shadow-card);
+  border-radius: 40px var(--border-rad-small) var(--border-rad-small) 40px;
+  max-width: 220px;
+  transition: background var(--trans-short);
+}
+
+.b_swatch__circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: var(--sg-swatch-border-width, 1px) solid var(--sg-swatch-ring, rgba(0,0,0,0.2));
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.b_swatch__details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.b_swatch__hex {
+  font: var(--text-code-400);
+  color: var(--sg-swatch-text, var(--clr-grey-100));
+  transition: color var(--trans-short);
+}
+
+.b_swatch--focus {
+  --sg-swatch-back: var(--clr-grey-200);
+  --sg-swatch-text: var(--clr-grey-1000);
+  --sg-swatch-border-width: 3px;
+  --sg-swatch-ring: var(--clr-grey-1000);
+}
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+.sg-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--clr-grey-100);
+  color: var(--clr-grey-1000);
+  padding: 10px 18px;
+  border-radius: var(--border-rad-normal);
+  font: var(--text-code-300);
+  box-shadow: var(--shadow-default);
+  transform: translateY(14px);
+  opacity: 0;
+  transition: all var(--trans-short);
+  pointer-events: none;
+  z-index: 100;
+}
+
+.sg-toast.show { transform: translateY(0); opacity: 1; }
+
+  </style>
+</head>
+<body>
+
+<!-- ==================== NAV ==================== -->
+<nav class="sg-nav">
+  <div class="sg-nav__brand">
+    <div class="sg-nav__title">Colour Contrast</div>
+    <div class="sg-nav__subtitle">Design Tokens</div>
+  </div>
+  <ul>
+    <li class="sg-nav__section-label">Tokens</li>
+    <li><a href="#colours">Colours</a></li>
+    <li><a href="#typography">Typography</a></li>
+    <li><a href="#spacing">Spacing</a></li>
+    <li><a href="#borders">Borders</a></li>
+    <li><a href="#shadows">Shadows</a></li>
+    <li><a href="#animation">Animation</a></li>
+    <li class="sg-nav__section-label">Components</li>
+    <li><a href="#buttons">Buttons</a></li>
+    <li><a href="#toggles">Toggle Switch</a></li>
+    <li><a href="#pills">Segmented Pills</a></li>
+    <li><a href="#fields">Form Fields</a></li>
+    <li><a href="#badges">Badges</a></li>
+    <li><a href="#contrast-card">Contrast Card</a></li>
+    <li><a href="#swatches">Colour Swatch</a></li>
+  </ul>
+</nav>
+
+<!-- ==================== MAIN ==================== -->
+<main class="sg-main">
+
+  <header class="sg-hero">
+    <h1>Design Tokens</h1>
+    <p>CSS custom properties, type scale, spacing, and component reference for the Colour Contrast Checker. Click any colour swatch to copy its CSS variable.</p>
+  </header>
+
+  <!-- ==================== COLOURS ==================== -->
+  <section id="colours" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Colours</h2>
+      <p class="sg-section__desc">Click any swatch to copy <code style="font-family:var(--fontFamily-code);font-size:0.85em">var(--token-name)</code> to clipboard.</p>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Greyscale</h3>
+      <div class="sg-colour-grid" id="grey-grid"></div>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Blue</h3>
+      <div class="sg-colour-grid" id="blue-grid"></div>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Red</h3>
+      <div class="sg-colour-grid" id="red-grid"></div>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Green &amp; Purple</h3>
+      <div class="sg-colour-grid" id="green-grid"></div>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Semantic Aliases</h3>
+      <p class="sg-section__desc" style="margin-bottom:16px">Prefer these over raw palette tokens in components — they carry intent and can be swapped per theme.</p>
+      <div class="sg-alias-grid" id="alias-grid"></div>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Badge Colours</h3>
+      <p class="sg-section__desc" style="margin-bottom:16px">Used in APCA mode to indicate contrast use-case (Body / Large / Decorative).</p>
+      <div class="sg-alias-grid" id="badge-grid"></div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-comment">/* Semantic tokens — prefer over raw palette */</span>
+<span class="tok-prop">background:</span> <span class="tok-val">var(--clr-body)</span>;            <span class="tok-comment">/* page background  */</span>
+<span class="tok-prop">color:</span>      <span class="tok-val">var(--clr-text-heading)</span>;  <span class="tok-comment">/* heading text     */</span>
+<span class="tok-prop">border:</span>     1px solid <span class="tok-val">var(--clr-border)</span>; <span class="tok-comment">/* dividers, fields */</span>
+<span class="tok-prop">color:</span>      <span class="tok-val">var(--clr-accent)</span>;       <span class="tok-comment">/* interactive      */</span></pre>
+    </div>
+  </section>
+
+  <!-- ==================== TYPOGRAPHY ==================== -->
+  <section id="typography" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Typography</h2>
+      <p class="sg-section__desc">The <code style="font-family:var(--fontFamily-code);font-size:0.85em">font:</code> shorthand encodes weight, size, line-height, and family in one property. Use the shorthand tokens wherever possible.</p>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Font Families</h3>
+      <div class="sg-font-families">
+        <div class="sg-font-card">
+          <div class="sg-font-card__label">UI / Base</div>
+          <div class="sg-font-card__sample" style="font-family:'Inter',sans-serif;font-weight:300;font-size:28px">Inter Light</div>
+          <div class="sg-font-card__sample" style="font-family:'Inter',sans-serif;font-weight:400;font-size:16px;color:var(--clr-grey-300);line-height:1.5;margin-top:6px">The quick brown fox jumps over the lazy dog</div>
+          <div class="sg-font-card__sample" style="font-family:'Inter',sans-serif;font-weight:700;font-size:16px;margin-top:8px">Bold 700 — AA / AAA</div>
+          <div class="sg-font-card__token">--fontFamily-base</div>
+        </div>
+        <div class="sg-font-card">
+          <div class="sg-font-card__label">Code / Mono</div>
+          <div class="sg-font-card__sample" style="font-family:'Fira Code',monospace;font-weight:500;font-size:22px">#007ac1</div>
+          <div class="sg-font-card__sample" style="font-family:'Fira Code',monospace;font-weight:500;font-size:14px;color:var(--clr-grey-300);margin-top:6px">Lc 108.0 → var(--clr-blue-200)</div>
+          <div class="sg-font-card__sample" style="font-family:'Fira Code',monospace;font-weight:500;font-size:14px;margin-top:8px">4.52:1 · Pass · WCAG AA</div>
+          <div class="sg-font-card__token">--fontFamily-code</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Heading Scale</h3>
+      <div class="sg-type-scale">
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--heading-1200</strong>300 · fluid 40–54px</div>
+          <div style="font:var(--heading-1200);color:var(--clr-grey-100)">Contrast</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--heading-1000</strong>700 · fluid 24–32px</div>
+          <div style="font:var(--heading-1000);color:var(--clr-grey-100)">Colour Palette</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--heading-800</strong>700 · fluid 20–24px</div>
+          <div style="font:var(--heading-800);color:var(--clr-grey-100)">WCAG Compliance</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--heading-700</strong>700 · 18px</div>
+          <div style="font:var(--heading-700);color:var(--clr-grey-100)">Contrast Mode · Toggle</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Body Scale</h3>
+      <div class="sg-type-scale">
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--body-400</strong>400 · 16px</div>
+          <div style="font:var(--body-400);color:var(--clr-grey-100);line-height:1.6;max-width:480px">The contrast ratio between foreground and background colours must meet a minimum threshold to ensure readability for all users.</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--body-300</strong>400 · 14px</div>
+          <div style="font:var(--body-300);color:var(--clr-grey-100);line-height:1.6;max-width:480px">WCAG AA requires 4.5:1 for normal text and 3:1 for large text. APCA measures perceptual contrast using the Lc scale with use-case thresholds.</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--body-200</strong>400 · 12px</div>
+          <div style="font:var(--body-200);color:var(--clr-grey-100);line-height:1.6;max-width:480px">Protanopia affects approx. 1% of males. Deuteranopia is the most common form, affecting ~8% of males overall.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Code / Monospace Scale</h3>
+      <div class="sg-type-scale">
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--text-code-400</strong>500 · 16px</div>
+          <div style="font:var(--text-code-400);color:var(--clr-grey-100)">#007ac1 → var(--clr-blue-200)</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--text-code-300</strong>500 · 14px</div>
+          <div style="font:var(--text-code-300);color:var(--clr-grey-100)">Lc 54.3 · Large · APCA threshold 45–60</div>
+        </div>
+        <div class="sg-type-row">
+          <div class="sg-type-row__meta"><strong>--text-code-200</strong>500 · 12px</div>
+          <div style="font:var(--text-code-200);color:var(--clr-grey-100)">4.52:1 · Pass · WCAG AA 4.5:1 minimum</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-comment">/* Shorthand — weight size/line-height family */</span>
+<span class="tok-prop">font:</span> <span class="tok-val">var(--heading-700)</span>;   <span class="tok-comment">/* labels, toggle text  */</span>
+<span class="tok-prop">font:</span> <span class="tok-val">var(--body-400)</span>;     <span class="tok-comment">/* body copy            */</span>
+<span class="tok-prop">font:</span> <span class="tok-val">var(--text-code-400)</span>;<span class="tok-comment">/* hex values, ratios   */</span>
+
+<span class="tok-comment">/* Raw size tokens */</span>
+<span class="tok-prop">font-size:</span>   <span class="tok-val">var(--font-size-300)</span>;  <span class="tok-comment">/* 0.875rem */</span>
+<span class="tok-prop">font-family:</span> <span class="tok-val">var(--fontFamily-code)</span>;</pre>
+    </div>
+  </section>
+
+  <!-- ==================== SPACING ==================== -->
+  <section id="spacing" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Spacing</h2>
+      <p class="sg-section__desc">8px base unit. Named sizes are multiples. Fluid sizes use <code style="font-family:var(--fontFamily-code);font-size:0.85em">clamp()</code> to interpolate between the 320px mobile and 1200px desktop breakpoints.</p>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Fixed</h3>
+      <div class="sg-spacing-list">
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-unit</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:11px"></div></div>
+          <span class="sg-spacing-row__value">8px — base unit</span>
+        </div>
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-xs</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:8px"></div></div>
+          <span class="sg-spacing-row__value">6px (0.75 × unit)</span>
+        </div>
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-s</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:11px"></div></div>
+          <span class="sg-spacing-row__value">8px (1 × unit)</span>
+        </div>
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-m</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:33px"></div></div>
+          <span class="sg-spacing-row__value">24px (3 × unit)</span>
+        </div>
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-l · --main-spacing</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:55px"></div></div>
+          <span class="sg-spacing-row__value">40px (5 × unit)</span>
+        </div>
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-xl</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:77px"></div></div>
+          <span class="sg-spacing-row__value">56px (7 × unit)</span>
+        </div>
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-medium</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:33px"></div></div>
+          <span class="sg-spacing-row__value">24px — also --border-rad-large</span>
+        </div>
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-large</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:44px"></div></div>
+          <span class="sg-spacing-row__value">2rem (32px)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-subsection">
+      <h3>Fluid (resize window to see these change)</h3>
+      <div class="sg-spacing-list">
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-xs-l</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:var(--size-xs-l)"></div></div>
+          <span class="sg-spacing-row__value">8px → 40px</span>
+        </div>
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-s-l</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:var(--size-s-l)"></div></div>
+          <span class="sg-spacing-row__value">16px → 40px</span>
+        </div>
+        <div class="sg-spacing-row">
+          <span class="sg-spacing-row__token">--size-m-l</span>
+          <div class="sg-spacing-bar-wrap"><div class="sg-spacing-bar" style="width:var(--size-m-l)"></div></div>
+          <span class="sg-spacing-row__value">24px → 40px</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-prop">padding:</span> <span class="tok-val">var(--size-s)</span> <span class="tok-val">var(--size-m)</span>;    <span class="tok-comment">/* 8px 24px */</span>
+<span class="tok-prop">gap:</span>     <span class="tok-val">var(--size-m)</span>;             <span class="tok-comment">/* 24px     */</span>
+<span class="tok-prop">padding:</span> <span class="tok-val">calc(var(--main-spacing) * 0.4)</span> <span class="tok-val">var(--main-spacing)</span>;
+         <span class="tok-comment">/* 16px 40px — used in toggle/pill control bars */</span></pre>
+    </div>
+  </section>
+
+  <!-- ==================== BORDERS ==================== -->
+  <section id="borders" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Borders</h2>
+      <p class="sg-section__desc">Five tokens from 3px (tight badges) to 24px (pill controls).</p>
+    </div>
+
+    <div class="sg-border-grid">
+      <div class="sg-border-card">
+        <div class="sg-border-swatch" style="border-radius:var(--border-rad-inner)"></div>
+        <div class="sg-border-card__token">--border-rad-inner</div>
+        <div class="sg-border-card__value">3px · badges, tight UI</div>
+      </div>
+      <div class="sg-border-card">
+        <div class="sg-border-swatch" style="border-radius:var(--border-rad-outer)"></div>
+        <div class="sg-border-card__token">--border-rad-outer</div>
+        <div class="sg-border-card__value">5px · cards, contrast widget</div>
+      </div>
+      <div class="sg-border-card">
+        <div class="sg-border-swatch" style="border-radius:var(--border-rad-small)"></div>
+        <div class="sg-border-card__token">--border-rad-small</div>
+        <div class="sg-border-card__value">4px · unit ÷ 2</div>
+      </div>
+      <div class="sg-border-card">
+        <div class="sg-border-swatch" style="border-radius:var(--border-rad-normal)"></div>
+        <div class="sg-border-card__token">--border-rad-normal</div>
+        <div class="sg-border-card__value">0.5rem · panels, tooltips</div>
+      </div>
+      <div class="sg-border-card">
+        <div class="sg-border-swatch" style="border-radius:var(--border-rad-large)"></div>
+        <div class="sg-border-card__token">--border-rad-large</div>
+        <div class="sg-border-card__value">24px · pill, toggle, swatch</div>
+      </div>
+    </div>
+
+    <div class="sg-code" style="margin-top:20px">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-prop">border-radius:</span> <span class="tok-val">var(--border-rad-inner)</span>;  <span class="tok-comment">/* badges              */</span>
+<span class="tok-prop">border-radius:</span> <span class="tok-val">var(--border-rad-outer)</span>;  <span class="tok-comment">/* cards, form fields  */</span>
+<span class="tok-prop">border-radius:</span> <span class="tok-val">var(--border-rad-normal)</span>; <span class="tok-comment">/* panels, tooltips    */</span>
+<span class="tok-prop">border-radius:</span> <span class="tok-val">var(--border-rad-large)</span>;  <span class="tok-comment">/* pill controls       */</span>
+<span class="tok-comment">/* Mixed — left pill, right square: */</span>
+<span class="tok-prop">border-radius:</span> <span class="tok-val">var(--size-l)</span> <span class="tok-val">var(--border-rad-small)</span> <span class="tok-val">var(--border-rad-small)</span> <span class="tok-val">var(--size-l)</span>;</pre>
+    </div>
+  </section>
+
+  <!-- ==================== SHADOWS ==================== -->
+  <section id="shadows" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Shadows</h2>
+    </div>
+
+    <div class="sg-shadow-grid">
+      <div class="sg-shadow-card" style="box-shadow:var(--shadow-card)">
+        <div class="sg-shadow-card__token">--shadow-card</div>
+        <div class="sg-shadow-card__desc">Default elevation — contrast cards, swatches, pill controls</div>
+      </div>
+      <div class="sg-shadow-card" style="box-shadow:var(--shadow-subtle)">
+        <div class="sg-shadow-card__token">--shadow-subtle</div>
+        <div class="sg-shadow-card__desc">Stronger lift — dropdowns, popovers, floating panels</div>
+      </div>
+      <div class="sg-shadow-card" style="box-shadow:var(--shadow-default)">
+        <div class="sg-shadow-card__token">--shadow-default</div>
+        <div class="sg-shadow-card__desc">Directional — hover state on interactive elements</div>
+      </div>
+      <div class="sg-shadow-card" style="box-shadow:var(--shadow-double-light)">
+        <div class="sg-shadow-card__token">--shadow-double-light</div>
+        <div class="sg-shadow-card__desc">Double ring — focus indicator on light backgrounds</div>
+      </div>
+    </div>
+
+    <div class="sg-code" style="margin-top:24px">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-prop">box-shadow:</span> <span class="tok-val">var(--shadow-card)</span>;         <span class="tok-comment">/* resting state  */</span>
+<span class="tok-prop">box-shadow:</span> <span class="tok-val">var(--shadow-default)</span>;      <span class="tok-comment">/* on hover       */</span>
+<span class="tok-prop">box-shadow:</span> <span class="tok-val">var(--shadow-double-light)</span>; <span class="tok-comment">/* keyboard focus */</span></pre>
+    </div>
+  </section>
+
+  <!-- ==================== ANIMATION ==================== -->
+  <section id="animation" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Animation</h2>
+      <p class="sg-section__desc">Two timing tokens — hover the demo bars to compare.</p>
+    </div>
+
+    <div class="sg-trans-grid">
+      <div class="sg-trans-card">
+        <div class="sg-trans-header">
+          <span class="sg-trans-header__token">--trans-short</span>
+          <span class="sg-trans-header__val">0.15s ease-out</span>
+        </div>
+        <div class="sg-trans-demo sg-trans-demo--short">
+          <div class="sg-trans-demo__fill"></div>
+        </div>
+        <p class="sg-trans-hint">Hover to preview — buttons, icon states, background colour shifts</p>
+      </div>
+      <div class="sg-trans-card">
+        <div class="sg-trans-header">
+          <span class="sg-trans-header__token">--trans-long</span>
+          <span class="sg-trans-header__val">0.3s ease-out</span>
+        </div>
+        <div class="sg-trans-demo sg-trans-demo--long">
+          <div class="sg-trans-demo__fill"></div>
+        </div>
+        <p class="sg-trans-hint">Hover to preview — panel slides, tooltip fades, layout shifts</p>
+      </div>
+    </div>
+
+    <div class="sg-code" style="margin-top:20px">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-prop">transition:</span> <span class="tok-val">background-color var(--trans-short)</span>;
+<span class="tok-prop">transition:</span> <span class="tok-val">opacity var(--trans-long)</span>;
+<span class="tok-prop">transition:</span> <span class="tok-val">all var(--trans-short)</span>;</pre>
+    </div>
+  </section>
+
+  <!-- ==================== BUTTONS ==================== -->
+  <section id="buttons" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Buttons</h2>
+      <p class="sg-section__desc"><code style="font-family:var(--fontFamily-code);font-size:0.85em">FormAction.vue</code> — all variants are driven by <code style="font-family:var(--fontFamily-code);font-size:0.85em">--formAction-*</code> custom properties. Hover each button to preview.</p>
+    </div>
+
+    <div class="sg-component">
+      <div class="sg-component__header">
+        <span class="sg-component__title">b_action</span>
+        <span class="sg-component__tag">FormAction.vue</span>
+      </div>
+      <div class="sg-component__demo">
+        <div class="sg-demo-item">
+          <div class="b_action"><button class="b_action__button">Save palette</button></div>
+          <div class="sg-demo-label">positive / default</div>
+        </div>
+        <div class="sg-demo-item">
+          <div class="b_action b_action--negative"><button class="b_action__button">Delete</button></div>
+          <div class="sg-demo-label">negative</div>
+        </div>
+        <div class="sg-demo-item">
+          <div class="b_action b_action--utility"><button class="b_action__button">Export</button></div>
+          <div class="sg-demo-label">utility</div>
+        </div>
+        <div class="sg-demo-item">
+          <div class="b_action b_action--icon">
+            <button class="b_action__button" aria-label="Copy">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="5.5" y="5.5" width="8" height="8" rx="1.2" stroke="white" stroke-width="1.4"/>
+                <path d="M3 3h6.5M3 3v6.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="sg-demo-label">icon</div>
+        </div>
+        <div class="sg-demo-item">
+          <div class="b_action b_action--disabled"><button class="b_action__button" disabled>Disabled</button></div>
+          <div class="sg-demo-label">disabled</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-comment">&lt;!-- Vue usage --&gt;</span>
+&lt;FormAction buttonLabel="Save"   buttonMode="positive" :onClick="save" /&gt;
+&lt;FormAction buttonLabel="Delete" buttonMode="negative" :onClick="del"  /&gt;
+&lt;FormAction buttonLabel="Copy"   buttonMode="positive" buttonType="icon" :onClick="copy"&gt;
+  &lt;IconCopy /&gt;
+&lt;/FormAction&gt;
+
+<span class="tok-comment">/* Override via CSS custom properties */</span>
+<span class="tok-prop">--formAction-background:</span>     <span class="tok-val">var(--clr-blue-200)</span>;
+<span class="tok-prop">--formAction-background-hov:</span> <span class="tok-val">var(--clr-blue-100)</span>;
+<span class="tok-prop">--formAction-text:</span>           <span class="tok-val">var(--clr-grey-1000)</span>;
+<span class="tok-prop">--formAction-bordrad:</span>        <span class="tok-val">var(--border-rad-inner)</span>;
+<span class="tok-prop">--formAction-width:</span>          <span class="tok-val">34px</span>;   <span class="tok-comment">/* icon button */</span>
+<span class="tok-prop">--formAction-height:</span>         <span class="tok-val">34px</span>;</pre>
+    </div>
+  </section>
+
+  <!-- ==================== TOGGLES ==================== -->
+  <section id="toggles" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Toggle Switch</h2>
+      <p class="sg-section__desc"><code style="font-family:var(--fontFamily-code);font-size:0.85em">ModeToggle.vue</code> — binary option selector used for WCAG/APCA and AA/AAA modes. Click to toggle.</p>
+    </div>
+
+    <div class="sg-component">
+      <div class="sg-component__header">
+        <span class="sg-component__title">b_modeToggle</span>
+        <span class="sg-component__tag">ModeToggle.vue</span>
+      </div>
+      <div class="sg-component__demo" style="flex-direction:column;align-items:flex-start;gap:16px">
+        <div class="b_modeToggle">
+          <h3 class="b_modeToggle__title">Contrast Mode</h3>
+          <button class="b_modeToggle__control" id="toggle-contrast" onclick="toggleSwitch(this)">
+            <span class="b_modeToggle__label">WCAG</span>
+            <span class="b_modeToggle__switch"></span>
+            <span class="b_modeToggle__label">APCA</span>
+          </button>
+        </div>
+        <div class="b_modeToggle">
+          <h3 class="b_modeToggle__title">Compliance</h3>
+          <button class="b_modeToggle__control is-right" id="toggle-compliance" onclick="toggleSwitch(this)">
+            <span class="b_modeToggle__label">AA</span>
+            <span class="b_modeToggle__switch"></span>
+            <span class="b_modeToggle__label">AAA</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-comment">&lt;!-- Vue usage --&gt;</span>
+&lt;ModeToggle
+  title="Contrast Mode"
+  v-model="contrastMode"
+  :options="[{label:'WCAG', value:'wcag'}, {label:'APCA', value:'apca'}]"
+/&gt;
+
+<span class="tok-comment">/* Active (right) state via modifier class */</span>
+<span class="tok-sel">.b_modeToggle--right</span> .b_modeToggle__switch {
+  <span class="tok-prop">--switch-pill-left:</span> <span class="tok-val">calc(100% - 26px)</span>;
+}</pre>
+    </div>
+  </section>
+
+  <!-- ==================== PILLS ==================== -->
+  <section id="pills" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Segmented Pills</h2>
+      <p class="sg-section__desc"><code style="font-family:var(--fontFamily-code);font-size:0.85em">CVDModeSelector.vue</code> — multi-option pill group. Click to activate an option.</p>
+    </div>
+
+    <div class="sg-component">
+      <div class="sg-component__header">
+        <span class="sg-component__title">b_cvdSelector</span>
+        <span class="sg-component__tag">CVDModeSelector.vue</span>
+      </div>
+      <div class="sg-component__demo">
+        <div class="b_cvdSelector">
+          <h3 class="b_cvdSelector__title">CVD Mode</h3>
+          <div class="b_cvdSelector__control" id="pill-group">
+            <button class="b_cvdSelector__pill b_cvdSelector__pill--active" onclick="selectPill(this)">Normal</button>
+            <button class="b_cvdSelector__pill" onclick="selectPill(this)">Protanopia</button>
+            <button class="b_cvdSelector__pill" onclick="selectPill(this)">Deuteranopia</button>
+            <button class="b_cvdSelector__pill" onclick="selectPill(this)">Tritanopia</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-comment">&lt;!-- Vue usage --&gt;</span>
+&lt;CVDModeSelector
+  title="CVD Mode"
+  v-model="cvdMode"
+  :options="[{value:'normal',label:'Normal'}, ...]"
+/&gt;
+
+<span class="tok-comment">/* Active pill */</span>
+<span class="tok-sel">.b_cvdSelector__pill--active</span> {
+  <span class="tok-prop">background:</span> <span class="tok-val">var(--clr-blue-200)</span>;
+  <span class="tok-prop">color:</span>      <span class="tok-val">var(--clr-grey-1000)</span>;
+}
+<span class="tok-comment">/* Hover (non-active) */</span>
+<span class="tok-sel">.b_cvdSelector__pill:hover:not(.b_cvdSelector__pill--active)</span> {
+  <span class="tok-prop">background:</span> <span class="tok-val">var(--clr-grey-800)</span>;
+}</pre>
+    </div>
+  </section>
+
+  <!-- ==================== FORM FIELDS ==================== -->
+  <section id="fields" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Form Fields</h2>
+      <p class="sg-section__desc"><code style="font-family:var(--fontFamily-code);font-size:0.85em">FormFieldText.vue</code> — text input with optional label, icon prefix, and error state. Click a field to see focus style.</p>
+    </div>
+
+    <div class="sg-component">
+      <div class="sg-component__header">
+        <span class="sg-component__title">b_textfield variants</span>
+        <span class="sg-component__tag">FormFieldText.vue</span>
+      </div>
+      <div class="sg-component__demo" style="align-items:flex-start;gap:28px">
+        <div class="sg-demo-item" style="align-items:flex-start">
+          <div class="b_textfield" style="min-width:200px">
+            <label class="b_textfield__label" for="f1">Colour hex</label>
+            <div class="b_textfield__field">
+              <div class="b_textfield__fieldIcon">#</div>
+              <input id="f1" type="text" class="b_textfield__input" placeholder="007ac1">
+            </div>
+          </div>
+          <div class="sg-demo-label" style="text-align:left;margin-top:6px">with label + icon prefix</div>
+        </div>
+        <div class="sg-demo-item" style="align-items:flex-start">
+          <div class="b_textfield" style="min-width:200px">
+            <div class="b_textfield__field">
+              <input type="text" class="b_textfield__input" placeholder="Search palette…">
+            </div>
+          </div>
+          <div class="sg-demo-label" style="text-align:left;margin-top:6px">no label, no icon</div>
+        </div>
+        <div class="sg-demo-item" style="align-items:flex-start">
+          <div class="b_textfield b_textfield--error" style="min-width:200px">
+            <label class="b_textfield__label" for="f3">Colour hex</label>
+            <div class="b_textfield__field">
+              <div class="b_textfield__fieldIcon">#</div>
+              <input id="f3" type="text" class="b_textfield__input" value="gggggg">
+            </div>
+          </div>
+          <div class="sg-demo-label" style="text-align:left;margin-top:6px">error state</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-comment">&lt;!-- Vue usage --&gt;</span>
+&lt;FormFieldText id="hex" label="Colour hex" icon="hex" v-model="hex"
+  :status="isValid ? null : 'error'" mode="hex" /&gt;
+
+<span class="tok-comment">/* Error state */</span>
+<span class="tok-sel">.b_textfield--error</span> .b_textfield__field {
+  <span class="tok-prop">border-color:</span> <span class="tok-val">var(--clr-red-400)</span>;
+}
+<span class="tok-comment">/* Size overrides */</span>
+<span class="tok-prop">--form-field-min-width:</span> <span class="tok-val">200px</span>;
+<span class="tok-prop">--text-field-pd:</span>        <span class="tok-val">0.3em 0.85em</span>;</pre>
+    </div>
+  </section>
+
+  <!-- ==================== BADGES ==================== -->
+  <section id="badges" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Badges</h2>
+      <p class="sg-section__desc">Three semantic roles: Body (full pass), Large (large-text-only pass), Decorative (fail / informational).</p>
+    </div>
+
+    <div class="sg-component">
+      <div class="sg-component__header">
+        <span class="sg-component__title">Badge variants</span>
+        <span class="sg-component__tag">ColourContrastWidget.vue</span>
+      </div>
+      <div class="sg-component__demo">
+        <div class="sg-demo-item">
+          <span class="badge badge--body">Body</span>
+          <div class="sg-demo-label">--clr-badge-body<br>#3D930F · Lc ≥ 60</div>
+        </div>
+        <div class="sg-demo-item">
+          <span class="badge badge--large">Large</span>
+          <div class="sg-demo-label">--clr-badge-large<br>#3392E9 · Lc 45–60</div>
+        </div>
+        <div class="sg-demo-item">
+          <span class="badge badge--decorative">Decorative</span>
+          <div class="sg-demo-label">--clr-badge-decorative<br>#EE495B · Lc &lt; 45</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-comment">/* Badge base pattern */</span>
+font-size: 11px; font-weight: 600;
+text-transform: uppercase; letter-spacing: 0.05em;
+<span class="tok-prop">border-radius:</span> <span class="tok-val">var(--border-rad-inner)</span>;
+padding: 2px 6px;
+<span class="tok-prop">color:</span> <span class="tok-val">var(--clr-badge-text)</span>;           <span class="tok-comment">/* always white */</span>
+<span class="tok-prop">background:</span> <span class="tok-val">var(--clr-badge-body)</span>;       <span class="tok-comment">/* or --large, --decorative */</span></pre>
+    </div>
+  </section>
+
+  <!-- ==================== CONTRAST CARD ==================== -->
+  <section id="contrast-card" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Contrast Card</h2>
+      <p class="sg-section__desc"><code style="font-family:var(--fontFamily-code);font-size:0.85em">ColourContrastWidget.vue</code> — displays a colour pair with ratio and pass/partial/fail rating.</p>
+    </div>
+
+    <div class="sg-component">
+      <div class="sg-component__header">
+        <span class="sg-component__title">b_contrast — WCAG mode</span>
+        <span class="sg-component__tag">ColourContrastWidget.vue</span>
+      </div>
+      <div class="sg-component__demo" style="gap:24px;align-items:flex-start">
+        <div class="sg-demo-item">
+          <div class="b_contrast">
+            <div class="b_contrast__pair">
+              <div class="b_contrast__colour">
+                <div class="b_contrast__sample" style="background:#000000"></div>
+                <span class="b_contrast__hex">#000000</span>
+              </div>
+              <div class="b_contrast__colour">
+                <div class="b_contrast__sample" style="background:#ffffff;border:1px solid #e4e4e4"></div>
+                <span class="b_contrast__hex">#ffffff</span>
+              </div>
+            </div>
+            <div class="b_contrast__details">
+              <div class="b_contrast__result">
+                <span class="b_contrast__icon b_contrast__icon--pass">✓</span>
+                Pass <strong>21:1</strong>
+              </div>
+            </div>
+          </div>
+          <div class="sg-demo-label">Pass</div>
+        </div>
+        <div class="sg-demo-item">
+          <div class="b_contrast">
+            <div class="b_contrast__pair">
+              <div class="b_contrast__colour">
+                <div class="b_contrast__sample" style="background:#888888"></div>
+                <span class="b_contrast__hex">#888888</span>
+              </div>
+              <div class="b_contrast__colour">
+                <div class="b_contrast__sample" style="background:#ffffff;border:1px solid #e4e4e4"></div>
+                <span class="b_contrast__hex">#ffffff</span>
+              </div>
+            </div>
+            <div class="b_contrast__details">
+              <div class="b_contrast__result">
+                <span class="b_contrast__icon b_contrast__icon--partial">~</span>
+                Partial <strong>3.5:1</strong>
+              </div>
+            </div>
+          </div>
+          <div class="sg-demo-label">Partial (large text)</div>
+        </div>
+        <div class="sg-demo-item">
+          <div class="b_contrast">
+            <div class="b_contrast__pair">
+              <div class="b_contrast__colour">
+                <div class="b_contrast__sample" style="background:#aaaaaa"></div>
+                <span class="b_contrast__hex">#aaaaaa</span>
+              </div>
+              <div class="b_contrast__colour">
+                <div class="b_contrast__sample" style="background:#ffffff;border:1px solid #e4e4e4"></div>
+                <span class="b_contrast__hex">#ffffff</span>
+              </div>
+            </div>
+            <div class="b_contrast__details">
+              <div class="b_contrast__result">
+                <span class="b_contrast__icon b_contrast__icon--fail">✕</span>
+                Fail <strong>2.3:1</strong>
+              </div>
+            </div>
+          </div>
+          <div class="sg-demo-label">Fail</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-comment">&lt;!-- Vue usage --&gt;</span>
+&lt;ColourContrastWidget
+  primaryColour="#000000"
+  contrastColour="#ffffff"
+/&gt;
+
+<span class="tok-comment">/* Result icons — border + background */</span>
+<span class="tok-prop">border:</span> 1px solid <span class="tok-val">var(--clr-grey-900)</span>;
+<span class="tok-prop">border-radius:</span> <span class="tok-val">50px</span>;
+<span class="tok-comment">/* Pass icon colour: --clr-badge-body   */</span>
+<span class="tok-comment">/* Partial icon colour: --clr-badge-large  */</span>
+<span class="tok-comment">/* Fail icon colour: --clr-badge-decorative */</span></pre>
+    </div>
+  </section>
+
+  <!-- ==================== SWATCHES ==================== -->
+  <section id="swatches" class="sg-section">
+    <div class="sg-section__header">
+      <h2>Colour Swatch</h2>
+      <p class="sg-section__desc"><code style="font-family:var(--fontFamily-code);font-size:0.85em">ColourSwatch.vue</code> — draggable item with circular colour sample. Click the second swatch to toggle focus state.</p>
+    </div>
+
+    <div class="sg-component">
+      <div class="sg-component__header">
+        <span class="sg-component__title">b_swatch</span>
+        <span class="sg-component__tag">ColourSwatch.vue</span>
+      </div>
+      <div class="sg-component__demo" style="flex-direction:column;align-items:flex-start;gap:10px">
+        <div class="b_swatch">
+          <div class="b_swatch__circle" style="background:#007ac1"></div>
+          <div class="b_swatch__details">
+            <span class="b_swatch__hex">#007ac1</span>
+          </div>
+        </div>
+        <div class="b_swatch" id="swatch-focus-demo" onclick="this.classList.toggle('b_swatch--focus')" style="cursor:pointer">
+          <div class="b_swatch__circle" style="background:#007ac1"></div>
+          <div class="b_swatch__details">
+            <span class="b_swatch__hex">#007ac1</span>
+          </div>
+        </div>
+        <div style="font:var(--body-200);color:var(--clr-grey-600)">↑ default · click lower swatch to toggle focus state</div>
+      </div>
+    </div>
+
+    <div class="sg-code">
+      <button class="sg-code__copy" onclick="copyCode(this)">Copy</button>
+      <pre><span class="tok-comment">/* CSS custom property overrides */</span>
+<span class="tok-prop">--swatch-back:</span>                <span class="tok-comment">/* background            */</span>
+<span class="tok-prop">--swatch-text:</span>                <span class="tok-comment">/* hex label colour      */</span>
+<span class="tok-prop">--swatch-sample-size:</span>         <span class="tok-comment">/* circle size (40px)    */</span>
+<span class="tok-prop">--swatch-sample-border-clr:</span>   <span class="tok-comment">/* ring colour           */</span>
+<span class="tok-prop">--swatch-sample-border-width:</span> <span class="tok-comment">/* ring width            */</span>
+
+<span class="tok-comment">/* Focus state sets: */</span>
+<span class="tok-sel">.b_swatch.focus</span> {
+  <span class="tok-prop">--swatch-back:</span>               <span class="tok-val">var(--clr-grey-200)</span>;
+  <span class="tok-prop">--swatch-text:</span>               <span class="tok-val">var(--clr-grey-1000)</span>;
+  <span class="tok-prop">--swatch-sample-border-width:</span> 3px;
+  <span class="tok-prop">--swatch-sample-border-clr:</span>  <span class="tok-val">var(--clr-grey-1000)</span>;
+}</pre>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast -->
+<div id="toast" class="sg-toast"></div>
+
+<script>
+  /* ================================================================
+     COLOUR DATA
+     ================================================================ */
+  const greys = [
+    { token: '--clr-grey-000',  value: '#000000' },
+    { token: '--clr-grey-100',  value: '#1a1a1a' },
+    { token: '--clr-grey-200',  value: '#45454b' },
+    { token: '--clr-grey-300',  value: '#5a5a61' },
+    { token: '--clr-grey-600',  value: '#808080' },
+    { token: '--clr-grey-700',  value: '#a7a7a7' },
+    { token: '--clr-grey-800',  value: '#e4e4e4' },
+    { token: '--clr-grey-900',  value: '#F2F2F2' },
+    { token: '--clr-grey-1000', value: '#ffffff' },
+  ];
+
+  const blues = [
+    { token: '--clr-blue-100', value: '#005687' },
+    { token: '--clr-blue-200', value: '#007ac1' },
+    { token: '--clr-blue-300', value: '#00A3FF' },
+    { token: '--clr-blue-400', value: '#7CD0FF' },
+    { token: '--clr-blue-500', value: '#8ed4fd' },
+    { token: '--clr-blue-700', value: '#D0EEFF' },
+    { token: '--clr-blue-900', value: '#f0f9fe' },
+  ];
+
+  const reds = [
+    { token: '--clr-red-300', value: '#b02435' },
+    { token: '--clr-red-400', value: '#ee495b' },
+    { token: '--clr-red-900', value: '#fff0f4' },
+  ];
+
+  const greens = [
+    { token: '--clr-green-100',  value: '#1e6806' },
+    { token: '--clr-green-400',  value: '#33a50d' },
+    { token: '--clr-purple-900', value: '#DDCDFE' },
+  ];
+
+  const aliases = [
+    { token: '--clr-accent',               value: '#00A3FF', desc: '→ --clr-blue-300' },
+    { token: '--clr-border',               value: '#e4e4e4', desc: '→ --clr-grey-800' },
+    { token: '--clr-alt-back',             value: '#ffffff', desc: '→ --clr-grey-1000' },
+    { token: '--clr-body',                 value: '#D0EEFF', desc: '→ --clr-blue-700' },
+    { token: '--clr-text-heading',         value: '#1a1a1a', desc: '→ --clr-grey-100' },
+    { token: '--clr-text-body',            value: '#1a1a1a', desc: '→ --clr-grey-100' },
+    { token: '--clr-theme-background-light', value: '#ffffff', desc: 'Light theme bg' },
+    { token: '--clr-theme-foreground-light', value: '#1a1a1a', desc: 'Light theme fg' },
+    { token: '--clr-theme-background-dark',  value: '#45454b', desc: 'Dark theme bg' },
+    { token: '--clr-theme-foreground-dark',  value: '#F2F2F2', desc: 'Dark theme fg' },
+    { token: '--clr-form-field-border',    value: '#e4e4e4', desc: 'Input borders' },
+  ];
+
+  const badges = [
+    { token: '--clr-badge-text',       value: '#ffffff', desc: 'Always white' },
+    { token: '--clr-badge-body',       value: '#3D930F', desc: 'Pass / Body · Lc ≥ 60' },
+    { token: '--clr-badge-large',      value: '#3392E9', desc: 'Partial / Large · Lc 45–60' },
+    { token: '--clr-badge-decorative', value: '#EE495B', desc: 'Fail / Decorative · Lc < 45' },
+  ];
+
+  /* ================================================================
+     SWATCH RENDERING
+     ================================================================ */
+  function luminance(hexStr) {
+    const hex = hexStr.replace('#', '').padEnd(6, '0');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000;
+  }
+
+  function renderSwatches(id, tokens) {
+    const grid = document.getElementById(id);
+    if (!grid) return;
+    tokens.forEach(({ token, value }) => {
+      const isLight = luminance(value) > 170;
+      const el = document.createElement('div');
+      el.className = 'sg-swatch';
+      el.innerHTML = `
+        <div class="sg-swatch__colour" style="background:${value};${isLight ? 'box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12)' : ''}">
+          <div class="sg-swatch__overlay">Copy token</div>
+        </div>
+        <div class="sg-swatch__info">
+          <span class="sg-swatch__token">${token}</span>
+          <div class="sg-swatch__value">${value}</div>
+        </div>`;
+      el.addEventListener('click', () => {
+        copyText(`var(${token})`);
+        el.classList.add('sg-swatch--copied');
+        el.querySelector('.sg-swatch__overlay').textContent = 'Copied!';
+        setTimeout(() => {
+          el.classList.remove('sg-swatch--copied');
+          el.querySelector('.sg-swatch__overlay').textContent = 'Copy token';
+        }, 1500);
+      });
+      grid.appendChild(el);
+    });
+  }
+
+  function renderAliases(id, tokens) {
+    const grid = document.getElementById(id);
+    if (!grid) return;
+    tokens.forEach(({ token, value, desc }) => {
+      const isLight = luminance(value) > 170;
+      const el = document.createElement('div');
+      el.className = 'sg-alias';
+      el.title = 'Click to copy';
+      el.innerHTML = `
+        <div class="sg-alias__dot" style="background:${value};${isLight ? 'box-shadow:inset 0 0 0 1px rgba(0,0,0,0.15)' : ''}"></div>
+        <div>
+          <div class="sg-alias__token">${token}</div>
+          <div class="sg-alias__desc">${desc}</div>
+        </div>`;
+      el.addEventListener('click', () => copyText(`var(${token})`));
+      grid.appendChild(el);
+    });
+  }
+
+  renderSwatches('grey-grid',  greys);
+  renderSwatches('blue-grid',  blues);
+  renderSwatches('red-grid',   reds);
+  renderSwatches('green-grid', greens);
+  renderAliases('alias-grid',  aliases);
+  renderAliases('badge-grid',  badges);
+
+  /* ================================================================
+     COPY UTILITIES
+     ================================================================ */
+  let toastTimer;
+
+  function copyText(text) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => showToast(`Copied: ${text}`));
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast(`Copied: ${text}`);
+    }
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.sg-code').querySelector('pre');
+    copyText(pre.textContent.trim());
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  /* ================================================================
+     COMPONENT INTERACTIONS
+     ================================================================ */
+  function selectPill(btn) {
+    btn.closest('.b_cvdSelector__control')
+      .querySelectorAll('.b_cvdSelector__pill')
+      .forEach(p => p.classList.remove('b_cvdSelector__pill--active'));
+    btn.classList.add('b_cvdSelector__pill--active');
+  }
+
+  function toggleSwitch(btn) {
+    btn.classList.toggle('is-right');
+  }
+
+  /* ================================================================
+     NAV SCROLL SPY
+     ================================================================ */
+  const sections  = document.querySelectorAll('.sg-section');
+  const navLinks  = document.querySelectorAll('.sg-nav a');
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const link = document.querySelector(`.sg-nav a[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-15% 0px -75% 0px' });
+
+  sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

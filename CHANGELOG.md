@@ -8,6 +8,7 @@
 - **`docs/patterns/html/thin-wrapper-component.html`** — single-file HTML version of the Thin-Wrapper Component pattern doc; adds a three-approach comparison row and an SVG diagram showing store ↔ wrappers ↔ base component
 - **`docs/patterns/html/two-stage-computed-pipeline.html`** — single-file HTML version of the Two-Stage Computed Pipeline pattern doc; adds stage cards with input-dependency pills (showing `complianceMode` deliberately absent from stage 1), tabbed code blocks, and an SVG reactivity-graph diagram
 - **`docs/patterns/html/index.html`** — landing page for the pattern HTML artifacts; hero, intro block, and a 2×2 grid of pattern cards with per-pattern accent colours, inline SVG icons, tags, summaries, and hover-lift links to each artifact
+- **`docs/styleguide/index.html`** — single-file HTML design token reference; colour palettes (click-to-copy CSS variables), type scale, spacing/border/shadow/animation tokens, and live interactive component demos (buttons, toggle, segmented pills, form fields, badges, contrast card, colour swatch) with copy-to-clipboard code snippets and scroll-spy nav
 
 ## [1.5.0] — 2026-04-27 · Make URL persistence contract explicit with PaletteUrlState schema (closes #17)
 
