@@ -3,278 +3,89 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Patterns — colour-contrast-checker</title>
+<title>Architecture Patterns — Colour Contrast Checker</title>
 <style>
   :root {
-    --bg: #fafaf9;
-    --surface: #ffffff;
-    --surface-alt: #f4f4f2;
-    --border: #e5e4e0;
-    --border-strong: #d4d2cc;
-    --text: #1a1a18;
-    --text-muted: #5a5a55;
-    --text-faint: #8a8a82;
-    --accent: #3a5cff;
-    --accent-soft: #eaf0ff;
-    --good: #1f7a3a;
-    --warn: #b27800;
-    --warn-soft: #fff5e1;
-    --purple: #7c3aed;
-    --purple-soft: #f3e8ff;
-    --orange: #c84a1f;
-    --orange-soft: #fbece5;
-    --radius: 10px;
-    --radius-lg: 14px;
-    --shadow-sm: 0 1px 2px rgba(20, 20, 18, 0.04);
-    --shadow-md: 0 4px 14px rgba(20, 20, 18, 0.06);
-    --shadow-lg: 0 10px 30px rgba(20, 20, 18, 0.08);
+    --bg: #fafaf9; --surface: #ffffff; --surface-alt: #f4f4f2;
+    --border: #e5e4e0; --border-strong: #d4d2cc;
+    --text: #1a1a18; --text-muted: #5a5a55; --text-faint: #8a8a82;
+    --accent: #3a5cff; --accent-soft: #eaf0ff;
+    --good: #1f7a3a; --good-soft: #e7f5ec;
+    --warn: #b27800; --warn-soft: #fff5e1;
+    --purple: #7c3aed; --purple-soft: #f3e8ff;
+    --orange: #c84a1f; --orange-soft: #fbece5;
+    --radius: 10px; --radius-lg: 14px;
+    --shadow-sm: 0 1px 2px rgba(20,20,18,.04);
+    --shadow-md: 0 4px 14px rgba(20,20,18,.06);
+    --shadow-lg: 0 10px 30px rgba(20,20,18,.08);
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   }
-
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  body {
-    font-family: var(--sans);
-    color: var(--text);
-    background: var(--bg);
-    line-height: 1.6;
-    font-size: 16px;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-  }
+  body { font-family: var(--sans); color: var(--text); background: var(--bg); line-height: 1.6; font-size: 16px; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
 
-  .page {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 64px 32px 80px;
-  }
-  @media (max-width: 700px) {
-    .page { padding: 40px 20px; }
-  }
+  .page { max-width: 960px; margin: 0 auto; padding: 64px 32px 80px; }
+  @media (max-width: 700px) { .page { padding: 40px 20px; } }
 
-  /* Hero */
   .hero { margin-bottom: 56px; }
-  .eyebrow {
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent);
-    background: var(--accent-soft);
-    padding: 4px 12px;
-    border-radius: 999px;
-    margin-bottom: 18px;
-  }
-  h1 {
-    font-family: var(--serif);
-    font-size: 52px;
-    font-weight: 600;
-    line-height: 1.1;
-    letter-spacing: -0.015em;
-    margin: 0 0 18px;
-  }
+  .eyebrow { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: 4px 12px; border-radius: 999px; margin-bottom: 18px; }
+  h1 { font-family: var(--serif); font-size: 52px; font-weight: 600; line-height: 1.1; letter-spacing: -.015em; margin: 0 0 18px; }
   @media (max-width: 700px) { h1 { font-size: 38px; } }
-  .lede {
-    font-size: 20px;
-    color: var(--text-muted);
-    margin: 0 0 24px;
-    max-width: 64ch;
-  }
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 13px;
-  }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-  .chip code { font-size: 12px; background: transparent; padding: 0; color: var(--text); }
+  .lede { font-size: 20px; color: var(--text-muted); margin: 0 0 24px; max-width: 64ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted); font-weight: 500; }
 
-  /* Intro paragraph block */
-  .intro {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 24px 28px;
-    margin-bottom: 56px;
-    box-shadow: var(--shadow-sm);
-  }
+  .intro { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 56px; box-shadow: var(--shadow-sm); }
   .intro p { margin: 0 0 12px; color: var(--text-muted); font-size: 16px; }
   .intro p:last-child { margin: 0; }
-  .intro p code {
-    font-family: var(--mono);
-    font-size: 0.88em;
-    background: var(--surface-alt);
-    border: 1px solid var(--border);
-    padding: 1px 6px;
-    border-radius: 4px;
-  }
+  .intro p code { font-family: var(--mono); font-size: .88em; background: var(--surface-alt); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
   .intro strong { color: var(--text); }
 
-  /* Section heading */
-  h2 {
-    font-family: var(--serif);
-    font-size: 30px;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-    margin: 0 0 24px;
-  }
-  .section-eyebrow {
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-faint);
-    margin: 0 0 6px;
-  }
+  h2 { font-family: var(--serif); font-size: 30px; font-weight: 600; letter-spacing: -.005em; margin: 0 0 24px; }
+  .section-eyebrow { text-transform: uppercase; letter-spacing: .1em; font-size: 11px; font-weight: 600; color: var(--text-faint); margin: 0 0 6px; }
 
-  /* Pattern cards */
-  .patterns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
-  @media (max-width: 800px) {
-    .patterns { grid-template-columns: 1fr; }
-  }
+  .patterns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 800px) { .patterns { grid-template-columns: 1fr; } }
 
-  .pattern {
-    display: flex;
-    flex-direction: column;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 24px 26px;
-    text-decoration: none;
-    color: inherit;
-    box-shadow: var(--shadow-sm);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  .pattern::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: var(--accent);
-    transition: height 0.18s ease;
-  }
-  .pattern:hover {
-    text-decoration: none;
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--border-strong);
-  }
+  .pattern { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px 26px; text-decoration: none; color: inherit; box-shadow: var(--shadow-sm); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; position: relative; overflow: hidden; }
+  .pattern::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent); transition: height .18s ease; }
+  .pattern:hover { text-decoration: none; transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--border-strong); }
   .pattern:hover::before { height: 6px; }
 
-  .pattern.codec::before     { background: var(--accent); }
-  .pattern.hex::before       { background: var(--good); }
-  .pattern.wrapper::before   { background: var(--warn); }
-  .pattern.pipeline::before  { background: var(--purple); }
+  .pattern.server::before  { background: var(--accent); }
+  .pattern.client::before  { background: var(--good); }
+  .pattern.shared::before  { background: var(--warn); }
+  .pattern.combo::before   { background: var(--purple); }
+  .pattern.state::before   { background: var(--orange); }
 
-  .pattern-head {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 12px;
-  }
-  .pattern-icon {
-    flex: 0 0 auto;
-    width: 44px; height: 44px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .pattern.codec     .pattern-icon { background: var(--accent-soft); color: var(--accent); }
-  .pattern.hex       .pattern-icon { background: #e7f5ec;            color: var(--good); }
-  .pattern.wrapper   .pattern-icon { background: var(--warn-soft);   color: var(--warn); }
-  .pattern.pipeline  .pattern-icon { background: var(--purple-soft); color: var(--purple); }
+  .pattern-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+  .pattern-icon { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent);padding:5px; }
+  .pattern.server .pattern-icon { background: var(--accent-soft); color: var(--accent); }
+  .pattern.client .pattern-icon { background: var(--good-soft);   color: var(--good); }
+  .pattern.shared .pattern-icon { background: var(--warn-soft);   color: var(--warn); }
+  .pattern.combo  .pattern-icon { background: var(--purple-soft); color: var(--purple); }
+  .pattern.state  .pattern-icon { background: var(--orange-soft); color: var(--orange); }
 
-  .pattern h3 {
-    font-family: var(--serif);
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-    margin: 0;
-    line-height: 1.2;
-  }
-  .pattern .file {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-faint);
-    margin-top: 4px;
-  }
-  .pattern p {
-    margin: 0 0 16px;
-    color: var(--text-muted);
-    font-size: 14.5px;
-    flex: 1;
-  }
-  .pattern p code {
-    font-family: var(--mono);
-    font-size: 0.88em;
-    background: var(--surface-alt);
-    border: 1px solid var(--border);
-    padding: 1px 6px;
-    border-radius: 4px;
-  }
-  .pattern .read {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: auto;
-  }
-  .pattern .read .arrow {
-    transition: transform 0.18s ease;
-  }
+  .pattern h3 { font-family: var(--serif); font-size: 20px; font-weight: 600; letter-spacing: -.005em; margin: 0; line-height: 1.2; }
+  .pattern .file { font-family: var(--mono); font-size: 12px; color: var(--text-faint); margin-top: 4px; }
+  .pattern p { margin: 0 0 16px; color: var(--text-muted); font-size: 14.5px; flex: 1; }
+  .pattern p code { font-family: var(--mono); font-size: .88em; background: var(--surface-alt); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
+  .pattern .read { font-size: 13px; font-weight: 600; color: var(--accent); display: inline-flex; align-items: center; gap: 6px; margin-top: auto; }
+  .pattern.client .read { color: var(--good); }
+  .pattern.shared .read { color: var(--warn); }
+  .pattern.combo  .read { color: var(--purple); }
+  .pattern.state  .read { color: var(--orange); }
+  .pattern .read .arrow { transition: transform .18s ease; }
   .pattern:hover .read .arrow { transform: translateX(3px); }
 
-  .pattern .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .pattern .tag {
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: var(--surface-alt);
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-  }
+  .pattern .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .pattern .tag { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--surface-alt); color: var(--text-muted); border: 1px solid var(--border); }
 
-  footer {
-    margin-top: 80px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-    font-size: 13px;
-    color: var(--text-faint);
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-faint); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 </style>
 </head>
 <body>
@@ -282,151 +93,113 @@
 <div class="page">
 
   <header class="hero">
-    <span class="eyebrow">colour-contrast-checker</span>
-    <h1>Patterns</h1>
-    <p class="lede">
-      Architectural patterns used across this codebase — each one written up with the problem
-      it solves, how it's wired in this project, and the trade-offs that come with it.
-    </p>
-    <div class="meta">
-      <span class="chip">Vue 3 · Composition API</span>
-      <span class="chip">Pinia</span>
-      <span class="chip">Vitest</span>
-    </div>
+    <span class="eyebrow">Colour Contrast Checker</span>
+    <h1>Architecture Patterns</h1>
+      <p class="lede">Five recurring decisions that shape how this Vue 3 + Pinia contrast checker is organised — read these before adding a feature or tracing a bug.</p>
+      <div class="meta">
+        <span class="chip">Vue 3 · Pinia</span>
+        <span class="chip">5 patterns</span>
+        <span class="chip">Pure logic · injected I/O</span>
+      </div>
   </header>
 
   <div class="intro">
-    <p>
-      These four patterns together cover how the app stays <strong>testable</strong>,
-      <strong>fast</strong>, and <strong>maintainable</strong> as features have been added.
-      Hexagonal architecture isolates the store from the browser; the URL codec handles
-      serialisation at the boundary; the two-stage computed pipeline keeps reactive work cheap
-      where it matters; and the thin-wrapper component keeps UI duplication in check.
-    </p>
-    <p>
-      Each page describes the problem, shows the implementation in this codebase, and lists the
-      advantages and disadvantages so you can judge when (and when not) to reach for the
-      pattern.
-    </p>
+<p>These docs capture the load-bearing structure of the codebase: where computation lives, how the store reaches the outside world, and how the UI stays consistent. They explain the <em>why</em> behind each decision, not just the shape of the code.</p>
   </div>
 
   <p class="section-eyebrow">Index</p>
   <h2>Patterns covered</h2>
 
   <div class="patterns">
-
-    <a class="pattern hex" href="hexagonal-architecture.html">
+    <a class="pattern state" href="hexagonal-architecture.html">
       <div class="pattern-head">
-        <span class="pattern-icon" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
-            <polygon points="12,3 20,8 20,16 12,21 4,16 4,8"/>
-          </svg>
-        </span>
+        <span class="pattern-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <polygon points="12 2 21 7 21 17 12 22 3 17 3 7" />
+  <circle cx="12" cy="12" r="3" />
+</svg></span>
         <div>
-          <h3>Hexagonal Architecture</h3>
+          <h3>Hexagonal Architecture (Ports &amp; Adapters)</h3>
           <div class="file">hexagonal-architecture.html</div>
         </div>
       </div>
-      <div class="tags">
-        <span class="tag">stores/</span>
-        <span class="tag">adapters/</span>
-        <span class="tag">provide/inject</span>
-      </div>
-      <p>
-        Ports &amp; adapters at the store boundary. The store calls injected
-        <code>UrlPort</code> and <code>StoragePort</code> objects — production wires
-        <code>window</code> in; tests wire plain JS objects in — without changing a line of
-        business logic.
-      </p>
-      <span class="read">Read pattern <span class="arrow">→</span></span>
+      <div class="tags"><span class="tag">adapters</span><span class="tag">dependency-injection</span><span class="tag">testability</span></div>
+      <p>The store reaches the URL and localStorage through injected port interfaces, so it can be tested with in-memory fakes and retargeted to new storage without touching logic.</p>
+      <span class="read">Read pattern <span class="arrow">&rarr;</span></span>
     </a>
 
-    <a class="pattern pipeline" href="two-stage-computed-pipeline.html">
+    <a class="pattern state" href="two-stage-computed-pipeline.html">
       <div class="pattern-head">
-        <span class="pattern-icon" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="5" width="6" height="14" rx="1.5"/>
-            <rect x="15" y="5" width="6" height="14" rx="1.5"/>
-            <path d="M9 12 h6"/>
-            <path d="M13 10 l2 2 -2 2"/>
-          </svg>
-        </span>
+        <span class="pattern-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="2" y="8" width="7" height="8" rx="1.5" />
+  <rect x="15" y="8" width="7" height="8" rx="1.5" />
+  <path d="M9 12h4" />
+  <path d="M11 10l2 2-2 2" />
+</svg></span>
         <div>
           <h3>Two-Stage Computed Pipeline</h3>
           <div class="file">two-stage-computed-pipeline.html</div>
         </div>
       </div>
-      <div class="tags">
-        <span class="tag">stores/</span>
-        <span class="tag">composables/</span>
-        <span class="tag">O(N²) → cached</span>
-      </div>
-      <p>
-        Split expensive contrast math from cheap pass/fail bucketing into two cascading
-        <code>computed()</code> calls. Toggling AA ↔ AAA invalidates only stage 2 —
-        <code>scoredPairs</code> stays cached and the O(N²) loop never re-runs.
-      </p>
-      <span class="read">Read pattern <span class="arrow">→</span></span>
+      <div class="tags"><span class="tag">reactivity</span><span class="tag">computed</span><span class="tag">performance</span></div>
+      <p>Splitting scoring from bucketing into two chained computed properties means an AA/AAA toggle never re-runs colour maths — only the cheap second stage invalidates.</p>
+      <span class="read">Read pattern <span class="arrow">&rarr;</span></span>
     </a>
 
-    <a class="pattern wrapper" href="thin-wrapper-component.html">
+    <a class="pattern client" href="thin-wrapper-component.html">
       <div class="pattern-head">
-        <span class="pattern-icon" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <rect x="8" y="8" width="8" height="8" rx="1"/>
-          </svg>
-        </span>
+        <span class="pattern-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="3" width="18" height="18" rx="2.5" />
+  <rect x="8" y="8" width="8" height="8" rx="1.5" />
+</svg></span>
         <div>
           <h3>Thin-Wrapper Component</h3>
           <div class="file">thin-wrapper-component.html</div>
         </div>
       </div>
-      <div class="tags">
-        <span class="tag">components/</span>
-        <span class="tag">Vue v-model</span>
-        <span class="tag">~10-line wrappers</span>
-      </div>
-      <p>
-        One self-contained <code>ModeToggle</code> owns all rendering and behaviour;
-        <code>ComplianceModeToggle</code> and <code>ContrastModeToggle</code> are paper-thin
-        wrappers that do nothing but bind options and store state through v-model.
-      </p>
-      <span class="read">Read pattern <span class="arrow">→</span></span>
+      <div class="tags"><span class="tag">components</span><span class="tag">composition</span><span class="tag">reuse</span></div>
+      <p>ModeToggle owns every pixel of the toggle UI; ComplianceModeToggle and ContrastModeToggle are minimal declarative wrappers that bind it to the store.</p>
+      <span class="read">Read pattern <span class="arrow">&rarr;</span></span>
     </a>
 
-    <a class="pattern codec" href="url-codec.html">
+    <a class="pattern shared" href="url-codec.html">
       <div class="pattern-head">
-        <span class="pattern-icon" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13 a4 4 0 0 1 0 -5 l3 -3 a4 4 0 0 1 5 5 l-1.5 1.5"/>
-            <path d="M14 11 a4 4 0 0 1 0 5 l-3 3 a4 4 0 0 1 -5 -5 l1.5 -1.5"/>
-          </svg>
-        </span>
+        <span class="pattern-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M10 13a5 5 0 0 0 7.07 0l2-2a5 5 0 1 0-7.07-7.07l-1.5 1.5" />
+  <path d="M14 11a5 5 0 0 0-7.07 0l-2 2a5 5 0 1 0 7.07 7.07l1.5-1.5" />
+</svg></span>
         <div>
           <h3>URL Codec</h3>
           <div class="file">url-codec.html</div>
         </div>
       </div>
-      <div class="tags">
-        <span class="tag">composables/</span>
-        <span class="tag">pure functions</span>
-        <span class="tag">validation at boundary</span>
-      </div>
-      <p>
-        A pure encode/decode module that centralises URL serialisation and validates incoming
-        params before they reach the store. Malformed values fall back to defaults rather than
-        crash; the store assigns directly with no null guards.
-      </p>
-      <span class="read">Read pattern <span class="arrow">→</span></span>
+      <div class="tags"><span class="tag">serialisation</span><span class="tag">validation</span><span class="tag">pure-functions</span></div>
+      <p>One module encodes palette state to query params and decodes/validates them back into a complete typed shape — unrecognised values fall back to defaults before they ever reach the store.</p>
+      <span class="read">Read pattern <span class="arrow">&rarr;</span></span>
     </a>
 
+    <a class="pattern shared" href="framework-agnostic-logic-modules.html">
+      <div class="pattern-head">
+        <span class="pattern-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="8 7 3 12 8 17" />
+  <polyline points="16 7 21 12 16 17" />
+  <line x1="13" y1="5" x2="11" y2="19" />
+</svg></span>
+        <div>
+          <h3>Framework-Agnostic Logic Modules</h3>
+          <div class="file">framework-agnostic-logic-modules.html</div>
+        </div>
+      </div>
+      <div class="tags"><span class="tag">composables</span><span class="tag">pure-functions</span><span class="tag">testability</span></div>
+      <p>Contrast maths, CVD simulation, and URL encoding are plain functions with no framework dependency — testable without mounting a single component.</p>
+      <span class="read">Read pattern <span class="arrow">&rarr;</span></span>
+    </a>
   </div>
 
   <footer>
-    <span>colour-contrast-checker · docs/patterns</span>
+    <span>Colour Contrast Checker</span>
     <span>Index</span>
   </footer>
+
 </div>
 
 </body>

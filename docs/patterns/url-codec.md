@@ -1,19 +1,40 @@
-# URL Codec
+---
+title: URL Codec
+eyebrow: Pattern
+lede: A single pure module owns the entire mapping between app state and the URL — encoding, decoding, and validation — so malformed shared links are sanitised at the boundary and the store never touches `URLSearchParams`.
+chips:
+  - "Layer · composables"
+  - "Module · `paletteUrlCodec.js`"
+  - "Pure · validates at the edge"
+category: shared
+tags:
+  - serialisation
+  - validation
+  - pure-functions
+summary: One module encodes palette state to query params and decodes/validates them back into a complete typed shape — unrecognised values fall back to defaults before they ever reach the store.
+icon: |
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.07 0l2-2a5 5 0 1 0-7.07-7.07l-1.5 1.5" />
+    <path d="M14 11a5 5 0 0 0-7.07 0l-2 2a5 5 0 1 0 7.07 7.07l1.5-1.5" />
+  </svg>
+---
 
 ## Problem statement
 
-The app encodes the entire palette state — colours, title, focus colour, contrast mode, CVD mode, compliance level — into URL query parameters so users can share a palette via a link. Without a dedicated module for this, URL encoding logic tends to leak into store actions and URL decoding tends to get tangled with validation, making both harder to test and easy to get wrong. Malformed URLs (hand-edited or from external links) must be handled safely: an unrecognised value for `contrastMode` should be silently ignored, not crash the store. The challenge is keeping all of this — encoding, decoding, and validation — in one testable place that the store can call without touching browser globals.
+The app encodes the entire palette state — colours, title, focus colour, contrast mode, CVD mode, compliance level — into URL query parameters so users can share a palette via a link. Without a dedicated module for this, URL encoding logic tends to leak into store actions and URL decoding tends to get tangled with validation, making both harder to test and easy to get wrong. Malformed URLs (hand-edited or from external links) must be handled safely: an unrecognised value for `contrastMode` should be silently ignored, not crash the store. The challenge is keeping all of this — encoding, decoding, and validation — in one testable place the store can call without touching browser globals.
 
 ## Implementation in this codebase
 
-The codec lives in the **composable layer** as a single module: `src/composables/paletteUrlCodec.js`. It exports two pure functions. "Pure" means: no side effects, no imports of browser globals, no store access. The functions take plain values in and return plain values out.
+The codec lives in the **composable layer** as a single module: `src/composables/paletteUrlCodec.js`. It exports two pure functions. "Pure" means no side effects, no imports of browser globals, no store access — plain values in, plain values out.
 
 A named schema **`PaletteUrlState`** (JSDoc typedef) defines the decoder's return shape, and **`defaultPaletteUrlState()`** supplies canonical defaults. The decoder always returns a complete `PaletteUrlState` — missing or invalid fields fall back to these defaults rather than `null`, so callers can assign directly without null guards.
 
-**Encoding** (`encodePaletteToParams`): takes the current palette state as named arguments and returns a plain object of query parameter key/value pairs. Colours are joined as a hyphen-separated hex string (hashes stripped). Empty values become `null`, which signals the URL adapter to delete that parameter rather than leave a blank `?title=` in the URL.
+The two halves are mirror images — encode current state to params, decode raw search back to a validated state:
 
-```js
-// src/composables/paletteUrlCodec.js
+:::tabs
+@tab Encode
+```js src/composables/paletteUrlCodec.js
+// state → query-param object (null = "delete this param")
 export function encodePaletteToParams({ colours, title, focusColour, contrastMode, cvdMode, complianceMode }) {
   return {
     colours:  colours.length ? colours.map(c => c.replace("#", "")).join("-") : null,
@@ -25,13 +46,9 @@ export function encodePaletteToParams({ colours, title, focusColour, contrastMod
   };
 }
 ```
-
-**Decoding** (`decodePaletteFromSearch`): takes the raw URL search string (e.g. `?colours=ff0000-000000&contrastMode=apca`) and returns a typed, validated `PaletteUrlState`. Each field is validated before being returned:
-
-- Colour segments are validated with a hex regex — invalid hex values are filtered out silently.
-- Mode values (`contrastMode`, `cvdMode`, `complianceMode`) are checked against the canonical arrays in `src/config/modes.js`; unrecognised values fall back to the `defaultPaletteUrlState()` value for that field.
-
-```js
+@tab Decode
+```js src/composables/paletteUrlCodec.js
+// raw search → complete, validated PaletteUrlState
 export function decodePaletteFromSearch(search) {
   const defaults = defaultPaletteUrlState();
   const params = new URLSearchParams(search.replace(/^\?/, ""));
@@ -43,16 +60,18 @@ export function decodePaletteFromSearch(search) {
 
   const contrastRaw = params.get("contrastMode");
   const contrastMode = CONTRAST_MODES.includes(contrastRaw) ? contrastRaw : defaults.contrastMode;
-  // ...same pattern for cvdMode, complianceMode...
+  // ...same validate-or-default pattern for cvdMode, complianceMode...
 
   return { colours, title, focusColour, contrastMode, cvdMode, complianceMode };
 }
 ```
+:::
 
-The store calls both functions but never touches `URLSearchParams` directly:
+Each field is validated before being returned: colour segments are filtered through a hex regex (invalid hex dropped silently), and mode values are checked against the canonical arrays in `src/config/modes.js`, falling back to the `defaultPaletteUrlState()` value for that field when unrecognised.
 
-```js
-// src/stores/colourStore.js
+The store calls both functions but never touches `URLSearchParams` itself:
+
+```js src/stores/colourStore.js
 function updateURLData() {
   _urlPort.setParams(encodePaletteToParams({ colours, title, ... }));
 }
@@ -66,26 +85,30 @@ function loadPaletteFromQueryString() {
 }
 ```
 
+:::callout
+**Validation at the boundary:** by the time a value leaves `decodePaletteFromSearch`, it is guaranteed to be one of the canonical options. The store never has to defend against `contrastMode === "hack"` — the codec already replaced it with the default.
+:::
+
 This separation means the codec can be unit-tested with raw strings — no browser, no store, no adapter needed.
 
 ## Advantages
 
-- **Centralised serialisation** — the mapping between app state and URL shape is defined in exactly one file. Renaming a query parameter requires one change.
-- **Validation at the boundary** — unrecognised or malformed values are rejected before they reach the store. The store never needs to guard against `contrastMode === "hack"`.
+- **Centralised serialisation** — the mapping between app state and URL shape is defined in exactly one file. Renaming a query parameter is a one-line change.
+- **Validation at the boundary** — unrecognised or malformed values are rejected before they reach the store. The store never needs to guard against bad enum values.
 - **Pure functions are easy to test** — pass in a search string, assert the returned object. No mocking required.
 - **Decoupled from the URL adapter** — the codec produces and consumes plain strings and objects; the adapter handles the actual `window.location` manipulation. The codec works equally well under test with no browser present.
-- **Complete return value** — `decodePaletteFromSearch` always returns a full `PaletteUrlState`. The store assigns fields directly without null checks.
+- **Complete return value** — `decodePaletteFromSearch` always returns a full `PaletteUrlState`, so the store assigns fields directly without null checks.
 
 ## Disadvantages
 
-- **Encoder→adapter contract is still implicit** — `encodePaletteToParams` returns `{ colours, title, focus, contrastMode, cvdMode, complianceMode }`; the adapter must handle all those keys. Nothing in plain JS enforces this at write time. (`PaletteUrlState` formalizes the decoder output, but the encoder output shape has no equivalent schema.)
-- **Silent filtering can hide bugs** — invalid hex values are silently dropped rather than surfaced to the user. A corrupted shared link will load with fewer colours and no error message.
-- **Hex format is fragile** — colours are serialised by stripping `#` and joining with `-`. A colour hex that somehow contained a `-` would corrupt the entire colour list. (This can't happen with valid hex strings, but it's worth knowing the delimiter is load-bearing.)
+- **Encoder→adapter contract is still implicit** — `encodePaletteToParams` returns `{ colours, title, focus, contrastMode, cvdMode, complianceMode }`; the adapter must handle all those keys, and nothing in plain JS enforces it. (`PaletteUrlState` formalises the decoder output, but the encoder output shape has no equivalent schema.)
+- **Silent filtering can hide bugs** — invalid hex values are silently dropped rather than surfaced to the user. A corrupted shared link loads with fewer colours and no error message.
+- **Hex format is fragile** — colours are serialised by stripping `#` and joining with `-`. A hex that somehow contained a `-` would corrupt the entire colour list. (It can't happen with valid hex, but the delimiter is load-bearing.)
 
 ## Key files
 
-- [`src/composables/paletteUrlCodec.js`](../src/composables/paletteUrlCodec.js) — `defaultPaletteUrlState`, `encodePaletteToParams`, and `decodePaletteFromSearch`; the entire codec
-- [`src/config/modes.js`](../src/config/modes.js) — canonical arrays used for enum validation in the decoder
-- [`src/adapters/browserUrlAdapter.js`](../src/adapters/browserUrlAdapter.js) — production adapter that receives the params object and writes to `window.history`
-- [`src/adapters/testAdapters.js`](../src/adapters/testAdapters.js) — in-memory URL adapter used in tests
-- [`src/stores/colourStore.js`](../src/stores/colourStore.js) — calls `encodePaletteToParams` in `updateURLData` and `decodePaletteFromSearch` in `loadPaletteFromQueryString`
+- `src/composables/paletteUrlCodec.js` — `defaultPaletteUrlState`, `encodePaletteToParams`, and `decodePaletteFromSearch`; the entire codec
+- `src/config/modes.js` — canonical arrays used for enum validation in the decoder
+- `src/adapters/browserUrlAdapter.js` — production adapter that receives the params object and writes to `window.history`
+- `src/adapters/testAdapters.js` — in-memory URL adapter used in tests
+- `src/stores/colourStore.js` — calls `encodePaletteToParams` in `updateURLData` and `decodePaletteFromSearch` in `loadPaletteFromQueryString`

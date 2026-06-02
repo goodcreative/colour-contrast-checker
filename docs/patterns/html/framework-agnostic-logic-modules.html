@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>URL Codec</title>
+<title>Framework-Agnostic Logic Modules</title>
 <style>
   :root {
     --bg: #fafaf9; --surface: #ffffff; --surface-alt: #f4f4f2;
@@ -155,81 +155,72 @@
 
     <header class="hero">
       <span class="eyebrow">Pattern</span>
-      <h1>URL Codec</h1>
-      <p class="lede">A single pure module owns the entire mapping between app state and the URL — encoding, decoding, and validation — so malformed shared links are sanitised at the boundary and the store never touches <code>URLSearchParams</code>.</p>
+      <h1>Framework-Agnostic Logic Modules</h1>
+      <p class="lede">Every piece of real computation lives in a plain JavaScript module with <strong>zero Vue imports</strong> — the store is the only place that wires that logic into reactivity.</p>
       <div class="meta">
         <span class="chip">Layer · composables</span>
-        <span class="chip">Module · <code>paletteUrlCodec.js</code></span>
-        <span class="chip">Pure · validates at the edge</span>
+        <span class="chip">Entry · <code>contrastEngine.js</code></span>
+        <span class="chip">Pure functions · no Vue</span>
       </div>
     </header>
 
     <section id="problem-statement">
 <h2>Problem statement</h2>
-<p>The app encodes the entire palette state — colours, title, focus colour, contrast mode, CVD mode, compliance level — into URL query parameters so users can share a palette via a link. Without a dedicated module for this, URL encoding logic tends to leak into store actions and URL decoding tends to get tangled with validation, making both harder to test and easy to get wrong. Malformed URLs (hand-edited or from external links) must be handled safely: an unrecognised value for <code>contrastMode</code> should be silently ignored, not crash the store. The challenge is keeping all of this — encoding, decoding, and validation — in one testable place the store can call without touching browser globals.</p>
+<p>A web app has two very different kinds of code mixed together. Some of it is <em>logic</em> — given two colours, what is their contrast ratio? Some of it is <em>plumbing</em> — when this value changes, re-render that part of the screen. Frameworks like Vue are brilliant at the plumbing, and it is tempting to let framework features creep into the logic: a contrast calculation that reads a <code>ref</code>, a colour converter that lives inside a component's <code>&lt;script setup&gt;</code>, a URL parser that reaches into the store.</p>
+<p>The moment that happens, the logic can no longer be exercised on its own. To test "does pure black on pure white score 21:1?" you would have to mount a component, fake the browser, and wait for reactivity to settle — an enormous amount of ceremony to check a maths function. The logic also becomes impossible to reuse: a second feature that needs the same calculation has to drag the whole framework along with it. And reasoning about the code gets harder, because every function <em>might</em> secretly depend on some reactive value you cannot see in its signature.</p>
+<p>The goal is a clean split: keep all the genuine computation in plain functions that take values in and return values out, and confine framework awareness to one thin layer.</p>
 </section>
 
     <section id="implementation-in-this-codebase">
 <h2>Implementation in this codebase</h2>
-<p>The codec lives in the <strong>composable layer</strong> as a single module: <code>src/composables/paletteUrlCodec.js</code>. It exports two pure functions. "Pure" means no side effects, no imports of browser globals, no store access — plain values in, plain values out.</p>
-<p>A named schema <strong><code>PaletteUrlState</code></strong> (JSDoc typedef) defines the decoder's return shape, and <strong><code>defaultPaletteUrlState()</code></strong> supplies canonical defaults. The decoder always returns a complete <code>PaletteUrlState</code> — missing or invalid fields fall back to these defaults rather than <code>null</code>, so callers can assign directly without null guards.</p>
-<p>The two halves are mirror images — encode current state to params, decode raw search back to a validated state:</p>
+<p>The split runs along a layer boundary. The <strong>composable layer</strong> (<code>src/composables/</code>) holds the logic as ordinary functions. The <strong>state-management layer</strong> (<code>src/stores/colourStore.js</code>) is the <em>only</em> place allowed to connect that logic to Vue's reactivity.</p>
+<p>A composable here is just an exported function. It imports other plain modules and config constants — never <code>vue</code>. <code>simulateCVD</code> is representative: hex string in, simulated hex string out, the whole colour-science pipeline in between, and not a single reactive primitive.</p>
 <div class="code">
-<div class="tabs"><button class="tab-btn active" data-tab="pre19-tab0">Encode</button><button class="tab-btn" data-tab="pre19-tab1">Decode</button></div>
-<div id="pre19-tab0" class="tab-panel active">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/paletteUrlCodec.js</span><button class="copy-btn" data-copy-target="pre20">Copy</button></div>
-<pre id="pre20"><span class="tk-cmt">// state → query-param object (null = "delete this param")</span>
-<span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">encodePaletteToParams</span>({ colours, title, focusColour, contrastMode, cvdMode, complianceMode }) {
-  <span class="tk-kw">return</span> {
-    colours:  colours.length ? colours.<span class="tk-fn">map</span>(c =&gt; c.<span class="tk-fn">replace</span>(<span class="tk-str">"#"</span>, <span class="tk-str">""</span>)).<span class="tk-fn">join</span>(<span class="tk-str">"-"</span>) : <span class="tk-kw">null</span>,
-    title:    title || <span class="tk-kw">null</span>,
-    focus:    focusColour ? focusColour.<span class="tk-fn">replace</span>(<span class="tk-str">"#"</span>, <span class="tk-str">""</span>) : <span class="tk-kw">null</span>,
-    contrastMode,
-    cvdMode,
-    complianceMode,
-  };
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/simulateCVD.js</span><button class="copy-btn" data-copy-target="pre1">Copy</button></div>
+<pre id="pre1"><span class="tk-kw">export</span> <span class="tk-kw">default</span> <span class="tk-kw">function</span> <span class="tk-fn">simulateCVD</span>(hex, cvdType) {
+  <span class="tk-kw">if</span> (!CVD_MODES.<span class="tk-fn">includes</span>(cvdType) || cvdType === <span class="tk-str">'normal'</span>) <span class="tk-kw">return</span> hex;
+  <span class="tk-kw">const</span> matrix = CVD_MATRICES[cvdType];
+  <span class="tk-kw">if</span> (!matrix) <span class="tk-kw">return</span> hex;
+
+  <span class="tk-kw">const</span> [r, g, b] = <span class="tk-fn">hexToRGB</span>(hex);          <span class="tk-cmt">// hex → 8-bit RGB</span>
+  <span class="tk-kw">const</span> rL = <span class="tk-fn">linearize</span>(r);                  <span class="tk-cmt">// remove sRGB gamma</span>
+  <span class="tk-cmt">// ...matrix transform in linear space, clamp, re-apply gamma...</span>
+  <span class="tk-kw">return</span> <span class="tk-str">`#${toHex(compress(rS))}${toHex(compress(gS))}${toHex(compress(bS))}`</span>;
 }</pre>
 </div>
-<div id="pre19-tab1" class="tab-panel">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/paletteUrlCodec.js</span><button class="copy-btn" data-copy-target="pre21">Copy</button></div>
-<pre id="pre21"><span class="tk-cmt">// raw search → complete, validated PaletteUrlState</span>
-<span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">decodePaletteFromSearch</span>(search) {
-  <span class="tk-kw">const</span> defaults = <span class="tk-fn">defaultPaletteUrlState</span>();
-  <span class="tk-kw">const</span> params = <span class="tk-kw">new</span> <span class="tk-fn">URLSearchParams</span>(search.<span class="tk-fn">replace</span>(/^\?/, <span class="tk-str">""</span>));
-
-  <span class="tk-kw">const</span> coloursRaw = params.<span class="tk-kw">get</span>(<span class="tk-str">"colours"</span>);
-  <span class="tk-kw">const</span> colours = coloursRaw
-    ? coloursRaw.<span class="tk-fn">split</span>(<span class="tk-str">"-"</span>).<span class="tk-fn">map</span>(seg =&gt; <span class="tk-str">"#"</span> + seg).<span class="tk-fn">filter</span>(isValidHex)
-    : defaults.colours;
-
-  <span class="tk-kw">const</span> contrastRaw = params.<span class="tk-kw">get</span>(<span class="tk-str">"contrastMode"</span>);
-  <span class="tk-kw">const</span> contrastMode = CONTRAST_MODES.<span class="tk-fn">includes</span>(contrastRaw) ? contrastRaw : defaults.contrastMode;
-  <span class="tk-cmt">// ...same validate-or-default pattern for cvdMode, complianceMode...</span>
-
-  <span class="tk-kw">return</span> { colours, title, focusColour, contrastMode, cvdMode, complianceMode };
-}</pre>
-</div>
-</div>
-<p>Each field is validated before being returned: colour segments are filtered through a hex regex (invalid hex dropped silently), and mode values are checked against the canonical arrays in <code>src/config/modes.js</code>, falling back to the <code>defaultPaletteUrlState()</code> value for that field when unrecognised.</p>
-<p>The store calls both functions but never touches <code>URLSearchParams</code> itself:</p>
-<div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/stores/colourStore.js</span><button class="copy-btn" data-copy-target="pre22">Copy</button></div>
-<pre id="pre22"><span class="tk-kw">function</span> <span class="tk-fn">updateURLData</span>() {
-  _urlPort.<span class="tk-fn">setParams</span>(<span class="tk-fn">encodePaletteToParams</span>({ colours, title, ... }));
-}
-
-<span class="tk-kw">function</span> <span class="tk-fn">loadPaletteFromQueryString</span>() {
-  <span class="tk-kw">const</span> state = <span class="tk-fn">decodePaletteFromSearch</span>(_urlPort.<span class="tk-fn">getSearch</span>());
-  colourSwatches.value  = state.colours;
-  paletteTitle.value    = state.title;
-  contrastMode.value    = state.contrastMode;
-  <span class="tk-cmt">// ...assign directly, no null guards needed</span>
-}</pre>
-</div>
+<p>The same discipline holds across the layer. <code>calculateColourContrast.js</code> exports <code>contrastRatio(colour1, colour2)</code> — a number out, no state. <code>contrastEngine.js</code> exports <code>scoreColourPair</code>, <code>scoreAllPairs</code>, and <code>categorizePairs</code> — arrays and objects in, arrays and objects out. <code>paletteUrlCodec.js</code> exports <code>encodePaletteToParams</code> / <code>decodePaletteFromSearch</code> — it parses a query string with the standard <code>URLSearchParams</code>, but reads no <code>window</code> global and touches no store.</p>
 <div class="callout">
-<p><strong>Validation at the boundary:</strong> by the time a value leaves <code>decodePaletteFromSearch</code>, it is guaranteed to be one of the canonical options. The store never has to defend against <code>contrastMode === "hack"</code> — the codec already replaced it with the default.</p>
+<p><strong>The rule:</strong> if a file <code>import</code>s from <code>vue</code>, it is plumbing. If it doesn't, it is logic. In this codebase, everything under <code>src/composables/</code> is logic.</p>
 </div>
-<p>This separation means the codec can be unit-tested with raw strings — no browser, no store, no adapter needed.</p>
+<p>The store is where the two worlds meet. It imports the plain functions and wraps their <em>calls</em> in <code>computed()</code>, so Vue knows to re-run them when inputs change. The logic itself never learns it is being observed.</p>
+<div class="compare-grid">
+<div>
+<div class="compare-label bad"><span class="dot"></span>Tempting — reach into reactivity from the logic</div>
+<div class="code">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;logic now coupled to Vue + the store</span><button class="copy-btn" data-copy-target="pre2">Copy</button></div>
+<pre id="pre2"><span class="tk-cmt">// inside contrastEngine.js</span>
+<span class="tk-kw">import</span> { useColourStore } <span class="tk-kw">from</span> <span class="tk-str">'@/stores/colourStore'</span>;
+<span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">scoreAllPairs</span>() {
+  <span class="tk-kw">const</span> store = <span class="tk-fn">useColourStore</span>();      <span class="tk-cmt">// can't test without a Pinia instance</span>
+  <span class="tk-kw">return</span> store.colourSwatches.<span class="tk-fn">map</span>(<span class="tk-cmt">/* ... */</span>);
+}</pre>
+</div>
+</div>
+<div>
+<div class="compare-label good"><span class="dot"></span>Actual — plain inputs, wired up in the store</div>
+<div class="code">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;logic stays pure; store owns the wiring</span><button class="copy-btn" data-copy-target="pre3">Copy</button></div>
+<pre id="pre3"><span class="tk-cmt">// contrastEngine.js — takes a plain array</span>
+<span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">scoreAllPairs</span>(swatches, opts = {}) { <span class="tk-cmt">/* ... */</span> }
+
+<span class="tk-cmt">// colourStore.js — the only file that knows about Vue + state</span>
+<span class="tk-kw">const</span> scoredPairs = <span class="tk-fn">computed</span>(() =&gt;
+  <span class="tk-fn">scoreAllPairs</span>(colourSwatches.value, { mode: contrastMode.value })
+);</pre>
+</div>
+</div>
+</div>
+<p>This is exactly why the test suite can cover the hard parts — contrast maths, CVD matrices, URL round-tripping — in plain unit-test files (<code>contrastEngine.spec.js</code>, <code>paletteUrlCodec.spec.js</code>) that import a function and assert on its return value, with no component mounting and no browser fakery.</p>
 </section>
 
     <section id="tradeoffs">
@@ -237,11 +228,11 @@
 <div class="pc-grid">
 <div class="pc-card pros">
 <h3><span class="badge-icon">+</span> Advantages</h3>
-<ul><li><strong>Centralised serialisation</strong> — the mapping between app state and URL shape is defined in exactly one file. Renaming a query parameter is a one-line change.</li><li><strong>Validation at the boundary</strong> — unrecognised or malformed values are rejected before they reach the store. The store never needs to guard against bad enum values.</li><li><strong>Pure functions are easy to test</strong> — pass in a search string, assert the returned object. No mocking required.</li><li><strong>Decoupled from the URL adapter</strong> — the codec produces and consumes plain strings and objects; the adapter handles the actual <code>window.location</code> manipulation. The codec works equally well under test with no browser present.</li><li><strong>Complete return value</strong> — <code>decodePaletteFromSearch</code> always returns a full <code>PaletteUrlState</code>, so the store assigns fields directly without null checks.</li></ul>
+<ul><li><strong>Trivially testable.</strong> A logic function is tested by importing it and checking outputs. No mounting, no jsdom, no Pinia setup — which is why the composable specs are the stable, fast core of the suite.</li><li><strong>Honest signatures.</strong> A function's parameters are its <em>entire</em> input. There are no hidden reactive dependencies, so you can reason about it locally.</li><li><strong>Reusable and portable.</strong> Any of these modules could be lifted into a different project — or a Node script, or a Web Worker — unchanged, because nothing ties them to Vue.</li><li><strong>One place to understand reactivity.</strong> All the "when X changes, recompute Y" wiring lives in the store, so the reactive graph is read in a single file.</li></ul>
 </div>
 <div class="pc-card cons">
 <h3><span class="badge-icon">&minus;</span> Disadvantages</h3>
-<ul><li><strong>Encoder→adapter contract is still implicit</strong> — <code>encodePaletteToParams</code> returns <code>{ colours, title, focus, contrastMode, cvdMode, complianceMode }</code>; the adapter must handle all those keys, and nothing in plain JS enforces it. (<code>PaletteUrlState</code> formalises the decoder output, but the encoder output shape has no equivalent schema.)</li><li><strong>Silent filtering can hide bugs</strong> — invalid hex values are silently dropped rather than surfaced to the user. A corrupted shared link loads with fewer colours and no error message.</li><li><strong>Hex format is fragile</strong> — colours are serialised by stripping <code>#</code> and joining with <code>-</code>. A hex that somehow contained a <code>-</code> would corrupt the entire colour list. (It can't happen with valid hex, but the delimiter is load-bearing.)</li></ul>
+<ul><li><strong>Discipline, not enforcement.</strong> Nothing in the build stops someone from importing <code>vue</code> into a composable; the boundary holds only by convention and review.</li><li><strong>More wiring at the seam.</strong> Because logic takes plain arguments, the store must explicitly pass each input (<code>mode</code>, <code>cvdMode</code>, <code>focusColour</code>) into every call rather than letting the function read it directly — more verbose call sites.</li><li><strong>"Composable" is a slight misnomer.</strong> These are plain function modules, not Vue composables in the <code>useX()</code>-returns-refs sense, which can briefly confuse developers expecting the latter.</li></ul>
 </div>
 </div>
 </section>
@@ -252,36 +243,36 @@
 <li>
 <span class="file-icon js">JS</span>
 <div>
+<div class="file-path">src/composables/contrastEngine.js</div>
+<div class="file-desc"><code>scoreColourPair</code> / <code>scoreAllPairs</code> / <code>categorizePairs</code>; pure scoring and bucketing</div>
+</div>
+</li>
+<li>
+<span class="file-icon js">JS</span>
+<div>
+<div class="file-path">src/composables/simulateCVD.js</div>
+<div class="file-desc">colour-vision-deficiency simulation, hex in / hex out</div>
+</div>
+</li>
+<li>
+<span class="file-icon js">JS</span>
+<div>
+<div class="file-path">src/composables/calculateColourContrast.js</div>
+<div class="file-desc">WCAG 2.0 contrast-ratio maths</div>
+</div>
+</li>
+<li>
+<span class="file-icon js">JS</span>
+<div>
 <div class="file-path">src/composables/paletteUrlCodec.js</div>
-<div class="file-desc"><code>defaultPaletteUrlState</code>, <code>encodePaletteToParams</code>, and <code>decodePaletteFromSearch</code>; the entire codec</div>
-</div>
-</li>
-<li>
-<span class="file-icon js">JS</span>
-<div>
-<div class="file-path">src/config/modes.js</div>
-<div class="file-desc">canonical arrays used for enum validation in the decoder</div>
-</div>
-</li>
-<li>
-<span class="file-icon js">JS</span>
-<div>
-<div class="file-path">src/adapters/browserUrlAdapter.js</div>
-<div class="file-desc">production adapter that receives the params object and writes to <code>window.history</code></div>
-</div>
-</li>
-<li>
-<span class="file-icon js">JS</span>
-<div>
-<div class="file-path">src/adapters/testAdapters.js</div>
-<div class="file-desc">in-memory URL adapter used in tests</div>
+<div class="file-desc">encode/decode palette state to and from query strings</div>
 </div>
 </li>
 <li>
 <span class="file-icon js">JS</span>
 <div>
 <div class="file-path">src/stores/colourStore.js</div>
-<div class="file-desc">calls <code>encodePaletteToParams</code> in <code>updateURLData</code> and <code>decodePaletteFromSearch</code> in <code>loadPaletteFromQueryString</code></div>
+<div class="file-desc">the single layer that wires these functions into <code>computed()</code> reactivity</div>
 </div>
 </li>
 </ul>
@@ -289,7 +280,7 @@
 
     <footer>
       <span>Colour Contrast Checker</span>
-      <a href="../url-codec.md" style="color:inherit;">Source markdown &rarr;</a>
+      <a href="../framework-agnostic-logic-modules.md" style="color:inherit;">Source markdown &rarr;</a>
     </footer>
 
   </main>

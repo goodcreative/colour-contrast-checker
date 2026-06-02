@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased] — 2026-06-02 · Upgrade legacy pattern docs to rich doc format
+
+### Changed
+- **`docs/patterns/hexagonal-architecture.md`**, **`two-stage-computed-pipeline.md`**, **`thin-wrapper-component.md`**, **`url-codec.md`** — brought the four legacy pattern docs up to the current `document-patterns` structure: added YAML frontmatter (title, eyebrow, lede, hero chips, index `category`/`tags`/`summary`, inline SVG icon), moved file-path comments into code-fence header labels, converted Key files from markdown links to `` `path` — desc `` cards, and added `:::callout` / `:::compare` / `:::tabs` / `:::diagram` directives (incl. a token-styled reactivity-graph SVG on the two-stage pipeline doc)
+- **`docs/patterns/README.md`** — added index frontmatter (eyebrow, heading, lede, chips, intro) for a richer landing-page hero
+- **`docs/patterns/html/*`** — regenerated all pattern HTML artifacts from the updated markdown via `build_patterns.py`; index cards now carry per-pattern accent categories (`state`/`client`/`shared`)
+
 ## [Unreleased] — 2026-05-11 · HTML artifacts for pattern docs
 
 ### Added
