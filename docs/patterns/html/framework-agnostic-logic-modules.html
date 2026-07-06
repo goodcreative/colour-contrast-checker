@@ -13,9 +13,10 @@
     --good: #1f7a3a; --good-soft: #e7f5ec;
     --bad: #b1432a; --bad-soft: #fbece5;
     --warn: #b27800; --warn-soft: #fff5e1;
-    --code-bg: #16181d; --code-fg: #e5e5e0;
-    --code-comment: #7e8aa1; --code-string: #c5d99d;
-    --code-keyword: #c697e6; --code-fn: #8ec7ff; --code-num: #f5a97f;
+    --code-bg: #272822; --code-fg: #f8f8f2;
+    --code-comment: #75715e; --code-string: #e6db74;
+    --code-keyword: #f92672; --code-fn: #a6e22e; --code-num: #ae81ff;
+    --code-type: #66d9ef; --code-op: #f92672;
     --radius: 10px; --radius-lg: 14px;
     --shadow-sm: 0 1px 2px rgba(20,20,18,.04);
     --shadow-md: 0 4px 14px rgba(20,20,18,.06);
@@ -70,14 +71,21 @@
   .callout { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 16px 20px; border-radius: var(--radius); margin: 20px 0; box-shadow: var(--shadow-sm); }
   .callout p:last-child { margin-bottom: 0; }
 
-  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
-  .compare-grid > * { min-width: 0; }
-  @media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
-  .compare-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
-  .compare-label.bad  { color: var(--bad); }
-  .compare-label.good { color: var(--good); }
-  .compare-label .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-  .compare-grid .code { margin: 0; }
+  .compare { margin: 20px 0; display: flex; flex-direction: column; gap: 18px; }
+  .cmp-side { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .cmp-side.bad  { border-color: #e8b3a3; }
+  .cmp-side.good { border-color: #a8d5b8; }
+  .cmp-banner { display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .cmp-side.bad  .cmp-banner { background: var(--bad-soft); border-bottom-color: #f0cabb; }
+  .cmp-side.good .cmp-banner { background: var(--good-soft); border-bottom-color: #c2e3cd; }
+  .cmp-mark { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; font-size: 11px; font-weight: 700; line-height: 1; color: #fff; flex-shrink: 0; }
+  .cmp-side.bad  .cmp-mark { background: var(--bad); }
+  .cmp-side.good .cmp-mark { background: var(--good); }
+  .cmp-tag { font-family: var(--mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+  .cmp-side.bad  .cmp-tag { color: var(--bad); }
+  .cmp-side.good .cmp-tag { color: var(--good); }
+  .cmp-desc { color: var(--text-muted); }
+  .cmp-side .code { margin: 0; border-radius: 0; box-shadow: none; }
 
   .code { background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius); margin: 16px 0 24px; overflow: hidden; box-shadow: var(--shadow-md); }
   .code-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06); font-family: var(--mono); font-size: 12px; color: #aab1c2; }
@@ -92,6 +100,8 @@
   .tk-str { color: var(--code-string); }
   .tk-cmt { color: var(--code-comment); font-style: italic; }
   .tk-num { color: var(--code-num); }
+  .tk-type { color: var(--code-type); font-style: italic; }
+  .tk-op  { color: var(--code-op); }
 
   .tabs { display: flex; gap: 2px; padding: 8px 12px 0; background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06); }
   .tab-btn { padding: 5px 12px; font-size: 12px; font-family: var(--mono); border: 1px solid transparent; border-bottom: none; border-radius: 4px 4px 0 0; background: none; color: #7e8aa1; cursor: pointer; transition: color .15s, background .15s; }
@@ -178,12 +188,12 @@
 <div class="code">
 <div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/simulateCVD.js</span><button class="copy-btn" data-copy-target="pre1">Copy</button></div>
 <pre id="pre1"><span class="tk-kw">export</span> <span class="tk-kw">default</span> <span class="tk-kw">function</span> <span class="tk-fn">simulateCVD</span>(hex, cvdType) {
-  <span class="tk-kw">if</span> (!CVD_MODES.<span class="tk-fn">includes</span>(cvdType) || cvdType === <span class="tk-str">'normal'</span>) <span class="tk-kw">return</span> hex;
-  <span class="tk-kw">const</span> matrix = CVD_MATRICES[cvdType];
-  <span class="tk-kw">if</span> (!matrix) <span class="tk-kw">return</span> hex;
+  <span class="tk-kw">if</span> (<span class="tk-op">!</span><span class="tk-num">CVD_MODES</span>.<span class="tk-fn">includes</span>(cvdType) <span class="tk-op">||</span> cvdType <span class="tk-op">===</span> <span class="tk-str">'normal'</span>) <span class="tk-kw">return</span> hex;
+  <span class="tk-kw">const</span> matrix <span class="tk-op">=</span> <span class="tk-num">CVD_MATRICES</span>[cvdType];
+  <span class="tk-kw">if</span> (<span class="tk-op">!</span>matrix) <span class="tk-kw">return</span> hex;
 
-  <span class="tk-kw">const</span> [r, g, b] = <span class="tk-fn">hexToRGB</span>(hex);          <span class="tk-cmt">// hex → 8-bit RGB</span>
-  <span class="tk-kw">const</span> rL = <span class="tk-fn">linearize</span>(r);                  <span class="tk-cmt">// remove sRGB gamma</span>
+  <span class="tk-kw">const</span> [r, g, b] <span class="tk-op">=</span> <span class="tk-fn">hexToRGB</span>(hex);          <span class="tk-cmt">// hex → 8-bit RGB</span>
+  <span class="tk-kw">const</span> rL <span class="tk-op">=</span> <span class="tk-fn">linearize</span>(r);                  <span class="tk-cmt">// remove sRGB gamma</span>
   <span class="tk-cmt">// ...matrix transform in linear space, clamp, re-apply gamma...</span>
   <span class="tk-kw">return</span> <span class="tk-str">`#${toHex(compress(rS))}${toHex(compress(gS))}${toHex(compress(bS))}`</span>;
 }</pre>
@@ -193,28 +203,28 @@
 <p><strong>The rule:</strong> if a file <code>import</code>s from <code>vue</code>, it is plumbing. If it doesn't, it is logic. In this codebase, everything under <code>src/composables/</code> is logic.</p>
 </div>
 <p>The store is where the two worlds meet. It imports the plain functions and wraps their <em>calls</em> in <code>computed()</code>, so Vue knows to re-run them when inputs change. The logic itself never learns it is being observed.</p>
-<div class="compare-grid">
-<div>
-<div class="compare-label bad"><span class="dot"></span>Tempting — reach into reactivity from the logic</div>
+<div class="compare">
+<div class="cmp-side bad">
+<div class="cmp-banner"><span class="cmp-mark">&#10007;</span><span class="cmp-tag">Avoid</span><span class="cmp-desc">Tempting — reach into reactivity from the logic</span></div>
 <div class="code">
 <div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;logic now coupled to Vue + the store</span><button class="copy-btn" data-copy-target="pre2">Copy</button></div>
 <pre id="pre2"><span class="tk-cmt">// inside contrastEngine.js</span>
 <span class="tk-kw">import</span> { useColourStore } <span class="tk-kw">from</span> <span class="tk-str">'@/stores/colourStore'</span>;
 <span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">scoreAllPairs</span>() {
-  <span class="tk-kw">const</span> store = <span class="tk-fn">useColourStore</span>();      <span class="tk-cmt">// can't test without a Pinia instance</span>
+  <span class="tk-kw">const</span> store <span class="tk-op">=</span> <span class="tk-fn">useColourStore</span>();      <span class="tk-cmt">// can't test without a Pinia instance</span>
   <span class="tk-kw">return</span> store.colourSwatches.<span class="tk-fn">map</span>(<span class="tk-cmt">/* ... */</span>);
 }</pre>
 </div>
 </div>
-<div>
-<div class="compare-label good"><span class="dot"></span>Actual — plain inputs, wired up in the store</div>
+<div class="cmp-side good">
+<div class="cmp-banner"><span class="cmp-mark">&#10003;</span><span class="cmp-tag">Prefer</span><span class="cmp-desc">Actual — plain inputs, wired up in the store</span></div>
 <div class="code">
 <div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;logic stays pure; store owns the wiring</span><button class="copy-btn" data-copy-target="pre3">Copy</button></div>
 <pre id="pre3"><span class="tk-cmt">// contrastEngine.js — takes a plain array</span>
-<span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">scoreAllPairs</span>(swatches, opts = {}) { <span class="tk-cmt">/* ... */</span> }
+<span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">scoreAllPairs</span>(swatches, opts <span class="tk-op">=</span> {}) { <span class="tk-cmt">/* ... */</span> }
 
 <span class="tk-cmt">// colourStore.js — the only file that knows about Vue + state</span>
-<span class="tk-kw">const</span> scoredPairs = <span class="tk-fn">computed</span>(() =&gt;
+<span class="tk-kw">const</span> scoredPairs <span class="tk-op">=</span> <span class="tk-fn">computed</span>(() <span class="tk-op">=&gt;</span>
   <span class="tk-fn">scoreAllPairs</span>(colourSwatches.value, { mode: contrastMode.value })
 );</pre>
 </div>

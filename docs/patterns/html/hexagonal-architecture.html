@@ -13,9 +13,10 @@
     --good: #1f7a3a; --good-soft: #e7f5ec;
     --bad: #b1432a; --bad-soft: #fbece5;
     --warn: #b27800; --warn-soft: #fff5e1;
-    --code-bg: #16181d; --code-fg: #e5e5e0;
-    --code-comment: #7e8aa1; --code-string: #c5d99d;
-    --code-keyword: #c697e6; --code-fn: #8ec7ff; --code-num: #f5a97f;
+    --code-bg: #272822; --code-fg: #f8f8f2;
+    --code-comment: #75715e; --code-string: #e6db74;
+    --code-keyword: #f92672; --code-fn: #a6e22e; --code-num: #ae81ff;
+    --code-type: #66d9ef; --code-op: #f92672;
     --radius: 10px; --radius-lg: 14px;
     --shadow-sm: 0 1px 2px rgba(20,20,18,.04);
     --shadow-md: 0 4px 14px rgba(20,20,18,.06);
@@ -70,14 +71,21 @@
   .callout { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 16px 20px; border-radius: var(--radius); margin: 20px 0; box-shadow: var(--shadow-sm); }
   .callout p:last-child { margin-bottom: 0; }
 
-  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
-  .compare-grid > * { min-width: 0; }
-  @media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
-  .compare-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
-  .compare-label.bad  { color: var(--bad); }
-  .compare-label.good { color: var(--good); }
-  .compare-label .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-  .compare-grid .code { margin: 0; }
+  .compare { margin: 20px 0; display: flex; flex-direction: column; gap: 18px; }
+  .cmp-side { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .cmp-side.bad  { border-color: #e8b3a3; }
+  .cmp-side.good { border-color: #a8d5b8; }
+  .cmp-banner { display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .cmp-side.bad  .cmp-banner { background: var(--bad-soft); border-bottom-color: #f0cabb; }
+  .cmp-side.good .cmp-banner { background: var(--good-soft); border-bottom-color: #c2e3cd; }
+  .cmp-mark { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; font-size: 11px; font-weight: 700; line-height: 1; color: #fff; flex-shrink: 0; }
+  .cmp-side.bad  .cmp-mark { background: var(--bad); }
+  .cmp-side.good .cmp-mark { background: var(--good); }
+  .cmp-tag { font-family: var(--mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+  .cmp-side.bad  .cmp-tag { color: var(--bad); }
+  .cmp-side.good .cmp-tag { color: var(--good); }
+  .cmp-desc { color: var(--text-muted); }
+  .cmp-side .code { margin: 0; border-radius: 0; box-shadow: none; }
 
   .code { background: var(--code-bg); color: var(--code-fg); border-radius: var(--radius); margin: 16px 0 24px; overflow: hidden; box-shadow: var(--shadow-md); }
   .code-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06); font-family: var(--mono); font-size: 12px; color: #aab1c2; }
@@ -92,6 +100,8 @@
   .tk-str { color: var(--code-string); }
   .tk-cmt { color: var(--code-comment); font-style: italic; }
   .tk-num { color: var(--code-num); }
+  .tk-type { color: var(--code-type); font-style: italic; }
+  .tk-op  { color: var(--code-op); }
 
   .tabs { display: flex; gap: 2px; padding: 8px 12px 0; background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06); }
   .tab-btn { padding: 5px 12px; font-size: 12px; font-family: var(--mono); border: 1px solid transparent; border-bottom: none; border-radius: 4px 4px 0 0; background: none; color: #7e8aa1; cursor: pointer; transition: color .15s, background .15s; }
@@ -172,29 +182,29 @@
     <section id="implementation-in-this-codebase">
 <h2>Implementation in this codebase</h2>
 <p>The pattern lives at the boundary of the <strong>state-management layer</strong>. The store defines what it needs from the outside world as two implicit interfaces — a UrlPort and a StoragePort — and calls them through injected adapter objects rather than browser globals.</p>
-<div class="compare-grid">
-<div>
-<div class="compare-label bad"><span class="dot"></span>Tempting — the store reaches for browser globals directly</div>
+<div class="compare">
+<div class="cmp-side bad">
+<div class="cmp-banner"><span class="cmp-mark">&#10007;</span><span class="cmp-tag">Avoid</span><span class="cmp-desc">Tempting — the store reaches for browser globals directly</span></div>
 <div class="code">
 <div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;coupled to the browser; needs jsdom to test</span><button class="copy-btn" data-copy-target="pre4">Copy</button></div>
 <pre id="pre4"><span class="tk-cmt">// inside colourStore.js</span>
 <span class="tk-kw">function</span> <span class="tk-fn">loadPalette</span>() {
-  <span class="tk-kw">const</span> raw = localStorage.<span class="tk-fn">getItem</span>(<span class="tk-str">'palette'</span>);   <span class="tk-cmt">// real global</span>
-  <span class="tk-kw">const</span> search = window.location.search;          <span class="tk-cmt">// real global</span>
+  <span class="tk-kw">const</span> raw <span class="tk-op">=</span> localStorage.<span class="tk-fn">getItem</span>(<span class="tk-str">'palette'</span>);   <span class="tk-cmt">// real global</span>
+  <span class="tk-kw">const</span> search <span class="tk-op">=</span> window.location.search;          <span class="tk-cmt">// real global</span>
   <span class="tk-cmt">// ...test must fake window + localStorage and clean up after</span>
 }</pre>
 </div>
 </div>
-<div>
-<div class="compare-label good"><span class="dot"></span>Actual — the store calls injected ports</div>
+<div class="cmp-side good">
+<div class="cmp-banner"><span class="cmp-mark">&#10003;</span><span class="cmp-tag">Prefer</span><span class="cmp-desc">Actual — the store calls injected ports</span></div>
 <div class="code">
 <div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;technology-agnostic; tests pass in fakes</span><button class="copy-btn" data-copy-target="pre5">Copy</button></div>
-<pre id="pre5"><span class="tk-kw">const</span> _urlPort     = <span class="tk-fn">inject</span>(URL_PORT_KEY, ...);
-<span class="tk-kw">const</span> _storagePort = <span class="tk-fn">inject</span>(STORAGE_PORT_KEY, ...);
+<pre id="pre5"><span class="tk-kw">const</span> _urlPort     <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">URL_PORT_KEY</span>, ...);
+<span class="tk-kw">const</span> _storagePort <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">STORAGE_PORT_KEY</span>, ...);
 
 <span class="tk-kw">function</span> <span class="tk-fn">loadPalette</span>() {
-  <span class="tk-kw">const</span> raw    = _storagePort.<span class="tk-fn">load</span>(<span class="tk-str">'palette'</span>);    <span class="tk-cmt">// some StoragePort</span>
-  <span class="tk-kw">const</span> search = _urlPort.<span class="tk-fn">getSearch</span>();            <span class="tk-cmt">// some UrlPort</span>
+  <span class="tk-kw">const</span> raw    <span class="tk-op">=</span> _storagePort.<span class="tk-fn">load</span>(<span class="tk-str">'palette'</span>);    <span class="tk-cmt">// some StoragePort</span>
+  <span class="tk-kw">const</span> search <span class="tk-op">=</span> _urlPort.<span class="tk-fn">getSearch</span>();            <span class="tk-cmt">// some UrlPort</span>
 }</pre>
 </div>
 </div>
@@ -202,8 +212,8 @@
 <p><strong>The ports</strong> are the contracts the store depends on — just method shapes, no implementation:</p>
 <div class="code">
 <div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;the two port interfaces</span><button class="copy-btn" data-copy-target="pre6">Copy</button></div>
-<pre id="pre6">UrlPort:     <span class="tk-fn">getParam</span>(key), <span class="tk-fn">getSearch</span>(), <span class="tk-fn">setParams</span>(params)
-StoragePort: <span class="tk-fn">load</span>(key), <span class="tk-fn">save</span>(key, value), <span class="tk-fn">remove</span>(key)</pre>
+<pre id="pre6"><span class="tk-type">UrlPort</span>:     <span class="tk-fn">getParam</span>(key), <span class="tk-fn">getSearch</span>(), <span class="tk-fn">setParams</span>(params)
+<span class="tk-type">StoragePort</span>: <span class="tk-fn">load</span>(key), <span class="tk-fn">save</span>(key, value), <span class="tk-fn">remove</span>(key)</pre>
 </div>
 <p><strong>The adapters</strong> implement those interfaces. The production adapters delegate to real browser APIs; the test adapter backs them with a plain object and adds a <code>snapshot()</code> helper for assertions:</p>
 <div class="code">
@@ -214,9 +224,9 @@ StoragePort: <span class="tk-fn">load</span>(key), <span class="tk-fn">save</spa
   <span class="tk-kw">return</span> {
     <span class="tk-fn">getSearch</span>() { <span class="tk-kw">return</span> window.location.search; },
     <span class="tk-fn">setParams</span>(params) {
-      <span class="tk-kw">const</span> url = <span class="tk-kw">new</span> <span class="tk-fn">URL</span>(window.location.href);
-      <span class="tk-kw">for</span> (<span class="tk-kw">const</span> [key, value] <span class="tk-kw">of</span> <span class="tk-fn">Object</span>.<span class="tk-fn">entries</span>(params)) {
-        value === <span class="tk-kw">null</span> ? url.searchParams.<span class="tk-kw">delete</span>(key) : url.searchParams.<span class="tk-kw">set</span>(key, value);
+      <span class="tk-kw">const</span> url <span class="tk-op">=</span> <span class="tk-kw">new</span> <span class="tk-num">URL</span>(window.location.href);
+      <span class="tk-kw">for</span> (<span class="tk-kw">const</span> [key, value] <span class="tk-kw">of</span> <span class="tk-type">Object</span>.<span class="tk-fn">entries</span>(params)) {
+        value <span class="tk-op">===</span> <span class="tk-num">null</span> <span class="tk-op">?</span> url.searchParams.<span class="tk-kw">delete</span>(key) : url.searchParams.<span class="tk-kw">set</span>(key, value);
       }
       window.history.<span class="tk-fn">replaceState</span>(history.state, <span class="tk-str">''</span>, url);
     },
@@ -236,11 +246,11 @@ StoragePort: <span class="tk-fn">load</span>(key), <span class="tk-fn">save</spa
 </div>
 <div id="pre7-tab2" class="tab-panel">
 <div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/adapters/testAdapters.js</span><button class="copy-btn" data-copy-target="pre10">Copy</button></div>
-<pre id="pre10"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">createInMemoryStorageAdapter</span>(seed = {}) {
-  <span class="tk-kw">const</span> store = { ...seed };
+<pre id="pre10"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">createInMemoryStorageAdapter</span>(seed <span class="tk-op">=</span> {}) {
+  <span class="tk-kw">const</span> store <span class="tk-op">=</span> { ...seed };
   <span class="tk-kw">return</span> {
-    <span class="tk-fn">load</span>(key)        { <span class="tk-kw">return</span> key <span class="tk-kw">in</span> store ? store[key] : <span class="tk-kw">null</span>; },
-    <span class="tk-fn">save</span>(key, value) { store[key] = value; },
+    <span class="tk-fn">load</span>(key)        { <span class="tk-kw">return</span> key <span class="tk-kw">in</span> store <span class="tk-op">?</span> store[key] : <span class="tk-num">null</span>; },
+    <span class="tk-fn">save</span>(key, value) { store[key] <span class="tk-op">=</span> value; },
     <span class="tk-fn">remove</span>(key)      { <span class="tk-kw">delete</span> store[key]; },
     <span class="tk-fn">snapshot</span>()       { <span class="tk-kw">return</span> { ...store }; },   <span class="tk-cmt">// for assertions</span>
   };
@@ -255,8 +265,8 @@ StoragePort: <span class="tk-fn">load</span>(key), <span class="tk-fn">save</spa
 <p><strong>The store</strong> uses Vue's <code>inject()</code> to receive its adapters, with lazy browser-adapter fallbacks so it still works without any <code>provide()</code> call in production:</p>
 <div class="code">
 <div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/stores/colourStore.js</span><button class="copy-btn" data-copy-target="pre11">Copy</button></div>
-<pre id="pre11"><span class="tk-kw">const</span> _urlPort     = <span class="tk-fn">inject</span>(URL_PORT_KEY, () =&gt; <span class="tk-fn">createBrowserUrlAdapter</span>(), <span class="tk-kw">true</span>);
-<span class="tk-kw">const</span> _storagePort = <span class="tk-fn">inject</span>(STORAGE_PORT_KEY, () =&gt; <span class="tk-fn">createBrowserStorageAdapter</span>(), <span class="tk-kw">true</span>);</pre>
+<pre id="pre11"><span class="tk-kw">const</span> _urlPort     <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">URL_PORT_KEY</span>, () <span class="tk-op">=&gt;</span> <span class="tk-fn">createBrowserUrlAdapter</span>(), <span class="tk-num">true</span>);
+<span class="tk-kw">const</span> _storagePort <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">STORAGE_PORT_KEY</span>, () <span class="tk-op">=&gt;</span> <span class="tk-fn">createBrowserStorageAdapter</span>(), <span class="tk-num">true</span>);</pre>
 </div>
 <div class="callout">
 <p><strong>The rule:</strong> production <code>main.js</code> calls <code>app.provide(URL_PORT_KEY, …)</code> and <code>app.provide(STORAGE_PORT_KEY, …)</code> before mounting; a test's <code>beforeEach</code> calls <code>createTestPinia(createInMemoryUrlAdapter(), createInMemoryStorageAdapter())</code>. Either way the store just calls <code>inject()</code> and never touches <code>window</code> or <code>localStorage</code>.</p>
