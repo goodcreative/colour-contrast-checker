@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased] — 2026-07-08 · Security: npm audit fix (non-breaking transitive vulns)
+
+### Changed
+- **`package-lock.json`** — `npm audit fix`: lockfile-only bumps of transitive dev/build deps, no direct-dependency version changes; cleared 36 of 43 Dependabot alerts (typecheck/build/219 tests green). Remaining 7 need major upgrades (vite/vitest) or have no fix (linkify-it) — deferred to issue #31
+
 ## [Unreleased] — 2026-07-08 · Pattern docs: 2.0 foundation refresh + two new patterns
 
 ### Added
