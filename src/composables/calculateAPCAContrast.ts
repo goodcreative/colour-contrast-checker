@@ -1,16 +1,17 @@
+// @ts-expect-error — apca-w3 ships no type declarations
 import { APCAcontrast, sRGBtoY } from 'apca-w3';
-import hexToRGB from '@/composables/hexToRGB.js';
+import hexToRGB from '@/composables/hexToRGB';
 
 /**
  * Calculates APCA (Advanced Perceptual Contrast Algorithm) contrast between two hex colours.
  * APCA models human spatial-frequency perception more accurately than WCAG 2.x contrast ratios.
  * Returns the absolute Lightness Contrast (Lc) value, rounded to 1 decimal place.
  *
- * @param {string} colour1 - Foreground hex colour (e.g. "#112233")
- * @param {string} colour2 - Background hex colour
- * @returns {number} Absolute Lc value (0–106 range typical)
+ * @param colour1 - Foreground hex colour (e.g. "#112233")
+ * @param colour2 - Background hex colour
+ * @returns Absolute Lc value (0–106 range typical)
  */
-export default function apcaContrast(colour1, colour2) {
+export default function apcaContrast(colour1: string, colour2: string): number {
   // Step 1: Convert hex strings to [R, G, B] integer arrays (0–255)
   const [r1, g1, b1] = hexToRGB(colour1);
   const [r2, g2, b2] = hexToRGB(colour2);
@@ -20,5 +21,5 @@ export default function apcaContrast(colour1, colour2) {
   const Lc = APCAcontrast(sRGBtoY([r1, g1, b1, 255]), sRGBtoY([r2, g2, b2, 255]));
 
   // Step 4: Take absolute value (direction is irrelevant here) and round to 1 decimal place
-  return Math.round(Math.abs(Lc) * 10) / 10;
+  return Math.round(Math.abs(Number(Lc)) * 10) / 10;
 }

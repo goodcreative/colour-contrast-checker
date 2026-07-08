@@ -1,4 +1,8 @@
-import { CONTRAST_MODES, CVD_MODES, COMPLIANCE_MODES } from "@/config/modes";
+import {
+  CONTRAST_ALGORITHMS,
+  CVD_TYPES,
+  COMPLIANCE_LEVELS,
+} from "@/config/contrastSettings";
 
 const isValidHex = hex => /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(hex);
 
@@ -66,13 +70,13 @@ export function decodePaletteFromSearch(search) {
   const focusColour = focusRaw ? "#" + focusRaw : defaults.focusColour;
 
   const contrastRaw = params.get("contrastMode");
-  const contrastMode = CONTRAST_MODES.includes(contrastRaw) ? contrastRaw : defaults.contrastMode;
+  const contrastMode = CONTRAST_ALGORITHMS.includes(contrastRaw) ? contrastRaw : defaults.contrastMode;
 
   const cvdRaw = params.get("cvdMode");
-  const cvdMode = CVD_MODES.includes(cvdRaw) ? cvdRaw : defaults.cvdMode;
+  const cvdMode = CVD_TYPES.includes(cvdRaw) ? cvdRaw : defaults.cvdMode;
 
   const complianceRaw = params.get("complianceMode");
-  const complianceMode = COMPLIANCE_MODES.includes(complianceRaw) ? complianceRaw : defaults.complianceMode;
+  const complianceMode = COMPLIANCE_LEVELS.includes(complianceRaw) ? complianceRaw : defaults.complianceMode;
 
   return { colours, title, focusColour, contrastMode, cvdMode, complianceMode };
 }

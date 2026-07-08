@@ -1,17 +1,46 @@
-import contrastRatio from '@/composables/calculateColourContrast.js';
-import apcaContrast from '@/composables/calculateAPCAContrast.js';
-import simulateCVD from '@/composables/simulateCVD.js';
-import { contrastConfig } from '@/config/contrastConfig.js';
+import contrastRatio from '@/composables/calculateColourContrast';
+import apcaContrast from '@/composables/calculateAPCAContrast';
+import simulateCVD from '@/composables/simulateCVD';
+import { contrastConfig } from '@/config/contrastConfig';
+import type { ContrastAlgorithm, CVDType, ComplianceLevel } from '@/config/contrastSettings';
+
+/** A single scored foreground/background pair. */
+export interface ScoredPair {
+  fgHex: string;
+  bgHex: string;
+  score: number;
+  simulatedFg: string;
+  simulatedBg: string;
+}
+
+export interface ScorePairOptions {
+  mode?: ContrastAlgorithm;
+  cvdMode?: CVDType;
+}
+
+export interface ScoreAllPairsOptions extends ScorePairOptions {
+  focusColour?: string | null;
+}
+
+export interface CategorizeOptions {
+  mode?: ContrastAlgorithm;
+  complianceLevel?: ComplianceLevel;
+}
+
+export interface CategorizedPairs {
+  pass: ScoredPair[];
+  partial: ScoredPair[];
+  fail: ScoredPair[];
+}
 
 /**
  * Score a single colour pair. Core atom — all other functions delegate to this.
- *
- * @param {string} hexFg
- * @param {string} hexBg
- * @param {{ mode?: 'wcag'|'apca', cvdMode?: 'normal'|'protanopia'|'deuteranopia'|'tritanopia' }} [opts]
- * @returns {{ score: number, simulatedFg: string, simulatedBg: string }}
  */
-export function scoreColourPair(hexFg, hexBg, opts = {}) {
+export function scoreColourPair(
+  hexFg: string,
+  hexBg: string,
+  opts: ScorePairOptions = {},
+): Pick<ScoredPair, 'score' | 'simulatedFg' | 'simulatedBg'> {
   const { mode = 'wcag', cvdMode = 'normal' } = opts;
   const simulatedFg = simulateCVD(hexFg, cvdMode);
   const simulatedBg = simulateCVD(hexBg, cvdMode);
@@ -25,18 +54,17 @@ export function scoreColourPair(hexFg, hexBg, opts = {}) {
 
 /**
  * Score all unique pairs in a palette. Implemented as a loop over scoreColourPair.
- *
- * @param {string[]} swatches
- * @param {{ mode?: string, cvdMode?: string, focusColour?: string|null }} [opts]
- * @returns {Array<{ fgHex: string, bgHex: string, score: number, simulatedFg: string, simulatedBg: string }>}
  */
-export function scoreAllPairs(swatches, opts = {}) {
+export function scoreAllPairs(
+  swatches: string[],
+  opts: ScoreAllPairsOptions = {},
+): ScoredPair[] {
   const { mode = 'wcag', cvdMode = 'normal', focusColour = null } = opts;
   if (swatches.length < 2) return [];
 
-  const seenPairs = new Map();
+  const seenPairs = new Map<string, boolean>();
   const primarySet = focusColour ? [focusColour] : swatches;
-  const result = [];
+  const result: ScoredPair[] = [];
 
   primarySet.forEach(first => {
     swatches.forEach(second => {
@@ -59,14 +87,13 @@ export function scoreAllPairs(swatches, opts = {}) {
 
 /**
  * Bin pre-scored pairs into pass/partial/fail. Cheap re-categorization without re-scoring.
- *
- * @param {ReturnType<typeof scoreAllPairs>} scoredPairs
- * @param {{ mode?: string, complianceLevel?: 'AA'|'AAA' }} [opts]
- * @returns {{ pass: object[], partial: object[], fail: object[] }}
  */
-export function categorizePairs(scoredPairs, opts = {}) {
+export function categorizePairs(
+  scoredPairs: ScoredPair[],
+  opts: CategorizeOptions = {},
+): CategorizedPairs {
   const { mode = 'wcag', complianceLevel = 'AA' } = opts;
-  const categories = { pass: [], partial: [], fail: [] };
+  const categories: CategorizedPairs = { pass: [], partial: [], fail: [] };
   const thresholds = contrastConfig[mode]?.[complianceLevel.toLowerCase()];
   if (!thresholds) return categories;
 
@@ -76,7 +103,7 @@ export function categorizePairs(scoredPairs, opts = {}) {
     else                                   categories.fail.push(pair);
   }
 
-  const byScoreDesc = (a, b) => b.score - a.score;
+  const byScoreDesc = (a: ScoredPair, b: ScoredPair) => b.score - a.score;
   categories.pass.sort(byScoreDesc);
   categories.partial.sort(byScoreDesc);
   categories.fail.sort(byScoreDesc);

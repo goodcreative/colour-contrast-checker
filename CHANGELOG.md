@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased] — 2026-07-08 · 2.0 foundation: TypeScript toolchain, engine port, domain types & PersistencePort (closes #19)
+
+### Added
+- **TypeScript toolchain** — `typescript`, `vue-tsc`, `@types/node` dev deps; `tsconfig.json` (`allowJs`, `strict`, `@/*` path alias); `npm run typecheck` script (`vue-tsc --noEmit`)
+- **`vite.config.js`** — `js-to-ts-resolver` plugin resolving `.js` import specifiers to sibling `.ts` files, so JS and TS coexist during the hybrid migration without touching every import site or the test suite
+- **`src/domain/types.ts`** — 2.0 domain model as types: `Project`, `Palette`, `Colour` (stable `id`, `name`, `roles[]`, value-per-`Mode`), `Mode`, `Role`, `RoleClassification` (foreground/background/both), `HexColour`
+- **`src/domain/roles.ts`** — controlled role vocabulary with fg/bg/both classification (ADR 0006); `ROLE_VOCABULARY`, `ROLE_IDS`, `getRole()` + spec
+- **`src/domain/persistencePort.ts`** — repository interface (async CRUD over the Project aggregate)
+- **`src/adapters/inMemoryPersistenceAdapter.ts`** — in-memory `PersistencePort` adapter (deep-copies on read/write) + spec; `PERSISTENCE_PORT_KEY` injection key
+
+### Changed
+- **Engine composables ported JS→TS** with explicit types, tests unchanged and green: `hexToRGB`, `simulateCVD`, `calculateColourContrast`, `calculateAPCAContrast`, `contrastEngine`; `config/contrastConfig` also ported
+- **Mode naming collision resolved** — `config/modes.js` → `config/contrastSettings.ts`; `CONTRAST_MODES`/`CVD_MODES`/`COMPLIANCE_MODES` renamed to `CONTRAST_ALGORITHMS`/`CVD_TYPES`/`COMPLIANCE_LEVELS` (with union types), freeing "Mode" for the new theme-variant concept; call sites in `simulateCVD`, `contrastConfig`, `paletteUrlCodec` updated
+- **`src/adapters/injectionKeys.js` → `.ts`** — typed `InjectionKey` for the persistence port
+
 ## [Unreleased] — 2026-06-02 · Upgrade legacy pattern docs to rich doc format
 
 ### Changed

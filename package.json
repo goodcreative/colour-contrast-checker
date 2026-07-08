@@ -6,6 +6,7 @@
     "build": "vite build",
     "preview": "vite preview --port 4173",
     "test:unit": "vitest --environment jsdom",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@pinia/testing": "^0.1.7",
     "@rushstack/eslint-patch": "^1.1.4",
+    "@types/node": "^26.1.1",
     "@vitejs/plugin-vue": "^3.0.3",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/test-utils": "^2.0.2",
@@ -31,8 +33,10 @@
     "jsdom": "^20.0.0",
     "prettier": "^2.7.1",
     "sass": "^1.55.0",
+    "typescript": "~5.4",
     "vite": "^3.0.9",
     "vite-plugin-markdown": "^2.0.2",
-    "vitest": "^0.23.0"
+    "vitest": "^0.23.0",
+    "vue-tsc": "~2.0"
   }
 }

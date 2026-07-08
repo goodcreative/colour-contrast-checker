@@ -1,10 +1,12 @@
-import hexToRGB from '@/composables/hexToRGB.js';
-import { CVD_MODES } from '@/config/modes.js';
+import hexToRGB from '@/composables/hexToRGB';
+import { CVD_TYPES, type CVDType } from '@/config/contrastSettings';
+
+type CVDMatrix = [number[], number[], number[]];
 
 // Colour-vision deficiency simulation matrices from:
 // Machado et al. 2009 "A Physiologically-based Model for Simulation of Color Vision Deficiency"
 // Severity=1.0 (full dichromacy). Matrices operate in linear (linearized sRGB) space.
-const CVD_MATRICES = {
+const CVD_MATRICES: Record<Exclude<CVDType, 'normal'>, CVDMatrix> = {
   protanopia: [
     [ 0.152286,  1.052583, -0.204868],
     [ 0.114503,  0.786281,  0.099216],
@@ -23,13 +25,13 @@ const CVD_MATRICES = {
 };
 
 /** Converts an 8-bit sRGB channel (0–255) to linear light (removes gamma). */
-function linearize(c) {
+function linearize(c: number): number {
   const n = c / 255;
   return n <= 0.04045 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4);
 }
 
 /** Applies sRGB gamma to a linear channel value, clamps to [0,1], returns 0–255 integer. */
-function compress(c) {
+function compress(c: number): number {
   const n = c <= 0.0031308
     ? 12.92 * c
     : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
@@ -37,7 +39,7 @@ function compress(c) {
 }
 
 /** Converts a 0–255 integer to a zero-padded two-character hex string. */
-function toHex(n) {
+function toHex(n: number): string {
   return n.toString(16).padStart(2, '0');
 }
 
@@ -45,14 +47,14 @@ function toHex(n) {
  * Simulates how a hex colour appears under a colour-vision deficiency (CVD).
  * Pipeline: sRGB hex → linear RGB → matrix transform → sRGB gamma → hex output.
  *
- * @param {string} hex     - Input colour, e.g. "#aabbcc"
- * @param {string} cvdType - "normal" | "protanopia" | "deuteranopia" | "tritanopia"
- * @returns {string} Simulated hex colour
+ * @param hex     - Input colour, e.g. "#aabbcc"
+ * @param cvdType - "normal" | "protanopia" | "deuteranopia" | "tritanopia"
+ * @returns Simulated hex colour
  */
-export default function simulateCVD(hex, cvdType) {
-  if (!CVD_MODES.includes(cvdType) || cvdType === 'normal') return hex;
-  const matrix = CVD_MATRICES[cvdType];
-  if (!matrix) return hex; // safety net if CVD_MODES/CVD_MATRICES drift
+export default function simulateCVD(hex: string, cvdType: CVDType | string): string {
+  if (!CVD_TYPES.includes(cvdType as CVDType) || cvdType === 'normal') return hex;
+  const matrix = CVD_MATRICES[cvdType as Exclude<CVDType, 'normal'>];
+  if (!matrix) return hex; // safety net if CVD_TYPES/CVD_MATRICES drift
 
   // Step 1: hex → 8-bit RGB channels
   const [r, g, b] = hexToRGB(hex);
