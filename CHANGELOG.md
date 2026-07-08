@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased] — 2026-07-08 · 2.0 Figma foundations styleguide (issue #20)
+
+### Added
+- **Figma styleguide** in the `Colour-Contrast-2.0-UI-Design` file, frame `2:2` "UI Elements" — visual foundations harvested from the Wattage artifact: Colour (surfaces/ink, semantic pass/partial/fail triad with base·light·border·rail, severity, 7-hue category+tint role palette), Typography (scale specimen + Inter/Roboto Mono typefaces), Primitives (button, segmented control, meta-chip, pass/partial/fail badges, rail-track contrast viz), Shape & Space (radius, layout metrics, spacing scale). Built via `use_figma`; font substitutions `system-ui → Inter`, `SF Mono → Roboto Mono`. Static swatches — not yet bound to Figma variables.
+- **Comparison styleguide** — second frame `17:2` "UI Elements — Current App Tokens" (right of `2:2`), same section structure built from the app's live SCSS tokens (`src/assets/scss/tokens/`) and real components: grey/blue ramps, status hues, badge→pass/partial/fail semantics; type scale (300-weight display heading) with Inter + Fira Code as-shipped; pill button, switch-style ModeToggle, use-case badges, `.b_contrast` result card; app radius/spacing/shadow system. Enables side-by-side keep/ditch review for the #20 direction.
+
+### Changed
+- **`docs/2.0-design/visual-direction-notes.md`** — Figma entry updated: node `2:2` read (was empty) → styleguide built; recorded the remote-vs-local Figma MCP write-path gotcha.
+
+## [Unreleased] — 2026-07-08 · 2.0 visual-direction working notes (issue #20)
+
+### Added
+- **`docs/2.0-design/visual-direction-notes.md`** — starting-point analysis for the #20 design track: harvest map from the Wattage performance-report artifact (warm-neutral palette, semantic pass/partial/fail triad, 7-hue role palette, mono-for-values typography, rail-track/segmented-control/collapsible-row components), mapping to the Project→Palette→Colour IA, the Mode naming collision, and open questions. Figma read (`node-id=2-2`) still pending a session restart to load the Figma MCP tools.
+
 ## [Unreleased] — 2026-07-08 · Security: npm audit fix (non-breaking transitive vulns)
 
 ### Changed
