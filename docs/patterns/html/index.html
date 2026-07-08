@@ -95,10 +95,10 @@
   <header class="hero">
     <span class="eyebrow">Colour Contrast Checker</span>
     <h1>Architecture Patterns</h1>
-      <p class="lede">Five recurring decisions that shape how this Vue 3 + Pinia contrast checker is organised — read these before adding a feature or tracing a bug.</p>
+      <p class="lede">Seven recurring decisions that shape how this Vue 3 + Pinia contrast checker is organised — read these before adding a feature or tracing a bug.</p>
       <div class="meta">
-        <span class="chip">Vue 3 · Pinia</span>
-        <span class="chip">5 patterns</span>
+        <span class="chip">Vue 3 · Pinia · TS</span>
+        <span class="chip">7 patterns</span>
         <span class="chip">Pure logic · injected I/O</span>
       </div>
   </header>
@@ -191,6 +191,41 @@
       </div>
       <div class="tags"><span class="tag">composables</span><span class="tag">pure-functions</span><span class="tag">testability</span></div>
       <p>Contrast maths, CVD simulation, and URL encoding are plain functions with no framework dependency — testable without mounting a single component.</p>
+      <span class="read">Read pattern <span class="arrow">&rarr;</span></span>
+    </a>
+
+    <a class="pattern shared" href="incremental-typescript-migration.html">
+      <div class="pattern-head">
+        <span class="pattern-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 7h9" />
+  <path d="M9 3l4 4-4 4" />
+  <path d="M20 17h-9" />
+  <path d="M15 13l-4 4 4 4" />
+</svg></span>
+        <div>
+          <h3>Incremental TypeScript Migration</h3>
+          <div class="file">incremental-typescript-migration.html</div>
+        </div>
+      </div>
+      <div class="tags"><span class="tag">typescript</span><span class="tag">build</span><span class="tag">migration</span></div>
+      <p>The engine is being ported to TypeScript one file at a time; <code>allowJs</code> plus a Vite <code>resolveId</code> shim mean <code>.js</code> imports keep resolving after a module becomes <code>.ts</code>, so no big-bang rewrite and the existing tests stay untouched.</p>
+      <span class="read">Read pattern <span class="arrow">&rarr;</span></span>
+    </a>
+
+    <a class="pattern shared" href="domain-types-ubiquitous-language.html">
+      <div class="pattern-head">
+        <span class="pattern-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="3" width="18" height="18" rx="2" />
+  <path d="M3 9h18" />
+  <path d="M9 21V9" />
+</svg></span>
+        <div>
+          <h3>Domain Types as Ubiquitous Language</h3>
+          <div class="file">domain-types-ubiquitous-language.html</div>
+        </div>
+      </div>
+      <div class="tags"><span class="tag">typescript</span><span class="tag">domain-modeling</span><span class="tag">types</span></div>
+      <p>The colour-management domain is modelled as a small set of TypeScript interfaces plus controlled vocabularies (const-array unions and a role list), turning the ubiquitous language of the design docs into compiler-checked code.</p>
       <span class="read">Read pattern <span class="arrow">&rarr;</span></span>
     </a>
   </div>

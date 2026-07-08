@@ -27,7 +27,7 @@ The contrast checker computes ratios for every unique pair of colours in a palet
 
 ## Implementation in this codebase
 
-The pipeline lives in the **state-management layer**: `colourStore.js` wires two `computed()` calls in sequence, backed by three pure functions in `contrastEngine.js` — `scoreColourPair` (the core atom), `scoreAllPairs` (stage 1), and `categorizePairs` (stage 2).
+The pipeline lives in the **state-management layer**: `colourStore.js` wires two `computed()` calls in sequence, backed by three pure functions in `contrastEngine.ts` — `scoreColourPair` (the core atom), `scoreAllPairs` (stage 1), and `categorizePairs` (stage 2).
 
 :::diagram
 <svg viewBox="0 0 650 250" role="img" aria-label="Two-stage pipeline: scoreAllPairs feeds a cached scoredPairs value, which categorizePairs buckets; complianceMode feeds only the second stage.">
@@ -80,7 +80,7 @@ The pipeline lives in the **state-management layer**: `colourStore.js` wires two
 
 **Stage 1 — scoring** (`scoreAllPairs`): iterates every unique pair and calls `scoreColourPair` for each. Returns a flat array of `{ fgHex, bgHex, score, simulatedFg, simulatedBg }` objects. It depends on `swatches`, `contrastMode`, `cvdMode`, and `focusColour` — but deliberately *not* `complianceMode`.
 
-```js src/composables/contrastEngine.js
+```ts src/composables/contrastEngine.ts
 export function scoreAllPairs(swatches, opts = {}) {
   const { mode = 'wcag', cvdMode = 'normal', focusColour = null } = opts;
   // ...deduplicates pairs, calls scoreColourPair for each...
@@ -91,7 +91,7 @@ export function scoreAllPairs(swatches, opts = {}) {
 
 **Stage 2 — bucketing** (`categorizePairs`): receives the scored array and splits it into `{ pass, partial, fail }` using threshold values from `contrastConfig`. Runs no colour math. Depends on `complianceMode` (indirectly, via the thresholds lookup).
 
-```js src/composables/contrastEngine.js
+```ts src/composables/contrastEngine.ts
 export function categorizePairs(scoredPairs, opts = {}) {
   for (const pair of scoredPairs) {
     if (pair.score >= thresholds.max)      categories.pass.push(pair);
@@ -153,6 +153,6 @@ const categorizedCombinations = computed(() =>
 
 ## Key files
 
-- `src/composables/contrastEngine.js` — `scoreColourPair`, `scoreAllPairs`, and `categorizePairs`
+- `src/composables/contrastEngine.ts` — `scoreColourPair`, `scoreAllPairs`, and `categorizePairs`
 - `src/stores/colourStore.js` — wires the two computed layers; lines 108–122 are the critical section
-- `src/config/contrastConfig.js` — threshold values consumed by stage 2
+- `src/config/contrastConfig.ts` — threshold values consumed by stage 2

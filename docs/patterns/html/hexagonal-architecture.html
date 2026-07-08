@@ -169,7 +169,7 @@
       <p class="lede">The store names what it needs from the outside world as <strong>ports</strong>, then receives concrete <strong>adapters</strong> by injection — so browser globals never leak into business logic and tests swap in plain-object fakes.</p>
       <div class="meta">
         <span class="chip">Layer · state management</span>
-        <span class="chip">Ports · URL + Storage</span>
+        <span class="chip">Ports · URL · Storage · Persistence</span>
         <span class="chip">Injected · no globals</span>
       </div>
     </header>
@@ -181,13 +181,13 @@
 
     <section id="implementation-in-this-codebase">
 <h2>Implementation in this codebase</h2>
-<p>The pattern lives at the boundary of the <strong>state-management layer</strong>. The store defines what it needs from the outside world as two implicit interfaces — a UrlPort and a StoragePort — and calls them through injected adapter objects rather than browser globals.</p>
+<p>The pattern lives at the boundary of the <strong>state-management layer</strong>. The store defines what it needs from the outside world as port interfaces — a UrlPort and a StoragePort — and calls them through injected adapter objects rather than browser globals. The 2.0 work adds a third port, <strong>PersistencePort</strong>, defined the same way (covered at the end of this section).</p>
 <div class="compare">
 <div class="cmp-side bad">
 <div class="cmp-banner"><span class="cmp-mark">&#10007;</span><span class="cmp-tag">Avoid</span><span class="cmp-desc">Tempting — the store reaches for browser globals directly</span></div>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;coupled to the browser; needs jsdom to test</span><button class="copy-btn" data-copy-target="pre4">Copy</button></div>
-<pre id="pre4"><span class="tk-cmt">// inside colourStore.js</span>
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;coupled to the browser; needs jsdom to test</span><button class="copy-btn" data-copy-target="pre8">Copy</button></div>
+<pre id="pre8"><span class="tk-cmt">// inside colourStore.js</span>
 <span class="tk-kw">function</span> <span class="tk-fn">loadPalette</span>() {
   <span class="tk-kw">const</span> raw <span class="tk-op">=</span> localStorage.<span class="tk-fn">getItem</span>(<span class="tk-str">'palette'</span>);   <span class="tk-cmt">// real global</span>
   <span class="tk-kw">const</span> search <span class="tk-op">=</span> window.location.search;          <span class="tk-cmt">// real global</span>
@@ -198,8 +198,8 @@
 <div class="cmp-side good">
 <div class="cmp-banner"><span class="cmp-mark">&#10003;</span><span class="cmp-tag">Prefer</span><span class="cmp-desc">Actual — the store calls injected ports</span></div>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;technology-agnostic; tests pass in fakes</span><button class="copy-btn" data-copy-target="pre5">Copy</button></div>
-<pre id="pre5"><span class="tk-kw">const</span> _urlPort     <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">URL_PORT_KEY</span>, ...);
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;technology-agnostic; tests pass in fakes</span><button class="copy-btn" data-copy-target="pre9">Copy</button></div>
+<pre id="pre9"><span class="tk-kw">const</span> _urlPort     <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">URL_PORT_KEY</span>, ...);
 <span class="tk-kw">const</span> _storagePort <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">STORAGE_PORT_KEY</span>, ...);
 
 <span class="tk-kw">function</span> <span class="tk-fn">loadPalette</span>() {
@@ -211,16 +211,17 @@
 </div>
 <p><strong>The ports</strong> are the contracts the store depends on — just method shapes, no implementation:</p>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;the two port interfaces</span><button class="copy-btn" data-copy-target="pre6">Copy</button></div>
-<pre id="pre6"><span class="tk-type">UrlPort</span>:     <span class="tk-fn">getParam</span>(key), <span class="tk-fn">getSearch</span>(), <span class="tk-fn">setParams</span>(params)
-<span class="tk-type">StoragePort</span>: <span class="tk-fn">load</span>(key), <span class="tk-fn">save</span>(key, value), <span class="tk-fn">remove</span>(key)</pre>
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;the port interfaces</span><button class="copy-btn" data-copy-target="pre10">Copy</button></div>
+<pre id="pre10"><span class="tk-type">UrlPort</span>:         <span class="tk-fn">getParam</span>(key), <span class="tk-fn">getSearch</span>(), <span class="tk-fn">setParams</span>(params)
+<span class="tk-type">StoragePort</span>:     <span class="tk-fn">load</span>(key), <span class="tk-fn">save</span>(key, value), <span class="tk-fn">remove</span>(key)
+<span class="tk-type">PersistencePort</span>: <span class="tk-fn">listProjects</span>(), <span class="tk-fn">getProject</span>(id), <span class="tk-fn">saveProject</span>(p), <span class="tk-fn">deleteProject</span>(id)   <span class="tk-cmt">// async</span></pre>
 </div>
 <p><strong>The adapters</strong> implement those interfaces. The production adapters delegate to real browser APIs; the test adapter backs them with a plain object and adds a <code>snapshot()</code> helper for assertions:</p>
 <div class="code">
-<div class="tabs"><button class="tab-btn active" data-tab="pre7-tab0">Production · URL</button><button class="tab-btn" data-tab="pre7-tab1">Production · Storage</button><button class="tab-btn" data-tab="pre7-tab2">Test · in-memory</button></div>
-<div id="pre7-tab0" class="tab-panel active">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/adapters/browserUrlAdapter.js</span><button class="copy-btn" data-copy-target="pre8">Copy</button></div>
-<pre id="pre8"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">createBrowserUrlAdapter</span>() {
+<div class="tabs"><button class="tab-btn active" data-tab="pre11-tab0">Production · URL</button><button class="tab-btn" data-tab="pre11-tab1">Production · Storage</button><button class="tab-btn" data-tab="pre11-tab2">Test · in-memory</button></div>
+<div id="pre11-tab0" class="tab-panel active">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/adapters/browserUrlAdapter.js</span><button class="copy-btn" data-copy-target="pre12">Copy</button></div>
+<pre id="pre12"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">createBrowserUrlAdapter</span>() {
   <span class="tk-kw">return</span> {
     <span class="tk-fn">getSearch</span>() { <span class="tk-kw">return</span> window.location.search; },
     <span class="tk-fn">setParams</span>(params) {
@@ -234,9 +235,9 @@
   };
 }</pre>
 </div>
-<div id="pre7-tab1" class="tab-panel">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/adapters/browserStorageAdapter.js</span><button class="copy-btn" data-copy-target="pre9">Copy</button></div>
-<pre id="pre9"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">createBrowserStorageAdapter</span>() {
+<div id="pre11-tab1" class="tab-panel">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/adapters/browserStorageAdapter.js</span><button class="copy-btn" data-copy-target="pre13">Copy</button></div>
+<pre id="pre13"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">createBrowserStorageAdapter</span>() {
   <span class="tk-kw">return</span> {
     <span class="tk-fn">load</span>(key)        { <span class="tk-kw">return</span> localStorage.<span class="tk-fn">getItem</span>(key); },
     <span class="tk-fn">save</span>(key, value) { localStorage.<span class="tk-fn">setItem</span>(key, value); },
@@ -244,9 +245,9 @@
   };
 }</pre>
 </div>
-<div id="pre7-tab2" class="tab-panel">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/adapters/testAdapters.js</span><button class="copy-btn" data-copy-target="pre10">Copy</button></div>
-<pre id="pre10"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">createInMemoryStorageAdapter</span>(seed <span class="tk-op">=</span> {}) {
+<div id="pre11-tab2" class="tab-panel">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/adapters/testAdapters.js</span><button class="copy-btn" data-copy-target="pre14">Copy</button></div>
+<pre id="pre14"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">createInMemoryStorageAdapter</span>(seed <span class="tk-op">=</span> {}) {
   <span class="tk-kw">const</span> store <span class="tk-op">=</span> { ...seed };
   <span class="tk-kw">return</span> {
     <span class="tk-fn">load</span>(key)        { <span class="tk-kw">return</span> key <span class="tk-kw">in</span> store <span class="tk-op">?</span> store[key] : <span class="tk-num">null</span>; },
@@ -264,12 +265,41 @@
 </div>
 <p><strong>The store</strong> uses Vue's <code>inject()</code> to receive its adapters, with lazy browser-adapter fallbacks so it still works without any <code>provide()</code> call in production:</p>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/stores/colourStore.js</span><button class="copy-btn" data-copy-target="pre11">Copy</button></div>
-<pre id="pre11"><span class="tk-kw">const</span> _urlPort     <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">URL_PORT_KEY</span>, () <span class="tk-op">=&gt;</span> <span class="tk-fn">createBrowserUrlAdapter</span>(), <span class="tk-num">true</span>);
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/stores/colourStore.js</span><button class="copy-btn" data-copy-target="pre15">Copy</button></div>
+<pre id="pre15"><span class="tk-kw">const</span> _urlPort     <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">URL_PORT_KEY</span>, () <span class="tk-op">=&gt;</span> <span class="tk-fn">createBrowserUrlAdapter</span>(), <span class="tk-num">true</span>);
 <span class="tk-kw">const</span> _storagePort <span class="tk-op">=</span> <span class="tk-fn">inject</span>(<span class="tk-num">STORAGE_PORT_KEY</span>, () <span class="tk-op">=&gt;</span> <span class="tk-fn">createBrowserStorageAdapter</span>(), <span class="tk-num">true</span>);</pre>
 </div>
 <div class="callout">
 <p><strong>The rule:</strong> production <code>main.js</code> calls <code>app.provide(URL_PORT_KEY, …)</code> and <code>app.provide(STORAGE_PORT_KEY, …)</code> before mounting; a test's <code>beforeEach</code> calls <code>createTestPinia(createInMemoryUrlAdapter(), createInMemoryStorageAdapter())</code>. Either way the store just calls <code>inject()</code> and never touches <code>window</code> or <code>localStorage</code>.</p>
+</div>
+<h3>The third port: PersistencePort (2.0)</h3>
+<p>The 2.0 colour-management service needs to persist the domain aggregate — Projects and everything they own. Rather than reach for a backend client directly, it defines a <code>PersistencePort</code> interface (now in TypeScript, so the contract is <em>explicit</em> rather than convention) and follows the identical inject-a-port discipline. The production adapter will be Supabase-backed; the in-memory adapter is the test/dev counterpart:</p>
+<div class="code">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/domain/persistencePort.ts</span><button class="copy-btn" data-copy-target="pre16">Copy</button></div>
+<pre id="pre16"><span class="tk-kw">export</span> <span class="tk-kw">interface</span> <span class="tk-type">PersistencePort</span> {
+  <span class="tk-fn">listProjects</span>(): <span class="tk-type">Promise</span><span class="tk-op">&lt;</span><span class="tk-type">Project</span>[]<span class="tk-op">&gt;</span>;
+  <span class="tk-fn">getProject</span>(id: string): <span class="tk-type">Promise</span><span class="tk-op">&lt;</span><span class="tk-type">Project</span> <span class="tk-op">|</span> <span class="tk-num">null</span><span class="tk-op">&gt;</span>;
+  <span class="tk-fn">saveProject</span>(project: <span class="tk-type">Project</span>): <span class="tk-type">Promise</span><span class="tk-op">&lt;</span><span class="tk-type">Project</span><span class="tk-op">&gt;</span>;   <span class="tk-cmt">// create or replace</span>
+  <span class="tk-fn">deleteProject</span>(id: string): <span class="tk-type">Promise</span><span class="tk-op">&lt;</span><span class="tk-kw">void</span><span class="tk-op">&gt;</span>;
+}</pre>
+</div>
+<div class="code">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/adapters/inMemoryPersistenceAdapter.ts</span><button class="copy-btn" data-copy-target="pre17">Copy</button></div>
+<pre id="pre17"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">createInMemoryPersistenceAdapter</span>(seed: <span class="tk-type">Project</span>[] <span class="tk-op">=</span> []): <span class="tk-type">InMemoryPersistenceAdapter</span> {
+  <span class="tk-kw">const</span> store <span class="tk-op">=</span> <span class="tk-kw">new</span> <span class="tk-type">Map</span><span class="tk-op">&lt;</span>string, <span class="tk-type">Project</span><span class="tk-op">&gt;</span>(seed.<span class="tk-fn">map</span>((p) <span class="tk-op">=&gt;</span> [p.id, <span class="tk-fn">structuredClone</span>(p)]));
+  <span class="tk-kw">return</span> {
+    <span class="tk-kw">async</span> <span class="tk-fn">listProjects</span>() { <span class="tk-kw">return</span> [...store.<span class="tk-fn">values</span>()].<span class="tk-fn">map</span>(structuredClone); },
+    <span class="tk-kw">async</span> <span class="tk-fn">getProject</span>(id) { <span class="tk-kw">const</span> p <span class="tk-op">=</span> store.<span class="tk-kw">get</span>(id); <span class="tk-kw">return</span> p <span class="tk-op">?</span> <span class="tk-fn">structuredClone</span>(p) : <span class="tk-num">null</span>; },
+    <span class="tk-kw">async</span> <span class="tk-fn">saveProject</span>(project) { store.<span class="tk-kw">set</span>(project.id, <span class="tk-fn">structuredClone</span>(project)); <span class="tk-kw">return</span> <span class="tk-fn">structuredClone</span>(project); },
+    <span class="tk-kw">async</span> <span class="tk-fn">deleteProject</span>(id) { store.<span class="tk-kw">delete</span>(id); },
+    <span class="tk-fn">snapshot</span>() { <span class="tk-kw">return</span> [...store.<span class="tk-fn">values</span>()].<span class="tk-fn">map</span>(structuredClone); },   <span class="tk-cmt">// for assertions</span>
+  };
+}</pre>
+</div>
+<p>Two things differ from the URL/Storage ports, both deliberate:</p>
+<ul><li><strong><code>structuredClone</code> on every read and write.</strong> The store holds live domain objects; handing out shared references would let a caller mutate the "persisted" copy. Deep-copying at the boundary makes the in-memory adapter behave like a real database round-trip, where nothing is shared.</li><li><strong>The port currently leads its production adapter.</strong> <code>PERSISTENCE_PORT_KEY</code> and the interface exist and are adapter-ready, but there is no Supabase adapter yet and <code>main.js</code> does <em>not</em> <code>provide()</code> it — wiring the in-memory adapter into the live app would mean nothing survives a refresh. The port is defined ahead of its consumer (the 2.0 domain store) on purpose: the domain can be built and tested against the fake before any backend exists. This is the pattern's payoff stated as a schedule — <em>interface first, real adapter later.</em></li></ul>
+<div class="callout">
+<p><strong>Why define a port with no production adapter?</strong> Because the interface is the cheap, stable part and the backend is the expensive, changeable part. Committing to the shape now lets every downstream consumer be written and tested immediately; the Supabase adapter slots in later without any of them changing.</p>
 </div>
 </section>
 
@@ -282,7 +312,7 @@
 </div>
 <div class="pc-card cons">
 <h3><span class="badge-icon">&minus;</span> Disadvantages</h3>
-<ul><li><strong>Indirection cost</strong> — a simple <code>localStorage.getItem</code> call is now routed through an adapter. The extra layer is invisible in production but adds a file to open when tracing a data flow.</li><li><strong>Implicit contracts</strong> — the port interfaces are defined only by convention. Nothing in plain JavaScript prevents an adapter from omitting a method until it's called at runtime.</li><li><strong>Test setup boilerplate</strong> — every store test must call <code>createTestPinia</code> with the desired adapters. Forgetting it means <code>inject()</code> returns the lazy browser fallback, which throws in Node.</li></ul>
+<ul><li><strong>Indirection cost</strong> — a simple <code>localStorage.getItem</code> call is now routed through an adapter. The extra layer is invisible in production but adds a file to open when tracing a data flow.</li><li><strong>Implicit contracts (for the JS ports)</strong> — the UrlPort and StoragePort interfaces are defined only by convention; nothing in plain JavaScript stops an adapter omitting a method until it's called at runtime. The 2.0 <code>PersistencePort</code> fixes this by being a real TypeScript <code>interface</code> — an adapter that misses a method fails to typecheck. Expect the older ports to gain the same treatment as the migration proceeds.</li><li><strong>Test setup boilerplate</strong> — every store test must call <code>createTestPinia</code> with the desired adapters. Forgetting it means <code>inject()</code> returns the lazy browser fallback, which throws in Node.</li></ul>
 </div>
 </div>
 </section>
@@ -305,10 +335,10 @@
 </div>
 </li>
 <li>
-<span class="file-icon js">JS</span>
+<span class="file-icon ts">TS</span>
 <div>
-<div class="file-path">src/adapters/injectionKeys.js</div>
-<div class="file-desc"><code>URL_PORT_KEY</code> and <code>STORAGE_PORT_KEY</code> symbols; shared between <code>main.js</code>, <code>testAdapters.js</code>, and <code>colourStore.js</code></div>
+<div class="file-path">src/adapters/injectionKeys.ts</div>
+<div class="file-desc"><code>URL_PORT_KEY</code>, <code>STORAGE_PORT_KEY</code>, and the typed <code>PERSISTENCE_PORT_KEY: InjectionKey&lt;PersistencePort&gt;</code>; shared between <code>main.js</code>, <code>testAdapters.js</code>, and <code>colourStore.js</code></div>
 </div>
 </li>
 <li>
@@ -319,17 +349,31 @@
 </div>
 </li>
 <li>
+<span class="file-icon ts">TS</span>
+<div>
+<div class="file-path">src/domain/persistencePort.ts</div>
+<div class="file-desc">the 2.0 PersistencePort interface (typed contract for the domain aggregate)</div>
+</div>
+</li>
+<li>
+<span class="file-icon ts">TS</span>
+<div>
+<div class="file-path">src/adapters/inMemoryPersistenceAdapter.ts</div>
+<div class="file-desc">deep-cloning in-memory PersistencePort; the dev/test counterpart to the future Supabase adapter, with a <code>snapshot()</code> helper</div>
+</div>
+</li>
+<li>
 <span class="file-icon js">JS</span>
 <div>
 <div class="file-path">src/stores/colourStore.js</div>
-<div class="file-desc">consumes both ports via <code>inject()</code> with lazy browser fallbacks</div>
+<div class="file-desc">consumes the URL and Storage ports via <code>inject()</code> with lazy browser fallbacks</div>
 </div>
 </li>
 <li>
 <span class="file-icon js">JS</span>
 <div>
 <div class="file-path">src/main.js</div>
-<div class="file-desc">provides both production adapters before mounting the app</div>
+<div class="file-desc">provides the URL and Storage production adapters before mounting the app (no PersistencePort adapter yet)</div>
 </div>
 </li>
 </ul>

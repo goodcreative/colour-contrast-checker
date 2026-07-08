@@ -59,7 +59,7 @@ export function decodePaletteFromSearch(search) {
     : defaults.colours;
 
   const contrastRaw = params.get("contrastMode");
-  const contrastMode = CONTRAST_MODES.includes(contrastRaw) ? contrastRaw : defaults.contrastMode;
+  const contrastMode = CONTRAST_ALGORITHMS.includes(contrastRaw) ? contrastRaw : defaults.contrastMode;
   // ...same validate-or-default pattern for cvdMode, complianceMode...
 
   return { colours, title, focusColour, contrastMode, cvdMode, complianceMode };
@@ -67,7 +67,7 @@ export function decodePaletteFromSearch(search) {
 ```
 :::
 
-Each field is validated before being returned: colour segments are filtered through a hex regex (invalid hex dropped silently), and mode values are checked against the canonical arrays in `src/config/modes.js`, falling back to the `defaultPaletteUrlState()` value for that field when unrecognised.
+Each field is validated before being returned: colour segments are filtered through a hex regex (invalid hex dropped silently), and setting values are checked against the canonical arrays in `src/config/contrastSettings.ts` (`CONTRAST_ALGORITHMS`, `CVD_TYPES`, `COMPLIANCE_LEVELS` — renamed from the legacy `modes.js` constants to free the word *Mode* for the 2.0 theme-variant concept), falling back to the `defaultPaletteUrlState()` value for that field when unrecognised.
 
 The store calls both functions but never touches `URLSearchParams` itself:
 
@@ -108,7 +108,7 @@ This separation means the codec can be unit-tested with raw strings — no brows
 ## Key files
 
 - `src/composables/paletteUrlCodec.js` — `defaultPaletteUrlState`, `encodePaletteToParams`, and `decodePaletteFromSearch`; the entire codec
-- `src/config/modes.js` — canonical arrays used for enum validation in the decoder
+- `src/config/contrastSettings.ts` — canonical arrays (`CONTRAST_ALGORITHMS` / `CVD_TYPES` / `COMPLIANCE_LEVELS`) used for enum validation in the decoder
 - `src/adapters/browserUrlAdapter.js` — production adapter that receives the params object and writes to `window.history`
 - `src/adapters/testAdapters.js` — in-memory URL adapter used in tests
 - `src/stores/colourStore.js` — calls `encodePaletteToParams` in `updateURLData` and `decodePaletteFromSearch` in `loadPaletteFromQueryString`

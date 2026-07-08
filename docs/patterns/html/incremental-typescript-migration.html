@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Two-Stage Computed Pipeline</title>
+<title>Incremental TypeScript Migration</title>
 <style>
   :root {
     --bg: #fafaf9; --surface: #ffffff; --surface-alt: #f4f4f2;
@@ -165,132 +165,75 @@
 
     <header class="hero">
       <span class="eyebrow">Pattern</span>
-      <h1>Two-Stage Computed Pipeline</h1>
-      <p class="lede">Contrast scoring (O(N²)) and compliance bucketing live in <strong>two separate <code>computed()</code> layers</strong> — so toggling AA ↔ AAA re-buckets cached scores instead of recomputing every ratio.</p>
+      <h1>Incremental TypeScript Migration</h1>
+      <p class="lede">JavaScript and TypeScript coexist file-by-file — <code>allowJs</code> lets the two live side by side, and a tiny Vite resolver rewrites <code>.js</code> import specifiers to a ported <code>.ts</code> sibling, so a module gains types without any of its callers (or tests) changing a line.</p>
       <div class="meta">
-        <span class="chip">Layer · state management</span>
-        <span class="chip">Stage 1 · <code>scoreAllPairs</code></span>
-        <span class="chip">Stage 2 · <code>categorizePairs</code></span>
+        <span class="chip">Layer · build + tooling</span>
+        <span class="chip">Mechanism · <code>js-to-ts-resolver</code></span>
+        <span class="chip">Migration · engine-first</span>
       </div>
     </header>
 
     <section id="problem-statement">
 <h2>Problem statement</h2>
-<p>The contrast checker computes ratios for every unique pair of colours in a palette — O(N²) work. It also buckets those pairs into pass / partial-pass / fail based on the active compliance level (AA or AAA). If both operations live in a single computed property, every time the user toggles AA ↔ AAA the app re-runs all the contrast math, even though compliance thresholds have nothing to do with the raw ratios. On a large palette this makes the UI feel sluggish on a toggle that should be instant. The challenge is keeping the math and the bucketing separate without losing the convenience of a single result to render.</p>
+<p>The codebase started as plain JavaScript and is moving to TypeScript for the 2.0 work — but a codebase of any size cannot stop and convert every file in one commit. That "big-bang" rewrite is the thing to avoid: it is one enormous, unreviewable change, it blocks all other work while it is in flight, and if it introduces a bug there is no small diff to bisect. What you want instead is to convert <strong>one file at a time</strong>, keep the app shippable after every step, and leave the existing test suite green throughout.</p>
+<p>Two obstacles stand in the way. First, the whole app has to <em>agree</em> to let the two languages mix — the type-checker and the build must both accept a project where some files are <code>.js</code> and some are <code>.ts</code>. Second, and more subtly: when you rename <code>simulateCVD.js</code> to <code>simulateCVD.ts</code>, every file that wrote <code>import simulateCVD from './simulateCVD.js'</code> now points at a filename that no longer exists. Bundlers and test runners do <strong>not</strong> automatically try <code>.ts</code> when a <code>.js</code> file is missing — so the naïve rename breaks every import site at once, including a pile of test files you were trying not to touch. The goal is a setup where a module can flip to TypeScript and its callers never notice.</p>
 </section>
 
     <section id="implementation-in-this-codebase">
 <h2>Implementation in this codebase</h2>
-<p>The pipeline lives in the <strong>state-management layer</strong>: <code>colourStore.js</code> wires two <code>computed()</code> calls in sequence, backed by three pure functions in <code>contrastEngine.ts</code> — <code>scoreColourPair</code> (the core atom), <code>scoreAllPairs</code> (stage 1), and <code>categorizePairs</code> (stage 2).</p>
-<div class="flow-diagram">
-<svg viewBox="0 0 650 250" role="img" aria-label="Two-stage pipeline: scoreAllPairs feeds a cached scoredPairs value, which categorizePairs buckets; complianceMode feeds only the second stage.">
-  <defs>
-    <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0 0L6 3L0 6Z" style="fill:var(--text-muted)" />
-    </marker>
-    <marker id="ara" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0 0L6 3L0 6Z" style="fill:var(--accent)" />
-    </marker>
-  </defs>
-
-  <!-- inputs to stage 1 -->
-  <rect x="80" y="20" width="150" height="46" rx="8" style="fill:var(--surface-alt);stroke:var(--border-strong)" />
-  <text x="155" y="40" text-anchor="middle" font-size="12" style="fill:var(--text-muted)">swatches · contrastMode</text>
-  <text x="155" y="56" text-anchor="middle" font-size="12" style="fill:var(--text-muted)">cvdMode · focusColour</text>
-  <line x1="155" y1="66" x2="155" y2="98" style="stroke:var(--text-muted)" stroke-width="1.5" marker-end="url(#ar)" />
-
-  <!-- complianceMode to stage 2 only -->
-  <rect x="420" y="20" width="150" height="46" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)" />
-  <text x="495" y="42" text-anchor="middle" font-size="12.5" style="fill:var(--accent)">complianceMode</text>
-  <text x="495" y="58" text-anchor="middle" font-size="11" style="fill:var(--accent)">AA ⇄ AAA · stage 2 only</text>
-  <line x1="495" y1="66" x2="495" y2="98" style="stroke:var(--accent)" stroke-width="1.5" marker-end="url(#ara)" />
-
-  <!-- stage 1 -->
-  <rect x="80" y="100" width="150" height="60" rx="10" style="fill:var(--surface-alt);stroke:var(--border-strong)" />
-  <text x="155" y="126" text-anchor="middle" font-size="13.5" font-family="var(--mono)" style="fill:var(--text)">scoreAllPairs()</text>
-  <text x="155" y="145" text-anchor="middle" font-size="11.5" style="fill:var(--text-muted)">Stage 1 · scoring</text>
-
-  <!-- cached scoredPairs -->
-  <rect x="270" y="108" width="110" height="44" rx="22" style="fill:var(--good-soft);stroke:var(--good)" />
-  <text x="325" y="126" text-anchor="middle" font-size="12.5" font-family="var(--mono)" style="fill:var(--good)">scoredPairs</text>
-  <text x="325" y="142" text-anchor="middle" font-size="11" style="fill:var(--good)">cached</text>
-
-  <!-- stage 2 -->
-  <rect x="420" y="100" width="150" height="60" rx="10" style="fill:var(--surface-alt);stroke:var(--border-strong)" />
-  <text x="495" y="126" text-anchor="middle" font-size="13.5" font-family="var(--mono)" style="fill:var(--text)">categorizePairs()</text>
-  <text x="495" y="145" text-anchor="middle" font-size="11.5" style="fill:var(--text-muted)">Stage 2 · bucketing</text>
-
-  <!-- horizontal flow -->
-  <line x1="230" y1="130" x2="268" y2="130" style="stroke:var(--text-muted)" stroke-width="1.5" marker-end="url(#ar)" />
-  <line x1="380" y1="130" x2="418" y2="130" style="stroke:var(--text-muted)" stroke-width="1.5" marker-end="url(#ar)" />
-
-  <!-- output -->
-  <line x1="495" y1="160" x2="495" y2="194" style="stroke:var(--text-muted)" stroke-width="1.5" marker-end="url(#ar)" />
-  <rect x="420" y="196" width="150" height="42" rx="8" style="fill:var(--surface-alt);stroke:var(--border-strong)" />
-  <text x="495" y="222" text-anchor="middle" font-size="12.5" font-family="var(--mono)" style="fill:var(--text)">{ pass, partial, fail }</text>
-</svg>
-</div>
-<p><strong>Stage 1 — scoring</strong> (<code>scoreAllPairs</code>): iterates every unique pair and calls <code>scoreColourPair</code> for each. Returns a flat array of <code>{ fgHex, bgHex, score, simulatedFg, simulatedBg }</code> objects. It depends on <code>swatches</code>, <code>contrastMode</code>, <code>cvdMode</code>, and <code>focusColour</code> — but deliberately <em>not</em> <code>complianceMode</code>.</p>
+<p>The pattern lives in the <strong>build-and-tooling layer</strong> — two small pieces of configuration, not application code.</p>
+<p><strong>First, let the languages mix.</strong> <code>tsconfig.json</code> sets <code>allowJs: true</code>, so a <code>.ts</code> module can import a still-untyped <code>.js</code> module and vice versa; the project type-checks as one unit. A <code>typecheck</code> script runs <code>vue-tsc</code> over everything, and Vite already transpiles <code>.ts</code> out of the box.</p>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/contrastEngine.ts</span><button class="copy-btn" data-copy-target="pre25">Copy</button></div>
-<pre id="pre25"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">scoreAllPairs</span>(swatches, opts <span class="tk-op">=</span> {}) {
-  <span class="tk-kw">const</span> { mode <span class="tk-op">=</span> <span class="tk-str">'wcag'</span>, cvdMode <span class="tk-op">=</span> <span class="tk-str">'normal'</span>, focusColour <span class="tk-op">=</span> <span class="tk-num">null</span> } <span class="tk-op">=</span> opts;
-  <span class="tk-cmt">// ...deduplicates pairs, calls scoreColourPair for each...</span>
-  result.<span class="tk-fn">push</span>({ fgHex, bgHex, score, simulatedFg, simulatedBg });
-  <span class="tk-kw">return</span> result;
-}</pre>
-</div>
-<p><strong>Stage 2 — bucketing</strong> (<code>categorizePairs</code>): receives the scored array and splits it into <code>{ pass, partial, fail }</code> using threshold values from <code>contrastConfig</code>. Runs no colour math. Depends on <code>complianceMode</code> (indirectly, via the thresholds lookup).</p>
-<div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/contrastEngine.ts</span><button class="copy-btn" data-copy-target="pre26">Copy</button></div>
-<pre id="pre26"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">categorizePairs</span>(scoredPairs, opts <span class="tk-op">=</span> {}) {
-  <span class="tk-kw">for</span> (<span class="tk-kw">const</span> pair <span class="tk-kw">of</span> scoredPairs) {
-    <span class="tk-kw">if</span> (pair.score <span class="tk-op">&gt;=</span> thresholds.max)      categories.pass.<span class="tk-fn">push</span>(pair);
-    <span class="tk-kw">else</span> <span class="tk-kw">if</span> (pair.score <span class="tk-op">&gt;=</span> thresholds.min) categories.partial.<span class="tk-fn">push</span>(pair);
-    <span class="tk-kw">else</span>                                   categories.fail.<span class="tk-fn">push</span>(pair);
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;tsconfig.json (the load-bearing flags)</span><button class="copy-btn" data-copy-target="pre18">Copy</button></div>
+<pre id="pre18">{
+  <span class="tk-str">"compilerOptions"</span>: {
+    <span class="tk-str">"allowJs"</span>: <span class="tk-num">true</span>,      <span class="tk-cmt">// JS and TS coexist — no big-bang conversion</span>
+    <span class="tk-str">"checkJs"</span>: <span class="tk-num">false</span>,     <span class="tk-cmt">// don't type-check the JS that hasn't been ported yet</span>
+    <span class="tk-str">"strict"</span>: <span class="tk-num">true</span>,       <span class="tk-cmt">// full strictness for the code that HAS been ported</span>
+    <span class="tk-str">"noEmit"</span>: <span class="tk-num">true</span>        <span class="tk-cmt">// Vite does the emitting; tsc only checks</span>
   }
-  <span class="tk-cmt">// ...sort each bucket...</span>
-  <span class="tk-kw">return</span> categories;
 }</pre>
 </div>
-<p>Wiring them as <strong>two separate <code>computed()</code> calls</strong> — rather than one — is the entire point:</p>
+<p><strong>Second, bridge the extension gap.</strong> A ~10-line Vite plugin intercepts every import ending in <code>.js</code>; if a sibling <code>.ts</code> file exists, it resolves to that instead. This is the piece that makes the file-by-file rename invisible to callers:</p>
+<div class="code">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;vite.config.js</span><button class="copy-btn" data-copy-target="pre19">Copy</button></div>
+<pre id="pre19"><span class="tk-kw">function</span> <span class="tk-fn">jsToTsResolver</span>() {
+  <span class="tk-kw">return</span> {
+    name: <span class="tk-str">"js-to-ts-resolver"</span>,
+    enforce: <span class="tk-str">"pre"</span>,                       <span class="tk-cmt">// run before Vite's own resolver</span>
+    <span class="tk-kw">async</span> <span class="tk-fn">resolveId</span>(source, importer, options) {
+      <span class="tk-kw">if</span> (<span class="tk-op">!</span>source.<span class="tk-fn">endsWith</span>(<span class="tk-str">".js"</span>)) <span class="tk-kw">return</span> <span class="tk-num">null</span>;            <span class="tk-cmt">// not our concern</span>
+      <span class="tk-kw">const</span> tsSource <span class="tk-op">=</span> source.<span class="tk-fn">slice</span>(<span class="tk-num">0</span>, <span class="tk-op">-</span><span class="tk-num">3</span>) <span class="tk-op">+</span> <span class="tk-str">".ts"</span>;        <span class="tk-cmt">// foo.js → foo.ts</span>
+      <span class="tk-kw">const</span> resolved <span class="tk-op">=</span> <span class="tk-kw">await</span> <span class="tk-kw">this</span>.<span class="tk-fn">resolve</span>(tsSource, importer, { ...options, skipSelf: <span class="tk-num">true</span> });
+      <span class="tk-kw">return</span> resolved <span class="tk-op">||</span> <span class="tk-num">null</span>;            <span class="tk-cmt">// found a .ts sibling? use it. else fall through</span>
+    },
+  };
+}
+
+<span class="tk-kw">export</span> <span class="tk-kw">default</span> <span class="tk-fn">defineConfig</span>({ plugins: [<span class="tk-fn">jsToTsResolver</span>(), <span class="tk-fn">vue</span>()], <span class="tk-cmt">/* ... */</span> });</pre>
+</div>
+<div class="callout">
+<p><strong>Why the resolver, not a find-and-replace?</strong> The existing engine tests import the modules under test with <code>.js</code> extensions. A requirement of the port was that those spec files stay <em>literally unchanged</em> and green — proof that the port preserved behaviour. Rewriting every import to <code>.ts</code> would have edited the very tests meant to be the safety net. The resolver moves the fix into one config file instead of hundreds of call sites.</p>
+</div>
+<p>With both pieces in place, porting a module is a three-step move that touches only that module:</p>
 <div class="compare">
 <div class="cmp-side bad">
-<div class="cmp-banner"><span class="cmp-mark">&#10007;</span><span class="cmp-tag">Avoid</span><span class="cmp-desc">One computed — recomputes everything on an AA/AAA toggle</span></div>
+<div class="cmp-banner"><span class="cmp-mark">&#10007;</span><span class="cmp-tag">Avoid</span><span class="cmp-desc">Big-bang — rename everything, fix every import, hope the tests still pass</span></div>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;complianceMode now invalidates the colour maths too</span><button class="copy-btn" data-copy-target="pre27">Copy</button></div>
-<pre id="pre27"><span class="tk-kw">const</span> categorizedCombinations <span class="tk-op">=</span> <span class="tk-fn">computed</span>(() <span class="tk-op">=&gt;</span> {
-  <span class="tk-kw">const</span> scored <span class="tk-op">=</span> <span class="tk-fn">scoreAllPairs</span>(colourSwatches.value, { <span class="tk-cmt">/* ... */</span> });   <span class="tk-cmt">// O(N²) re-run</span>
-  <span class="tk-kw">return</span> <span class="tk-fn">categorizePairs</span>(scored, { complianceLevel: complianceMode.value });
-});
-<span class="tk-cmt">// toggling AA ↔ AAA re-runs scoreAllPairs for no reason</span></pre>
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;one giant unreviewable diff</span><button class="copy-btn" data-copy-target="pre20">Copy</button></div>
+<pre id="pre20">git mv src<span class="tk-op">/</span>composables<span class="tk-op">/*</span>.js → <span class="tk-op">*</span>.ts        # dozens <span class="tk-kw">of</span> files</pre>
 </div>
 </div>
 <div class="cmp-side good">
-<div class="cmp-banner"><span class="cmp-mark">&#10003;</span><span class="cmp-tag">Prefer</span><span class="cmp-desc">Two computeds — the toggle only re-runs the cheap stage</span></div>
+<div class="cmp-banner"><span class="cmp-mark">&#10003;</span><span class="cmp-tag">Prefer</span><span class="cmp-desc">Incremental — one file, callers untouched</span></div>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/stores/colourStore.js · lines 108–122</span><button class="copy-btn" data-copy-target="pre28">Copy</button></div>
-<pre id="pre28"><span class="tk-kw">const</span> scoredPairs <span class="tk-op">=</span> <span class="tk-fn">computed</span>(() <span class="tk-op">=&gt;</span>
-  <span class="tk-fn">scoreAllPairs</span>(colourSwatches.value, {
-    mode: contrastMode.value,
-    cvdMode: cvdMode.value,
-    focusColour: focusColour.value <span class="tk-op">||</span> <span class="tk-num">null</span>,
-  })
-);
-
-<span class="tk-kw">const</span> categorizedCombinations <span class="tk-op">=</span> <span class="tk-fn">computed</span>(() <span class="tk-op">=&gt;</span>
-  <span class="tk-fn">categorizePairs</span>(scoredPairs.value, {
-    mode: contrastMode.value,
-    complianceLevel: complianceMode.value,  <span class="tk-cmt">// ← only here</span>
-  })
-);</pre>
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;a small, reviewable diff per module</span><button class="copy-btn" data-copy-target="pre21">Copy</button></div>
+<pre id="pre21">git mv simulateCVD.js simulateCVD.ts       # <span class="tk-num">1</span> file</pre>
 </div>
 </div>
 </div>
-<div class="callout">
-<p><strong>Why it works:</strong> Vue tracks which reactive values each <code>computed()</code> reads. Because <code>complianceMode</code> is read <em>only</em> by the second computed, toggling AA ↔ AAA invalidates <code>categorizedCombinations</code> alone — <code>scoredPairs</code> stays cached. Adding or removing a colour invalidates <code>scoredPairs</code>, which then cascades to <code>categorizedCombinations</code>.</p>
-</div>
-<p><code>scoreColourPair</code> is also used directly by <code>ColourContrastWidget</code> for single-pair display, ensuring the widget and the list always compute the same score under CVD.</p>
+<p>The migration runs <strong>engine-first</strong>: the pure, well-tested composables (<code>hexToRGB</code>, <code>simulateCVD</code>, <code>calculateColourContrast</code>, <code>contrastEngine</code>) went first because they have the strongest test coverage and no framework entanglement, so types could be added with the safety net at its tightest. Stores and components — where Vue's own typing gets involved — come later. Files still in JavaScript (<code>paletteUrlCodec.js</code>, the store, the adapters that haven't moved) keep working the entire time.</p>
 </section>
 
     <section id="tradeoffs">
@@ -298,11 +241,11 @@
 <div class="pc-grid">
 <div class="pc-card pros">
 <h3><span class="badge-icon">+</span> Advantages</h3>
-<ul><li><strong>Compliance toggles are instant</strong> — no colour math runs on an AA/AAA switch regardless of palette size.</li><li><strong>Dependency graph is explicit</strong> — the comment on <code>scoredPairs</code> documents that <code>complianceMode</code> is intentionally absent. The reason is visible at the call site.</li><li><strong>Pure functions are easy to test</strong> — <code>scoreAllPairs</code> and <code>categorizePairs</code> take plain values and return plain objects. No Vue reactivity, no store, no globals.</li><li><strong>Stages compose cleanly</strong> — a future stage (e.g. sorting by luminance) slots in between without touching the others.</li></ul>
+<ul><li><strong>Small, reviewable steps.</strong> Each port is one file plus its types — easy to review, easy to revert, easy to bisect if something regresses.</li><li><strong>Always shippable.</strong> The app builds and the suite passes after every single step; there is no broken interim state.</li><li><strong>Tests double as proof.</strong> Because spec files are untouched, a green run after a port is direct evidence the types changed nothing about behaviour.</li><li><strong>Types where they pay off first.</strong> Engine-first means the most-reused, most-critical maths gets real signatures before anything else.</li></ul>
 </div>
 <div class="pc-card cons">
 <h3><span class="badge-icon">&minus;</span> Disadvantages</h3>
-<ul><li><strong>Two call sites to keep in sync</strong> — adding a new input to the pipeline (say, a new simulation mode) means adding it to the right stage and understanding which computed to invalidate.</li><li><strong>Indirect dependency</strong> — <code>categorizedCombinations</code> passes <code>mode</code> to <code>categorizePairs</code> for the threshold lookup even though stage 2 does no contrast calculation. This is a config-key dependency, not a math dependency, which can confuse at first read.</li></ul>
+<ul><li><strong>A little build magic.</strong> The resolver is invisible until it isn't: a developer who greps for <code>simulateCVD.ts</code> won't find the <code>import './simulateCVD.js'</code> that loads it. This doc exists partly to point at that.</li><li><strong>Mixed extensions during the transition.</strong> For a while the tree has both <code>.js</code> and <code>.ts</code> in the same folder; you have to know which is which. The state is temporary but real.</li><li><strong><code>checkJs: false</code> leaves a blind spot.</strong> Un-ported JS is not type-checked at all, so type errors there surface only once the file is converted.</li><li><strong>Two type-check passes to remember.</strong> <code>npm run typecheck</code> (vue-tsc) is separate from the Vite build; the build can succeed while types are broken, so CI must run both.</li></ul>
 </div>
 </div>
 </section>
@@ -311,24 +254,38 @@
 <h2>Key files</h2>
 <ul class="files">
 <li>
-<span class="file-icon ts">TS</span>
+<span class="file-icon json">{}</span>
 <div>
-<div class="file-path">src/composables/contrastEngine.ts</div>
-<div class="file-desc"><code>scoreColourPair</code>, <code>scoreAllPairs</code>, and <code>categorizePairs</code></div>
+<div class="file-path">tsconfig.json</div>
+<div class="file-desc"><code>allowJs</code> / <code>checkJs: false</code> / <code>strict</code>; the config that lets JS and TS share one project</div>
 </div>
 </li>
 <li>
 <span class="file-icon js">JS</span>
 <div>
-<div class="file-path">src/stores/colourStore.js</div>
-<div class="file-desc">wires the two computed layers; lines 108–122 are the critical section</div>
+<div class="file-path">vite.config.js</div>
+<div class="file-desc">the <code>jsToTsResolver</code> plugin that redirects <code>.js</code> specifiers to <code>.ts</code> siblings</div>
+</div>
+</li>
+<li>
+<span class="file-icon json">{}</span>
+<div>
+<div class="file-path">package.json</div>
+<div class="file-desc">the <code>typecheck</code> script (<code>vue-tsc --noEmit</code>) and the <code>typescript</code> / <code>vue-tsc</code> dev dependencies</div>
 </div>
 </li>
 <li>
 <span class="file-icon ts">TS</span>
 <div>
-<div class="file-path">src/config/contrastConfig.ts</div>
-<div class="file-desc">threshold values consumed by stage 2</div>
+<div class="file-path">src/composables/*.ts</div>
+<div class="file-desc">the ported engine (the first wave of the migration)</div>
+</div>
+</li>
+<li>
+<span class="file-icon js">JS</span>
+<div>
+<div class="file-path">src/composables/paletteUrlCodec.js</div>
+<div class="file-desc">a representative not-yet-ported module that still works alongside the <code>.ts</code> files</div>
 </div>
 </li>
 </ul>
@@ -336,7 +293,7 @@
 
     <footer>
       <span>Colour Contrast Checker</span>
-      <a href="../two-stage-computed-pipeline.md" style="color:inherit;">Source markdown &rarr;</a>
+      <a href="../incremental-typescript-migration.md" style="color:inherit;">Source markdown &rarr;</a>
     </footer>
 
   </main>

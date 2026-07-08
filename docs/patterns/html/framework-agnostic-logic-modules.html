@@ -169,7 +169,7 @@
       <p class="lede">Every piece of real computation lives in a plain JavaScript module with <strong>zero Vue imports</strong> — the store is the only place that wires that logic into reactivity.</p>
       <div class="meta">
         <span class="chip">Layer · composables</span>
-        <span class="chip">Entry · <code>contrastEngine.js</code></span>
+        <span class="chip">Entry · <code>contrastEngine.ts</code></span>
         <span class="chip">Pure functions · no Vue</span>
       </div>
     </header>
@@ -184,11 +184,11 @@
     <section id="implementation-in-this-codebase">
 <h2>Implementation in this codebase</h2>
 <p>The split runs along a layer boundary. The <strong>composable layer</strong> (<code>src/composables/</code>) holds the logic as ordinary functions. The <strong>state-management layer</strong> (<code>src/stores/colourStore.js</code>) is the <em>only</em> place allowed to connect that logic to Vue's reactivity.</p>
-<p>A composable here is just an exported function. It imports other plain modules and config constants — never <code>vue</code>. <code>simulateCVD</code> is representative: hex string in, simulated hex string out, the whole colour-science pipeline in between, and not a single reactive primitive.</p>
+<p>A composable here is just an exported function. It imports other plain modules and config constants — never <code>vue</code>. Most of the engine is now TypeScript (the 2.0 port), but "framework-agnostic" is unchanged: adding types made the signatures <em>more</em> honest, not more coupled. <code>simulateCVD</code> is representative: hex string in, simulated hex string out, the whole colour-science pipeline in between, and not a single reactive primitive.</p>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/simulateCVD.js</span><button class="copy-btn" data-copy-target="pre1">Copy</button></div>
-<pre id="pre1"><span class="tk-kw">export</span> <span class="tk-kw">default</span> <span class="tk-kw">function</span> <span class="tk-fn">simulateCVD</span>(hex, cvdType) {
-  <span class="tk-kw">if</span> (<span class="tk-op">!</span><span class="tk-num">CVD_MODES</span>.<span class="tk-fn">includes</span>(cvdType) <span class="tk-op">||</span> cvdType <span class="tk-op">===</span> <span class="tk-str">'normal'</span>) <span class="tk-kw">return</span> hex;
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/simulateCVD.ts</span><button class="copy-btn" data-copy-target="pre5">Copy</button></div>
+<pre id="pre5"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">simulateCVD</span>(hex: string, cvdType: CVDType <span class="tk-op">|</span> string): string {
+  <span class="tk-kw">if</span> (<span class="tk-op">!</span><span class="tk-num">CVD_TYPES</span>.<span class="tk-fn">includes</span>(cvdType <span class="tk-kw">as</span> CVDType) <span class="tk-op">||</span> cvdType <span class="tk-op">===</span> <span class="tk-str">'normal'</span>) <span class="tk-kw">return</span> hex;
   <span class="tk-kw">const</span> matrix <span class="tk-op">=</span> <span class="tk-num">CVD_MATRICES</span>[cvdType];
   <span class="tk-kw">if</span> (<span class="tk-op">!</span>matrix) <span class="tk-kw">return</span> hex;
 
@@ -198,7 +198,7 @@
   <span class="tk-kw">return</span> <span class="tk-str">`#${toHex(compress(rS))}${toHex(compress(gS))}${toHex(compress(bS))}`</span>;
 }</pre>
 </div>
-<p>The same discipline holds across the layer. <code>calculateColourContrast.js</code> exports <code>contrastRatio(colour1, colour2)</code> — a number out, no state. <code>contrastEngine.js</code> exports <code>scoreColourPair</code>, <code>scoreAllPairs</code>, and <code>categorizePairs</code> — arrays and objects in, arrays and objects out. <code>paletteUrlCodec.js</code> exports <code>encodePaletteToParams</code> / <code>decodePaletteFromSearch</code> — it parses a query string with the standard <code>URLSearchParams</code>, but reads no <code>window</code> global and touches no store.</p>
+<p>The same discipline holds across the layer. <code>calculateColourContrast.ts</code> exports <code>contrastRatio(colour1, colour2)</code> — a number out, no state. <code>contrastEngine.ts</code> exports <code>scoreColourPair</code>, <code>scoreAllPairs</code>, and <code>categorizePairs</code> — arrays and objects in, arrays and objects out. <code>paletteUrlCodec.js</code> (still JS, pending its own port) exports <code>encodePaletteToParams</code> / <code>decodePaletteFromSearch</code> — it parses a query string with the standard <code>URLSearchParams</code>, but reads no <code>window</code> global and touches no store.</p>
 <div class="callout">
 <p><strong>The rule:</strong> if a file <code>import</code>s from <code>vue</code>, it is plumbing. If it doesn't, it is logic. In this codebase, everything under <code>src/composables/</code> is logic.</p>
 </div>
@@ -207,8 +207,8 @@
 <div class="cmp-side bad">
 <div class="cmp-banner"><span class="cmp-mark">&#10007;</span><span class="cmp-tag">Avoid</span><span class="cmp-desc">Tempting — reach into reactivity from the logic</span></div>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;logic now coupled to Vue + the store</span><button class="copy-btn" data-copy-target="pre2">Copy</button></div>
-<pre id="pre2"><span class="tk-cmt">// inside contrastEngine.js</span>
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;logic now coupled to Vue + the store</span><button class="copy-btn" data-copy-target="pre6">Copy</button></div>
+<pre id="pre6"><span class="tk-cmt">// inside contrastEngine.ts</span>
 <span class="tk-kw">import</span> { useColourStore } <span class="tk-kw">from</span> <span class="tk-str">'@/stores/colourStore'</span>;
 <span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">scoreAllPairs</span>() {
   <span class="tk-kw">const</span> store <span class="tk-op">=</span> <span class="tk-fn">useColourStore</span>();      <span class="tk-cmt">// can't test without a Pinia instance</span>
@@ -219,8 +219,8 @@
 <div class="cmp-side good">
 <div class="cmp-banner"><span class="cmp-mark">&#10003;</span><span class="cmp-tag">Prefer</span><span class="cmp-desc">Actual — plain inputs, wired up in the store</span></div>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;logic stays pure; store owns the wiring</span><button class="copy-btn" data-copy-target="pre3">Copy</button></div>
-<pre id="pre3"><span class="tk-cmt">// contrastEngine.js — takes a plain array</span>
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;logic stays pure; store owns the wiring</span><button class="copy-btn" data-copy-target="pre7">Copy</button></div>
+<pre id="pre7"><span class="tk-cmt">// contrastEngine.ts — takes a plain array</span>
 <span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">scoreAllPairs</span>(swatches, opts <span class="tk-op">=</span> {}) { <span class="tk-cmt">/* ... */</span> }
 
 <span class="tk-cmt">// colourStore.js — the only file that knows about Vue + state</span>
@@ -251,23 +251,23 @@
 <h2>Key files</h2>
 <ul class="files">
 <li>
-<span class="file-icon js">JS</span>
+<span class="file-icon ts">TS</span>
 <div>
-<div class="file-path">src/composables/contrastEngine.js</div>
+<div class="file-path">src/composables/contrastEngine.ts</div>
 <div class="file-desc"><code>scoreColourPair</code> / <code>scoreAllPairs</code> / <code>categorizePairs</code>; pure scoring and bucketing</div>
 </div>
 </li>
 <li>
-<span class="file-icon js">JS</span>
+<span class="file-icon ts">TS</span>
 <div>
-<div class="file-path">src/composables/simulateCVD.js</div>
+<div class="file-path">src/composables/simulateCVD.ts</div>
 <div class="file-desc">colour-vision-deficiency simulation, hex in / hex out</div>
 </div>
 </li>
 <li>
-<span class="file-icon js">JS</span>
+<span class="file-icon ts">TS</span>
 <div>
-<div class="file-path">src/composables/calculateColourContrast.js</div>
+<div class="file-path">src/composables/calculateColourContrast.ts</div>
 <div class="file-desc">WCAG 2.0 contrast-ratio maths</div>
 </div>
 </li>
@@ -275,7 +275,7 @@
 <span class="file-icon js">JS</span>
 <div>
 <div class="file-path">src/composables/paletteUrlCodec.js</div>
-<div class="file-desc">encode/decode palette state to and from query strings</div>
+<div class="file-desc">encode/decode palette state to and from query strings (still JS)</div>
 </div>
 </li>
 <li>

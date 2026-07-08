@@ -184,8 +184,8 @@
 <p>The pattern splits responsibility across two tiers in the <strong>component layer</strong>.</p>
 <p><strong>The base component</strong> (<code>ModeToggle.vue</code>) owns all template markup, all SCSS, and all toggle logic. It accepts a generic <code>options</code> array and a <code>modelValue</code> string, emits <code>update:modelValue</code> (Vue's v-model contract), and has no knowledge of the store. It is fully self-contained and could drop into a different project unchanged.</p>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/components/ModeToggle.vue</span><button class="copy-btn" data-copy-target="pre12">Copy</button></div>
-<pre id="pre12"><span class="tk-op">&lt;</span>script setup<span class="tk-op">&gt;</span>
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/components/ModeToggle.vue</span><button class="copy-btn" data-copy-target="pre22">Copy</button></div>
+<pre id="pre22"><span class="tk-op">&lt;</span>script setup<span class="tk-op">&gt;</span>
 <span class="tk-kw">const</span> props <span class="tk-op">=</span> <span class="tk-fn">defineProps</span>({
   title:      { <span class="tk-kw">type</span>: <span class="tk-type">String</span>, required: <span class="tk-num">true</span> },
   options:    { <span class="tk-kw">type</span>: <span class="tk-type">Array</span>,  required: <span class="tk-num">true</span> },   <span class="tk-cmt">// [{ label, value }, { label, value }]</span>
@@ -208,8 +208,8 @@
 <div class="cmp-side bad">
 <div class="cmp-banner"><span class="cmp-mark">&#10007;</span><span class="cmp-tag">Avoid</span><span class="cmp-desc">Drift — logic and styling leak back into the wrapper</span></div>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;ComplianceModeToggle.vue — now a second source of truth</span><button class="copy-btn" data-copy-target="pre13">Copy</button></div>
-<pre id="pre13"><span class="tk-op">&lt;</span>template<span class="tk-op">&gt;</span>
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;ComplianceModeToggle.vue — now a second source of truth</span><button class="copy-btn" data-copy-target="pre23">Copy</button></div>
+<pre id="pre23"><span class="tk-op">&lt;</span>template<span class="tk-op">&gt;</span>
   <span class="tk-op">&lt;</span>div <span class="tk-kw">class</span><span class="tk-op">=</span><span class="tk-str">"toggle"</span> :<span class="tk-kw">class</span><span class="tk-op">=</span><span class="tk-str">"{ active: isAAA }"</span> @click<span class="tk-op">=</span><span class="tk-str">"flip"</span><span class="tk-op">&gt;</span>
     <span class="tk-op">&lt;</span>span<span class="tk-op">&gt;</span>{{ store.complianceMode }}<span class="tk-op">&lt;/</span>span<span class="tk-op">&gt;</span>
   <span class="tk-op">&lt;/</span>div<span class="tk-op">&gt;</span>
@@ -224,8 +224,8 @@
 <div class="cmp-side good">
 <div class="cmp-banner"><span class="cmp-mark">&#10003;</span><span class="cmp-tag">Prefer</span><span class="cmp-desc">Thin — declarative configuration of the base</span></div>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/components/ComplianceModeToggle.vue</span><button class="copy-btn" data-copy-target="pre14">Copy</button></div>
-<pre id="pre14"><span class="tk-op">&lt;</span>template<span class="tk-op">&gt;</span>
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/components/ComplianceModeToggle.vue</span><button class="copy-btn" data-copy-target="pre24">Copy</button></div>
+<pre id="pre24"><span class="tk-op">&lt;</span>template<span class="tk-op">&gt;</span>
   <span class="tk-op">&lt;</span><span class="tk-type">ModeToggle</span>
     :title<span class="tk-op">=</span><span class="tk-str">"label"</span>
     :options<span class="tk-op">=</span><span class="tk-str">"[{ label: 'AA', value: 'AA' }, { label: 'AAA', value: 'AAA' }]"</span>

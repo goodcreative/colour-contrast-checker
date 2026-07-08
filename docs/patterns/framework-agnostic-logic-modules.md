@@ -4,7 +4,7 @@ eyebrow: Pattern
 lede: Every piece of real computation lives in a plain JavaScript module with **zero Vue imports** — the store is the only place that wires that logic into reactivity.
 chips:
   - "Layer · composables"
-  - "Entry · `contrastEngine.js`"
+  - "Entry · `contrastEngine.ts`"
   - "Pure functions · no Vue"
 category: shared
 tags:
@@ -32,11 +32,11 @@ The goal is a clean split: keep all the genuine computation in plain functions t
 
 The split runs along a layer boundary. The **composable layer** (`src/composables/`) holds the logic as ordinary functions. The **state-management layer** (`src/stores/colourStore.js`) is the *only* place allowed to connect that logic to Vue's reactivity.
 
-A composable here is just an exported function. It imports other plain modules and config constants — never `vue`. `simulateCVD` is representative: hex string in, simulated hex string out, the whole colour-science pipeline in between, and not a single reactive primitive.
+A composable here is just an exported function. It imports other plain modules and config constants — never `vue`. Most of the engine is now TypeScript (the 2.0 port), but "framework-agnostic" is unchanged: adding types made the signatures *more* honest, not more coupled. `simulateCVD` is representative: hex string in, simulated hex string out, the whole colour-science pipeline in between, and not a single reactive primitive.
 
-```js src/composables/simulateCVD.js
-export default function simulateCVD(hex, cvdType) {
-  if (!CVD_MODES.includes(cvdType) || cvdType === 'normal') return hex;
+```ts src/composables/simulateCVD.ts
+export function simulateCVD(hex: string, cvdType: CVDType | string): string {
+  if (!CVD_TYPES.includes(cvdType as CVDType) || cvdType === 'normal') return hex;
   const matrix = CVD_MATRICES[cvdType];
   if (!matrix) return hex;
 
@@ -47,7 +47,7 @@ export default function simulateCVD(hex, cvdType) {
 }
 ```
 
-The same discipline holds across the layer. `calculateColourContrast.js` exports `contrastRatio(colour1, colour2)` — a number out, no state. `contrastEngine.js` exports `scoreColourPair`, `scoreAllPairs`, and `categorizePairs` — arrays and objects in, arrays and objects out. `paletteUrlCodec.js` exports `encodePaletteToParams` / `decodePaletteFromSearch` — it parses a query string with the standard `URLSearchParams`, but reads no `window` global and touches no store.
+The same discipline holds across the layer. `calculateColourContrast.ts` exports `contrastRatio(colour1, colour2)` — a number out, no state. `contrastEngine.ts` exports `scoreColourPair`, `scoreAllPairs`, and `categorizePairs` — arrays and objects in, arrays and objects out. `paletteUrlCodec.js` (still JS, pending its own port) exports `encodePaletteToParams` / `decodePaletteFromSearch` — it parses a query string with the standard `URLSearchParams`, but reads no `window` global and touches no store.
 
 :::callout
 **The rule:** if a file `import`s from `vue`, it is plumbing. If it doesn't, it is logic. In this codebase, everything under `src/composables/` is logic.
@@ -57,8 +57,8 @@ The store is where the two worlds meet. It imports the plain functions and wraps
 
 :::compare
 @bad Tempting — reach into reactivity from the logic
-```js logic now coupled to Vue + the store
-// inside contrastEngine.js
+```ts logic now coupled to Vue + the store
+// inside contrastEngine.ts
 import { useColourStore } from '@/stores/colourStore';
 export function scoreAllPairs() {
   const store = useColourStore();      // can't test without a Pinia instance
@@ -66,8 +66,8 @@ export function scoreAllPairs() {
 }
 ```
 @good Actual — plain inputs, wired up in the store
-```js logic stays pure; store owns the wiring
-// contrastEngine.js — takes a plain array
+```ts logic stays pure; store owns the wiring
+// contrastEngine.ts — takes a plain array
 export function scoreAllPairs(swatches, opts = {}) { /* ... */ }
 
 // colourStore.js — the only file that knows about Vue + state
@@ -94,8 +94,8 @@ This is exactly why the test suite can cover the hard parts — contrast maths, 
 
 ## Key files
 
-- `src/composables/contrastEngine.js` — `scoreColourPair` / `scoreAllPairs` / `categorizePairs`; pure scoring and bucketing
-- `src/composables/simulateCVD.js` — colour-vision-deficiency simulation, hex in / hex out
-- `src/composables/calculateColourContrast.js` — WCAG 2.0 contrast-ratio maths
-- `src/composables/paletteUrlCodec.js` — encode/decode palette state to and from query strings
+- `src/composables/contrastEngine.ts` — `scoreColourPair` / `scoreAllPairs` / `categorizePairs`; pure scoring and bucketing
+- `src/composables/simulateCVD.ts` — colour-vision-deficiency simulation, hex in / hex out
+- `src/composables/calculateColourContrast.ts` — WCAG 2.0 contrast-ratio maths
+- `src/composables/paletteUrlCodec.js` — encode/decode palette state to and from query strings (still JS)
 - `src/stores/colourStore.js` — the single layer that wires these functions into `computed()` reactivity

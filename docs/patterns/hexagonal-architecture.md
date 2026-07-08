@@ -4,7 +4,7 @@ eyebrow: Pattern
 lede: The store names what it needs from the outside world as **ports**, then receives concrete **adapters** by injection — so browser globals never leak into business logic and tests swap in plain-object fakes.
 chips:
   - "Layer · state management"
-  - "Ports · URL + Storage"
+  - "Ports · URL · Storage · Persistence"
   - "Injected · no globals"
 category: state
 tags:
@@ -25,7 +25,7 @@ The store needs to read and write the browser URL and `localStorage`. If it call
 
 ## Implementation in this codebase
 
-The pattern lives at the boundary of the **state-management layer**. The store defines what it needs from the outside world as two implicit interfaces — a UrlPort and a StoragePort — and calls them through injected adapter objects rather than browser globals.
+The pattern lives at the boundary of the **state-management layer**. The store defines what it needs from the outside world as port interfaces — a UrlPort and a StoragePort — and calls them through injected adapter objects rather than browser globals. The 2.0 work adds a third port, **PersistencePort**, defined the same way (covered at the end of this section).
 
 :::compare
 @bad Tempting — the store reaches for browser globals directly
@@ -51,9 +51,10 @@ function loadPalette() {
 
 **The ports** are the contracts the store depends on — just method shapes, no implementation:
 
-```text the two port interfaces
-UrlPort:     getParam(key), getSearch(), setParams(params)
-StoragePort: load(key), save(key, value), remove(key)
+```text the port interfaces
+UrlPort:         getParam(key), getSearch(), setParams(params)
+StoragePort:     load(key), save(key, value), remove(key)
+PersistencePort: listProjects(), getProject(id), saveProject(p), deleteProject(id)   // async
 ```
 
 **The adapters** implement those interfaces. The production adapters delegate to real browser APIs; the test adapter backs them with a plain object and adds a `snapshot()` helper for assertions:
@@ -115,6 +116,41 @@ const _storagePort = inject(STORAGE_PORT_KEY, () => createBrowserStorageAdapter(
 **The rule:** production `main.js` calls `app.provide(URL_PORT_KEY, …)` and `app.provide(STORAGE_PORT_KEY, …)` before mounting; a test's `beforeEach` calls `createTestPinia(createInMemoryUrlAdapter(), createInMemoryStorageAdapter())`. Either way the store just calls `inject()` and never touches `window` or `localStorage`.
 :::
 
+### The third port: PersistencePort (2.0)
+
+The 2.0 colour-management service needs to persist the domain aggregate — Projects and everything they own. Rather than reach for a backend client directly, it defines a `PersistencePort` interface (now in TypeScript, so the contract is *explicit* rather than convention) and follows the identical inject-a-port discipline. The production adapter will be Supabase-backed; the in-memory adapter is the test/dev counterpart:
+
+```ts src/domain/persistencePort.ts
+export interface PersistencePort {
+  listProjects(): Promise<Project[]>;
+  getProject(id: string): Promise<Project | null>;
+  saveProject(project: Project): Promise<Project>;   // create or replace
+  deleteProject(id: string): Promise<void>;
+}
+```
+
+```ts src/adapters/inMemoryPersistenceAdapter.ts
+export function createInMemoryPersistenceAdapter(seed: Project[] = []): InMemoryPersistenceAdapter {
+  const store = new Map<string, Project>(seed.map((p) => [p.id, structuredClone(p)]));
+  return {
+    async listProjects() { return [...store.values()].map(structuredClone); },
+    async getProject(id) { const p = store.get(id); return p ? structuredClone(p) : null; },
+    async saveProject(project) { store.set(project.id, structuredClone(project)); return structuredClone(project); },
+    async deleteProject(id) { store.delete(id); },
+    snapshot() { return [...store.values()].map(structuredClone); },   // for assertions
+  };
+}
+```
+
+Two things differ from the URL/Storage ports, both deliberate:
+
+- **`structuredClone` on every read and write.** The store holds live domain objects; handing out shared references would let a caller mutate the "persisted" copy. Deep-copying at the boundary makes the in-memory adapter behave like a real database round-trip, where nothing is shared.
+- **The port currently leads its production adapter.** `PERSISTENCE_PORT_KEY` and the interface exist and are adapter-ready, but there is no Supabase adapter yet and `main.js` does *not* `provide()` it — wiring the in-memory adapter into the live app would mean nothing survives a refresh. The port is defined ahead of its consumer (the 2.0 domain store) on purpose: the domain can be built and tested against the fake before any backend exists. This is the pattern's payoff stated as a schedule — *interface first, real adapter later.*
+
+:::callout
+**Why define a port with no production adapter?** Because the interface is the cheap, stable part and the backend is the expensive, changeable part. Committing to the shape now lets every downstream consumer be written and tested immediately; the Supabase adapter slots in later without any of them changing.
+:::
+
 ## Advantages
 
 - **Testability** — swap real browser APIs for fast, deterministic in-memory fakes. Tests run in Node without jsdom globals.
@@ -126,14 +162,16 @@ const _storagePort = inject(STORAGE_PORT_KEY, () => createBrowserStorageAdapter(
 ## Disadvantages
 
 - **Indirection cost** — a simple `localStorage.getItem` call is now routed through an adapter. The extra layer is invisible in production but adds a file to open when tracing a data flow.
-- **Implicit contracts** — the port interfaces are defined only by convention. Nothing in plain JavaScript prevents an adapter from omitting a method until it's called at runtime.
+- **Implicit contracts (for the JS ports)** — the UrlPort and StoragePort interfaces are defined only by convention; nothing in plain JavaScript stops an adapter omitting a method until it's called at runtime. The 2.0 `PersistencePort` fixes this by being a real TypeScript `interface` — an adapter that misses a method fails to typecheck. Expect the older ports to gain the same treatment as the migration proceeds.
 - **Test setup boilerplate** — every store test must call `createTestPinia` with the desired adapters. Forgetting it means `inject()` returns the lazy browser fallback, which throws in Node.
 
 ## Key files
 
 - `src/adapters/browserUrlAdapter.js` — production UrlPort; delegates to `window.location` and `window.history`
 - `src/adapters/browserStorageAdapter.js` — production StoragePort; delegates to `localStorage`
-- `src/adapters/injectionKeys.js` — `URL_PORT_KEY` and `STORAGE_PORT_KEY` symbols; shared between `main.js`, `testAdapters.js`, and `colourStore.js`
+- `src/adapters/injectionKeys.ts` — `URL_PORT_KEY`, `STORAGE_PORT_KEY`, and the typed `PERSISTENCE_PORT_KEY: InjectionKey<PersistencePort>`; shared between `main.js`, `testAdapters.js`, and `colourStore.js`
 - `src/adapters/testAdapters.js` — in-memory UrlPort and StoragePort for tests; includes the `createTestPinia` helper and `snapshot()` assertion helper
-- `src/stores/colourStore.js` — consumes both ports via `inject()` with lazy browser fallbacks
-- `src/main.js` — provides both production adapters before mounting the app
+- `src/domain/persistencePort.ts` — the 2.0 PersistencePort interface (typed contract for the domain aggregate)
+- `src/adapters/inMemoryPersistenceAdapter.ts` — deep-cloning in-memory PersistencePort; the dev/test counterpart to the future Supabase adapter, with a `snapshot()` helper
+- `src/stores/colourStore.js` — consumes the URL and Storage ports via `inject()` with lazy browser fallbacks
+- `src/main.js` — provides the URL and Storage production adapters before mounting the app (no PersistencePort adapter yet)

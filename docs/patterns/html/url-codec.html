@@ -185,10 +185,10 @@
 <p>A named schema <strong><code>PaletteUrlState</code></strong> (JSDoc typedef) defines the decoder's return shape, and <strong><code>defaultPaletteUrlState()</code></strong> supplies canonical defaults. The decoder always returns a complete <code>PaletteUrlState</code> — missing or invalid fields fall back to these defaults rather than <code>null</code>, so callers can assign directly without null guards.</p>
 <p>The two halves are mirror images — encode current state to params, decode raw search back to a validated state:</p>
 <div class="code">
-<div class="tabs"><button class="tab-btn active" data-tab="pre19-tab0">Encode</button><button class="tab-btn" data-tab="pre19-tab1">Decode</button></div>
-<div id="pre19-tab0" class="tab-panel active">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/paletteUrlCodec.js</span><button class="copy-btn" data-copy-target="pre20">Copy</button></div>
-<pre id="pre20"><span class="tk-cmt">// state → query-param object (null = "delete this param")</span>
+<div class="tabs"><button class="tab-btn active" data-tab="pre29-tab0">Encode</button><button class="tab-btn" data-tab="pre29-tab1">Decode</button></div>
+<div id="pre29-tab0" class="tab-panel active">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/paletteUrlCodec.js</span><button class="copy-btn" data-copy-target="pre30">Copy</button></div>
+<pre id="pre30"><span class="tk-cmt">// state → query-param object (null = "delete this param")</span>
 <span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">encodePaletteToParams</span>({ colours, title, focusColour, contrastMode, cvdMode, complianceMode }) {
   <span class="tk-kw">return</span> {
     colours:  colours.length <span class="tk-op">?</span> colours.<span class="tk-fn">map</span>(c <span class="tk-op">=&gt;</span> c.<span class="tk-fn">replace</span>(<span class="tk-str">"#"</span>, <span class="tk-str">""</span>)).<span class="tk-fn">join</span>(<span class="tk-str">"-"</span>) : <span class="tk-num">null</span>,
@@ -200,9 +200,9 @@
   };
 }</pre>
 </div>
-<div id="pre19-tab1" class="tab-panel">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/paletteUrlCodec.js</span><button class="copy-btn" data-copy-target="pre21">Copy</button></div>
-<pre id="pre21"><span class="tk-cmt">// raw search → complete, validated PaletteUrlState</span>
+<div id="pre29-tab1" class="tab-panel">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/paletteUrlCodec.js</span><button class="copy-btn" data-copy-target="pre31">Copy</button></div>
+<pre id="pre31"><span class="tk-cmt">// raw search → complete, validated PaletteUrlState</span>
 <span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">decodePaletteFromSearch</span>(search) {
   <span class="tk-kw">const</span> defaults <span class="tk-op">=</span> <span class="tk-fn">defaultPaletteUrlState</span>();
   <span class="tk-kw">const</span> params <span class="tk-op">=</span> <span class="tk-kw">new</span> <span class="tk-fn">URLSearchParams</span>(search.<span class="tk-fn">replace</span>(<span class="tk-op">/^</span>\<span class="tk-op">?/</span>, <span class="tk-str">""</span>));
@@ -213,18 +213,18 @@
     : defaults.colours;
 
   <span class="tk-kw">const</span> contrastRaw <span class="tk-op">=</span> params.<span class="tk-kw">get</span>(<span class="tk-str">"contrastMode"</span>);
-  <span class="tk-kw">const</span> contrastMode <span class="tk-op">=</span> <span class="tk-num">CONTRAST_MODES</span>.<span class="tk-fn">includes</span>(contrastRaw) <span class="tk-op">?</span> contrastRaw : defaults.contrastMode;
+  <span class="tk-kw">const</span> contrastMode <span class="tk-op">=</span> <span class="tk-num">CONTRAST_ALGORITHMS</span>.<span class="tk-fn">includes</span>(contrastRaw) <span class="tk-op">?</span> contrastRaw : defaults.contrastMode;
   <span class="tk-cmt">// ...same validate-or-default pattern for cvdMode, complianceMode...</span>
 
   <span class="tk-kw">return</span> { colours, title, focusColour, contrastMode, cvdMode, complianceMode };
 }</pre>
 </div>
 </div>
-<p>Each field is validated before being returned: colour segments are filtered through a hex regex (invalid hex dropped silently), and mode values are checked against the canonical arrays in <code>src/config/modes.js</code>, falling back to the <code>defaultPaletteUrlState()</code> value for that field when unrecognised.</p>
+<p>Each field is validated before being returned: colour segments are filtered through a hex regex (invalid hex dropped silently), and setting values are checked against the canonical arrays in <code>src/config/contrastSettings.ts</code> (<code>CONTRAST_ALGORITHMS</code>, <code>CVD_TYPES</code>, <code>COMPLIANCE_LEVELS</code> — renamed from the legacy <code>modes.js</code> constants to free the word <em>Mode</em> for the 2.0 theme-variant concept), falling back to the <code>defaultPaletteUrlState()</code> value for that field when unrecognised.</p>
 <p>The store calls both functions but never touches <code>URLSearchParams</code> itself:</p>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/stores/colourStore.js</span><button class="copy-btn" data-copy-target="pre22">Copy</button></div>
-<pre id="pre22"><span class="tk-kw">function</span> <span class="tk-fn">updateURLData</span>() {
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/stores/colourStore.js</span><button class="copy-btn" data-copy-target="pre32">Copy</button></div>
+<pre id="pre32"><span class="tk-kw">function</span> <span class="tk-fn">updateURLData</span>() {
   _urlPort.<span class="tk-fn">setParams</span>(<span class="tk-fn">encodePaletteToParams</span>({ colours, title, ... }));
 }
 
@@ -267,10 +267,10 @@
 </div>
 </li>
 <li>
-<span class="file-icon js">JS</span>
+<span class="file-icon ts">TS</span>
 <div>
-<div class="file-path">src/config/modes.js</div>
-<div class="file-desc">canonical arrays used for enum validation in the decoder</div>
+<div class="file-path">src/config/contrastSettings.ts</div>
+<div class="file-desc">canonical arrays (<code>CONTRAST_ALGORITHMS</code> / <code>CVD_TYPES</code> / <code>COMPLIANCE_LEVELS</code>) used for enum validation in the decoder</div>
 </div>
 </li>
 <li>

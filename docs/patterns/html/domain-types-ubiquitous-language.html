@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Two-Stage Computed Pipeline</title>
+<title>Domain Types as Ubiquitous Language</title>
 <style>
   :root {
     --bg: #fafaf9; --surface: #ffffff; --surface-alt: #f4f4f2;
@@ -165,132 +165,79 @@
 
     <header class="hero">
       <span class="eyebrow">Pattern</span>
-      <h1>Two-Stage Computed Pipeline</h1>
-      <p class="lede">Contrast scoring (O(N²)) and compliance bucketing live in <strong>two separate <code>computed()</code> layers</strong> — so toggling AA ↔ AAA re-buckets cached scores instead of recomputing every ratio.</p>
+      <h1>Domain Types as Ubiquitous Language</h1>
+      <p class="lede">The 2.0 domain vocabulary — Project, Palette, Colour, Mode, Role — is written down once as TypeScript types, so the words the design docs use and the words the code uses are literally the same symbols, and the compiler enforces the decisions the ADRs made.</p>
       <div class="meta">
-        <span class="chip">Layer · state management</span>
-        <span class="chip">Stage 1 · <code>scoreAllPairs</code></span>
-        <span class="chip">Stage 2 · <code>categorizePairs</code></span>
+        <span class="chip">Layer · domain</span>
+        <span class="chip">Entry · <code>domain/types.ts</code></span>
+        <span class="chip">DDD · language in the type system</span>
       </div>
     </header>
 
     <section id="problem-statement">
 <h2>Problem statement</h2>
-<p>The contrast checker computes ratios for every unique pair of colours in a palette — O(N²) work. It also buckets those pairs into pass / partial-pass / fail based on the active compliance level (AA or AAA). If both operations live in a single computed property, every time the user toggles AA ↔ AAA the app re-runs all the contrast math, even though compliance thresholds have nothing to do with the raw ratios. On a large palette this makes the UI feel sluggish on a toggle that should be instant. The challenge is keeping the math and the bucketing separate without losing the convenience of a single result to render.</p>
+<p>The 2.0 work reorients the app from a single-palette contrast checker into a colour-management service, and that reorientation is described in a stack of design documents: a domain model, a glossary, six ADRs. Those documents introduce precise words — a <strong>Project</strong> owns <strong>Palettes</strong>, a <strong>Palette</strong> owns <strong>Colours</strong> and declares <strong>Modes</strong>, a <strong>Colour</strong> carries functional <strong>Roles</strong> and one value per Mode. The danger, when a domain is only written in prose, is <em>drift</em>: the code grows its own slightly-different vocabulary. One file calls it a "theme," another a "variant," a third a "mode"; a colour's roles are a loose array of arbitrary strings that nobody validates; the classification rule an ADR carefully decided ("text and icon are foreground, surface is background") lives only in someone's memory. Six months later nobody can tell whether the code still means what the docs say.</p>
+<p>The fix that domain-driven design proposes is a <strong>ubiquitous language</strong>: one set of terms shared by the design docs and the code, with no translation layer between them. The challenge is making that more than an aspiration — making the shared language something a machine checks, so it <em>cannot</em> silently drift.</p>
 </section>
 
     <section id="implementation-in-this-codebase">
 <h2>Implementation in this codebase</h2>
-<p>The pipeline lives in the <strong>state-management layer</strong>: <code>colourStore.js</code> wires two <code>computed()</code> calls in sequence, backed by three pure functions in <code>contrastEngine.ts</code> — <code>scoreColourPair</code> (the core atom), <code>scoreAllPairs</code> (stage 1), and <code>categorizePairs</code> (stage 2).</p>
-<div class="flow-diagram">
-<svg viewBox="0 0 650 250" role="img" aria-label="Two-stage pipeline: scoreAllPairs feeds a cached scoredPairs value, which categorizePairs buckets; complianceMode feeds only the second stage.">
-  <defs>
-    <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0 0L6 3L0 6Z" style="fill:var(--text-muted)" />
-    </marker>
-    <marker id="ara" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0 0L6 3L0 6Z" style="fill:var(--accent)" />
-    </marker>
-  </defs>
-
-  <!-- inputs to stage 1 -->
-  <rect x="80" y="20" width="150" height="46" rx="8" style="fill:var(--surface-alt);stroke:var(--border-strong)" />
-  <text x="155" y="40" text-anchor="middle" font-size="12" style="fill:var(--text-muted)">swatches · contrastMode</text>
-  <text x="155" y="56" text-anchor="middle" font-size="12" style="fill:var(--text-muted)">cvdMode · focusColour</text>
-  <line x1="155" y1="66" x2="155" y2="98" style="stroke:var(--text-muted)" stroke-width="1.5" marker-end="url(#ar)" />
-
-  <!-- complianceMode to stage 2 only -->
-  <rect x="420" y="20" width="150" height="46" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)" />
-  <text x="495" y="42" text-anchor="middle" font-size="12.5" style="fill:var(--accent)">complianceMode</text>
-  <text x="495" y="58" text-anchor="middle" font-size="11" style="fill:var(--accent)">AA ⇄ AAA · stage 2 only</text>
-  <line x1="495" y1="66" x2="495" y2="98" style="stroke:var(--accent)" stroke-width="1.5" marker-end="url(#ara)" />
-
-  <!-- stage 1 -->
-  <rect x="80" y="100" width="150" height="60" rx="10" style="fill:var(--surface-alt);stroke:var(--border-strong)" />
-  <text x="155" y="126" text-anchor="middle" font-size="13.5" font-family="var(--mono)" style="fill:var(--text)">scoreAllPairs()</text>
-  <text x="155" y="145" text-anchor="middle" font-size="11.5" style="fill:var(--text-muted)">Stage 1 · scoring</text>
-
-  <!-- cached scoredPairs -->
-  <rect x="270" y="108" width="110" height="44" rx="22" style="fill:var(--good-soft);stroke:var(--good)" />
-  <text x="325" y="126" text-anchor="middle" font-size="12.5" font-family="var(--mono)" style="fill:var(--good)">scoredPairs</text>
-  <text x="325" y="142" text-anchor="middle" font-size="11" style="fill:var(--good)">cached</text>
-
-  <!-- stage 2 -->
-  <rect x="420" y="100" width="150" height="60" rx="10" style="fill:var(--surface-alt);stroke:var(--border-strong)" />
-  <text x="495" y="126" text-anchor="middle" font-size="13.5" font-family="var(--mono)" style="fill:var(--text)">categorizePairs()</text>
-  <text x="495" y="145" text-anchor="middle" font-size="11.5" style="fill:var(--text-muted)">Stage 2 · bucketing</text>
-
-  <!-- horizontal flow -->
-  <line x1="230" y1="130" x2="268" y2="130" style="stroke:var(--text-muted)" stroke-width="1.5" marker-end="url(#ar)" />
-  <line x1="380" y1="130" x2="418" y2="130" style="stroke:var(--text-muted)" stroke-width="1.5" marker-end="url(#ar)" />
-
-  <!-- output -->
-  <line x1="495" y1="160" x2="495" y2="194" style="stroke:var(--text-muted)" stroke-width="1.5" marker-end="url(#ar)" />
-  <rect x="420" y="196" width="150" height="42" rx="8" style="fill:var(--surface-alt);stroke:var(--border-strong)" />
-  <text x="495" y="222" text-anchor="middle" font-size="12.5" font-family="var(--mono)" style="fill:var(--text)">{ pass, partial, fail }</text>
-</svg>
-</div>
-<p><strong>Stage 1 — scoring</strong> (<code>scoreAllPairs</code>): iterates every unique pair and calls <code>scoreColourPair</code> for each. Returns a flat array of <code>{ fgHex, bgHex, score, simulatedFg, simulatedBg }</code> objects. It depends on <code>swatches</code>, <code>contrastMode</code>, <code>cvdMode</code>, and <code>focusColour</code> — but deliberately <em>not</em> <code>complianceMode</code>.</p>
+<p>The pattern lives in a dedicated <strong>domain layer</strong> (<code>src/domain/</code>) that holds no logic and no framework code — only the vocabulary, expressed as types. It sits below everything: stores, adapters, and components all import <em>from</em> it, and it imports from nothing but itself.</p>
+<p><strong>The aggregate as nested interfaces.</strong> <code>types.ts</code> writes the ownership hierarchy the domain model describes directly as TypeScript. The nesting <em>is</em> the ownership rule — a Colour lives inside a Palette lives inside a Project — and every field carries the design doc's intent as a doc comment:</p>
 <div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/contrastEngine.ts</span><button class="copy-btn" data-copy-target="pre25">Copy</button></div>
-<pre id="pre25"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">scoreAllPairs</span>(swatches, opts <span class="tk-op">=</span> {}) {
-  <span class="tk-kw">const</span> { mode <span class="tk-op">=</span> <span class="tk-str">'wcag'</span>, cvdMode <span class="tk-op">=</span> <span class="tk-str">'normal'</span>, focusColour <span class="tk-op">=</span> <span class="tk-num">null</span> } <span class="tk-op">=</span> opts;
-  <span class="tk-cmt">// ...deduplicates pairs, calls scoreColourPair for each...</span>
-  result.<span class="tk-fn">push</span>({ fgHex, bgHex, score, simulatedFg, simulatedBg });
-  <span class="tk-kw">return</span> result;
-}</pre>
-</div>
-<p><strong>Stage 2 — bucketing</strong> (<code>categorizePairs</code>): receives the scored array and splits it into <code>{ pass, partial, fail }</code> using threshold values from <code>contrastConfig</code>. Runs no colour math. Depends on <code>complianceMode</code> (indirectly, via the thresholds lookup).</p>
-<div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/composables/contrastEngine.ts</span><button class="copy-btn" data-copy-target="pre26">Copy</button></div>
-<pre id="pre26"><span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">categorizePairs</span>(scoredPairs, opts <span class="tk-op">=</span> {}) {
-  <span class="tk-kw">for</span> (<span class="tk-kw">const</span> pair <span class="tk-kw">of</span> scoredPairs) {
-    <span class="tk-kw">if</span> (pair.score <span class="tk-op">&gt;=</span> thresholds.max)      categories.pass.<span class="tk-fn">push</span>(pair);
-    <span class="tk-kw">else</span> <span class="tk-kw">if</span> (pair.score <span class="tk-op">&gt;=</span> thresholds.min) categories.partial.<span class="tk-fn">push</span>(pair);
-    <span class="tk-kw">else</span>                                   categories.fail.<span class="tk-fn">push</span>(pair);
-  }
-  <span class="tk-cmt">// ...sort each bucket...</span>
-  <span class="tk-kw">return</span> categories;
-}</pre>
-</div>
-<p>Wiring them as <strong>two separate <code>computed()</code> calls</strong> — rather than one — is the entire point:</p>
-<div class="compare">
-<div class="cmp-side bad">
-<div class="cmp-banner"><span class="cmp-mark">&#10007;</span><span class="cmp-tag">Avoid</span><span class="cmp-desc">One computed — recomputes everything on an AA/AAA toggle</span></div>
-<div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;complianceMode now invalidates the colour maths too</span><button class="copy-btn" data-copy-target="pre27">Copy</button></div>
-<pre id="pre27"><span class="tk-kw">const</span> categorizedCombinations <span class="tk-op">=</span> <span class="tk-fn">computed</span>(() <span class="tk-op">=&gt;</span> {
-  <span class="tk-kw">const</span> scored <span class="tk-op">=</span> <span class="tk-fn">scoreAllPairs</span>(colourSwatches.value, { <span class="tk-cmt">/* ... */</span> });   <span class="tk-cmt">// O(N²) re-run</span>
-  <span class="tk-kw">return</span> <span class="tk-fn">categorizePairs</span>(scored, { complianceLevel: complianceMode.value });
-});
-<span class="tk-cmt">// toggling AA ↔ AAA re-runs scoreAllPairs for no reason</span></pre>
-</div>
-</div>
-<div class="cmp-side good">
-<div class="cmp-banner"><span class="cmp-mark">&#10003;</span><span class="cmp-tag">Prefer</span><span class="cmp-desc">Two computeds — the toggle only re-runs the cheap stage</span></div>
-<div class="code">
-<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/stores/colourStore.js · lines 108–122</span><button class="copy-btn" data-copy-target="pre28">Copy</button></div>
-<pre id="pre28"><span class="tk-kw">const</span> scoredPairs <span class="tk-op">=</span> <span class="tk-fn">computed</span>(() <span class="tk-op">=&gt;</span>
-  <span class="tk-fn">scoreAllPairs</span>(colourSwatches.value, {
-    mode: contrastMode.value,
-    cvdMode: cvdMode.value,
-    focusColour: focusColour.value <span class="tk-op">||</span> <span class="tk-num">null</span>,
-  })
-);
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/domain/types.ts</span><button class="copy-btn" data-copy-target="pre1">Copy</button></div>
+<pre id="pre1"><span class="tk-kw">export</span> <span class="tk-kw">interface</span> <span class="tk-type">Colour</span> {
+  id: string;                          <span class="tk-cmt">// stable — survives renames/re-tagging</span>
+  name: string;                        <span class="tk-cmt">// "Midnight Navy"</span>
+  roles: string[];                     <span class="tk-cmt">// role ids from the controlled vocabulary</span>
+  values: <span class="tk-type">Record</span><span class="tk-op">&lt;</span>string, <span class="tk-type">HexColour</span><span class="tk-op">&gt;</span>;   <span class="tk-cmt">// one value per Mode, keyed by Mode id</span>
+}
 
-<span class="tk-kw">const</span> categorizedCombinations <span class="tk-op">=</span> <span class="tk-fn">computed</span>(() <span class="tk-op">=&gt;</span>
-  <span class="tk-fn">categorizePairs</span>(scoredPairs.value, {
-    mode: contrastMode.value,
-    complianceLevel: complianceMode.value,  <span class="tk-cmt">// ← only here</span>
-  })
-);</pre>
+<span class="tk-kw">export</span> <span class="tk-kw">interface</span> <span class="tk-type">Palette</span> {
+  id: string;
+  name: string;
+  modes: <span class="tk-type">Mode</span>[];                       <span class="tk-cmt">// theme variants this Palette declares</span>
+  colours: <span class="tk-type">Colour</span>[];
+}
+
+<span class="tk-kw">export</span> <span class="tk-kw">interface</span> <span class="tk-type">Project</span> { id: string; name: string; palettes: <span class="tk-type">Palette</span>[]; }</pre>
 </div>
+<p><strong>Closed sets as const-array unions.</strong> Where the domain has a fixed set of allowed values, one declaration produces <em>both</em> the runtime list (for validation) and the compile-time type (for safety). This is the idiom that keeps the two from disagreeing:</p>
+<div class="code">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/config/contrastSettings.ts</span><button class="copy-btn" data-copy-target="pre2">Copy</button></div>
+<pre id="pre2"><span class="tk-kw">export</span> <span class="tk-kw">const</span> <span class="tk-num">CONTRAST_ALGORITHMS</span> <span class="tk-op">=</span> [<span class="tk-str">"wcag"</span>, <span class="tk-str">"apca"</span>] <span class="tk-kw">as</span> <span class="tk-kw">const</span>;
+<span class="tk-kw">export</span> <span class="tk-kw">type</span> <span class="tk-type">ContrastAlgorithm</span> <span class="tk-op">=</span> (<span class="tk-kw">typeof</span> <span class="tk-num">CONTRAST_ALGORITHMS</span>)[number];   <span class="tk-cmt">// "wcag" | "apca"</span></pre>
 </div>
-</div>
+<p>The array is what the URL codec loops over to reject bad input; the type is what stops any other file assigning <code>"hcag"</code> to an algorithm field. Add <code>"apca3"</code> to the array and the union widens automatically — you cannot update one without the other.</p>
 <div class="callout">
-<p><strong>Why it works:</strong> Vue tracks which reactive values each <code>computed()</code> reads. Because <code>complianceMode</code> is read <em>only</em> by the second computed, toggling AA ↔ AAA invalidates <code>categorizedCombinations</code> alone — <code>scoredPairs</code> stays cached. Adding or removing a colour invalidates <code>scoredPairs</code>, which then cascades to <code>categorizedCombinations</code>.</p>
+<p><strong>One declaration, two guarantees.</strong> <code>as const</code> freezes the array into literal values; <code>(typeof X)[number]</code> reads their union back out as a type. Runtime validation and compile-time checking are then provably the same set — there is no second list to keep in sync.</p>
 </div>
-<p><code>scoreColourPair</code> is also used directly by <code>ColourContrastWidget</code> for single-pair display, ensuring the widget and the list always compute the same score under CVD.</p>
+<p><strong>Controlled vocabulary with a safe lookup.</strong> Roles are not free-form strings — they come from a fixed list, and each one carries the foreground/background classification that <strong>ADR 0006</strong> decided. The vocabulary and its rules live in one file, with the ADR cited so the code and the decision stay tied together:</p>
+<div class="code">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/domain/roles.ts</span><button class="copy-btn" data-copy-target="pre3">Copy</button></div>
+<pre id="pre3"><span class="tk-cmt">// Classifications follow ADR 0006: text, icon, border, accent, brand → foreground;</span>
+<span class="tk-cmt">// background, surface → background. ("both" is reserved by the type for future roles.)</span>
+<span class="tk-kw">export</span> <span class="tk-kw">const</span> <span class="tk-num">ROLE_VOCABULARY</span>: <span class="tk-kw">readonly</span> <span class="tk-type">Role</span>[] <span class="tk-op">=</span> [
+  { id: <span class="tk-str">"background"</span>, label: <span class="tk-str">"Background"</span>, classification: <span class="tk-str">"background"</span> },
+  { id: <span class="tk-str">"text"</span>,       label: <span class="tk-str">"Text"</span>,       classification: <span class="tk-str">"foreground"</span> },
+  <span class="tk-cmt">// ...</span>
+];
+
+<span class="tk-kw">const</span> <span class="tk-num">ROLE_BY_ID</span> <span class="tk-op">=</span> <span class="tk-kw">new</span> <span class="tk-type">Map</span>(<span class="tk-num">ROLE_VOCABULARY</span>.<span class="tk-fn">map</span>((r) <span class="tk-op">=&gt;</span> [r.id, r]));
+
+<span class="tk-kw">export</span> <span class="tk-kw">function</span> <span class="tk-fn">getRole</span>(id: string): <span class="tk-type">Role</span> <span class="tk-op">|</span> <span class="tk-num">null</span> {
+  <span class="tk-kw">return</span> <span class="tk-num">ROLE_BY_ID</span>.<span class="tk-kw">get</span>(id) <span class="tk-op">??</span> <span class="tk-num">null</span>;    <span class="tk-cmt">// repo convention: lookups return null, not undefined</span>
+}</pre>
+</div>
+<p><strong>A repository over the aggregate.</strong> Persisting the domain is expressed against these types too: <code>PersistencePort</code> reads and writes whole <code>Project</code> objects, so the storage boundary speaks the same language as everything else (it is injected exactly like the URL and Storage ports — see <a href="hexagonal-architecture.md">Hexagonal Architecture</a>).</p>
+<div class="code">
+<div class="code-header"><span><span class="dot"></span><span class="dot"></span><span class="dot"></span>&nbsp;&nbsp;src/domain/persistencePort.ts</span><button class="copy-btn" data-copy-target="pre4">Copy</button></div>
+<pre id="pre4"><span class="tk-kw">export</span> <span class="tk-kw">interface</span> <span class="tk-type">PersistencePort</span> {
+  <span class="tk-fn">getProject</span>(id: string): <span class="tk-type">Promise</span><span class="tk-op">&lt;</span><span class="tk-type">Project</span> <span class="tk-op">|</span> <span class="tk-num">null</span><span class="tk-op">&gt;</span>;
+  <span class="tk-fn">saveProject</span>(project: <span class="tk-type">Project</span>): <span class="tk-type">Promise</span><span class="tk-op">&lt;</span><span class="tk-type">Project</span><span class="tk-op">&gt;</span>;
+  <span class="tk-cmt">// ...</span>
+}</pre>
+</div>
 </section>
 
     <section id="tradeoffs">
@@ -298,11 +245,11 @@
 <div class="pc-grid">
 <div class="pc-card pros">
 <h3><span class="badge-icon">+</span> Advantages</h3>
-<ul><li><strong>Compliance toggles are instant</strong> — no colour math runs on an AA/AAA switch regardless of palette size.</li><li><strong>Dependency graph is explicit</strong> — the comment on <code>scoredPairs</code> documents that <code>complianceMode</code> is intentionally absent. The reason is visible at the call site.</li><li><strong>Pure functions are easy to test</strong> — <code>scoreAllPairs</code> and <code>categorizePairs</code> take plain values and return plain objects. No Vue reactivity, no store, no globals.</li><li><strong>Stages compose cleanly</strong> — a future stage (e.g. sorting by luminance) slots in between without touching the others.</li></ul>
+<ul><li><strong>The docs and the code share symbols.</strong> "Palette owns Colours" in the domain model is <code>Palette { colours: Colour[] }</code> in the type. Reading one teaches you the other; there is no glossary-to-code translation to get wrong.</li><li><strong>Decisions become compiler-enforced.</strong> ADR 0006's classification rule is data the type-checker guards. Misclassifying a role, or inventing a fourth classification, fails to compile.</li><li><strong>Closed sets can't drift.</strong> The const-union idiom makes the validation list and the type provably identical — impossible to widen one and forget the other.</li><li><strong>One place to evolve the language.</strong> A new domain concept, or a renamed one, changes here and propagates outward through type errors that show every call site that must follow.</li></ul>
 </div>
 <div class="pc-card cons">
 <h3><span class="badge-icon">&minus;</span> Disadvantages</h3>
-<ul><li><strong>Two call sites to keep in sync</strong> — adding a new input to the pipeline (say, a new simulation mode) means adding it to the right stage and understanding which computed to invalidate.</li><li><strong>Indirect dependency</strong> — <code>categorizedCombinations</code> passes <code>mode</code> to <code>categorizePairs</code> for the threshold lookup even though stage 2 does no contrast calculation. This is a config-key dependency, not a math dependency, which can confuse at first read.</li></ul>
+<ul><li><strong>Types describe shape, not all invariants.</strong> <code>roles: string[]</code> types the field but does not itself guarantee each string is a real role id — that still needs a runtime check against <code>ROLE_IDS</code>. The type narrows the mistakes, it does not eliminate them.</li><li><strong>Discipline to keep ADRs and code aligned.</strong> The comment citing ADR 0006 is a convention; nothing forces someone changing the vocabulary to revisit the ADR. The link holds by review, not by tooling.</li><li><strong>Ahead of its consumers.</strong> These types were written before the store and UI that will use them, so today they are partly a promise. Their real payoff arrives as the 2.0 slices are built against them.</li></ul>
 </div>
 </div>
 </section>
@@ -313,22 +260,36 @@
 <li>
 <span class="file-icon ts">TS</span>
 <div>
-<div class="file-path">src/composables/contrastEngine.ts</div>
-<div class="file-desc"><code>scoreColourPair</code>, <code>scoreAllPairs</code>, and <code>categorizePairs</code></div>
-</div>
-</li>
-<li>
-<span class="file-icon js">JS</span>
-<div>
-<div class="file-path">src/stores/colourStore.js</div>
-<div class="file-desc">wires the two computed layers; lines 108–122 are the critical section</div>
+<div class="file-path">src/domain/types.ts</div>
+<div class="file-desc">the aggregate: <code>Project</code> → <code>Palette</code> → <code>Colour</code>, plus <code>Mode</code>, <code>Role</code>, <code>RoleClassification</code>, <code>HexColour</code></div>
 </div>
 </li>
 <li>
 <span class="file-icon ts">TS</span>
 <div>
-<div class="file-path">src/config/contrastConfig.ts</div>
-<div class="file-desc">threshold values consumed by stage 2</div>
+<div class="file-path">src/domain/roles.ts</div>
+<div class="file-desc">the controlled role vocabulary, its classifications (per ADR 0006), and the null-returning <code>getRole</code> lookup</div>
+</div>
+</li>
+<li>
+<span class="file-icon ts">TS</span>
+<div>
+<div class="file-path">src/config/contrastSettings.ts</div>
+<div class="file-desc">the const-array-union idiom for the contrast settings (<code>CONTRAST_ALGORITHMS</code>, <code>CVD_TYPES</code>, <code>COMPLIANCE_LEVELS</code>)</div>
+</div>
+</li>
+<li>
+<span class="file-icon ts">TS</span>
+<div>
+<div class="file-path">src/domain/persistencePort.ts</div>
+<div class="file-desc">the repository interface expressed over the <code>Project</code> aggregate</div>
+</div>
+</li>
+<li>
+<span class="file-icon ">›</span>
+<div>
+<div class="file-path">docs/2.0-design/</div>
+<div class="file-desc">the domain model, glossary, and ADRs these types make executable</div>
 </div>
 </li>
 </ul>
@@ -336,7 +297,7 @@
 
     <footer>
       <span>Colour Contrast Checker</span>
-      <a href="../two-stage-computed-pipeline.md" style="color:inherit;">Source markdown &rarr;</a>
+      <a href="../domain-types-ubiquitous-language.md" style="color:inherit;">Source markdown &rarr;</a>
     </footer>
 
   </main>

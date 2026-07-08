@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased] — 2026-07-08 · Pattern docs: 2.0 foundation refresh + two new patterns
+
+### Added
+- **`docs/patterns/incremental-typescript-migration.md`** — new pattern doc: `allowJs` + the `js-to-ts-resolver` Vite plugin let the engine port to TS one file at a time without touching callers or the test suite (engine-first migration)
+- **`docs/patterns/domain-types-ubiquitous-language.md`** — new pattern doc: the 2.0 domain vocabulary (Project/Palette/Colour/Mode/Role) written once as TS types; const-array unions and the controlled role vocabulary tie the design docs/ADRs to compiler-checked code
+
+### Changed
+- **`docs/patterns/hexagonal-architecture.md`** — added `PersistencePort` as a third port (typed interface, deep-cloning in-memory adapter, `snapshot()` helper, and the deliberate "port ahead of its production adapter" nuance); updated `injectionKeys.js` → `.ts` and key-files
+- **`docs/patterns/framework-agnostic-logic-modules.md`** — composables now `.ts` (`simulateCVD`/`contrastEngine`/`calculateColourContrast`); `CVD_MODES` → `CVD_TYPES` in the sample; `paletteUrlCodec.js` noted as still-JS
+- **`docs/patterns/url-codec.md`** — `config/modes.js` → `config/contrastSettings.ts`; `CONTRAST_MODES` → `CONTRAST_ALGORITHMS`
+- **`docs/patterns/two-stage-computed-pipeline.md`** — `contrastEngine.js`/`contrastConfig.js` → `.ts` in samples and key-files
+- **`docs/patterns/README.md`** — index now lists seven patterns (added the two new entries; updated lede/chips)
+- **`docs/patterns/html/*`** — regenerated all pattern HTML artifacts from the updated markdown via `build_patterns.py` (7 pattern pages + index; two new pages for the added patterns)
+
 ## [Unreleased] — 2026-07-08 · 2.0 foundation: TypeScript toolchain, engine port, domain types & PersistencePort (closes #19)
 
 ### Added
