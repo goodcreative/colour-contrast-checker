@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased] — 2026-07-14 · 2.0 canvas prototype review (issue #20)
+
+### Changed
+- **Canvas prototype verdict** — recorded owner review of the A/B/C role-canvas prototypes: no variant wins outright. Carry-forward findings: keep a persistent swatch display (variant A got closest); A's two-click pair-selection is a poor experience and won't carry forward — fg×bg relationships need a better mechanism. Moving to manual design; prototypes kept for reference.
+
+## [Unreleased] — 2026-07-09 · 2.0 hybrid styleguide (issue #20)
+
+### Added
+- **Hybrid styleguide** — third frame `25:2` "UI Elements — 2.0 Hybrid" (right of `17:2`) resolving the `2:2` (Wattage) vs `17:2` (app) keep/ditch comparison into the locked 2.0 direction. Cloned from the Wattage frame, then overridden per section-by-section decisions: **warm-neutral surfaces/ink** + Wattage type scale, Roboto Mono, 8px+pill radius, flat elevation (borders over shadows), 268/960 layout, Wattage button + segmented control + meta-chip + rail-track + severity — kept from Wattage; **accent `#00A3FF`** and **semantic triad pass `#3D930F` / partial `#3392E9` / fail `#EE495B`** (with derived light/border/rail tints) — grafted from the app. Badges and the rail-track (bands + partial marker/value) recoloured to follow the blue partial token. Built via `use_figma`; static swatches, not yet bound to Figma variables.
+
+### Changed
+- **Hybrid `25:2` cleanup** — renamed semantic swatch frames/labels/headings `good`/`ni`/`poor` → uniform `pass`/`partial`/`fail` tokens; replaced the Wattage 7-hue **category** palette (web-resource types) with the ADR 0006 **role** vocabulary — `background` · `surface` · `text` · `border` · `accent` · `brand` (hues kept), 7th hue reserved as a spare slot for a future role (e.g. `icon`); heading now flags fg/bg driving result pairing.
+
 ## [Unreleased] — 2026-07-08 · 2.0 Figma foundations styleguide (issue #20)
 
 ### Added

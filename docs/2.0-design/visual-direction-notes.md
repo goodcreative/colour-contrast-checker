@@ -23,6 +23,25 @@ ADRs still own decisions.
   styleguide structure built from the app's live SCSS tokens (`src/assets/scss/tokens/`) + real
   components (pill button, switch ModeToggle, `.b_contrast` card; Inter + Fira Code), for
   side-by-side keep/ditch comparison.
+  A **third frame `25:2`** "UI Elements — 2.0 Hybrid" (right of `17:2`, built 2026-07-09) is the
+  **locked direction** resolving that comparison. Cloned from Wattage `2:2`, then overridden per a
+  section-by-section keep/ditch walkthrough:
+  - **Kept from Wattage:** warm-neutral surfaces/ink (`#fafaf9`/`#ffffff`/`#efeeea`/`#1a1a18`/
+    `#5a5a55`/`#e5e4e0`); type scale specimen; Roboto Mono; 8px + full-pill radius; flat elevation
+    (borders over shadows, no shadow system); 268/960 layout; 8px spacing; button (8px rect);
+    segmented control; meta-chip; rail-track; 7-hue category palette; severity scale.
+  - **Grafted from the app:** accent `#00A3FF`; semantic triad **pass `#3D930F` / partial
+    `#3392E9` / fail `#EE495B`** with light/border/rail tints re-derived (mix-with-white 0.12 /
+    0.36 / 0.42). Badges + rail-track (bands + partial marker/value) recoloured to follow the blue
+    partial token. Semantic swatch tokens named uniformly `pass`/`partial`/`fail` (not
+    Wattage's `good`/`ni`/`poor`).
+  - **Role tags (adapted):** Wattage's 7-hue *category* palette (web-resource types) repurposed as
+    the ADR 0006 **role** vocabulary — `background`/`surface` (bg) · `text`/`border`/`accent`/
+    `brand` (fg/both) — hues kept as chip identities; the 7th (slate) held as a **reserve** slot
+    for a future role (likely `icon`). fg/bg classification drives the default result pairing.
+  - **Known tension:** accent `#00A3FF` and partial `#3392E9` are near-neighbour blues; the blue
+    partial also weakens the rail-track's traffic-light read — owner chose token-consistency
+    (green/blue/red rail) over the severity gradient. Revisit if it reads muddy in context.
   **Not yet promoted to Figma variables/tokens** — swatches are static; binding the palette to a
   variable collection (Light/Dark modes) is the next design step.
   Figma is a **scratchpad we build into**, not a source of truth we sync from — the Wattage

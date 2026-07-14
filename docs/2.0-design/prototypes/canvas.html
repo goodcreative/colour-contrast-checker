@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<!-- PROTOTYPE — throwaway 2.0 role-canvas exploration. Single self-contained file.
+     Just open it in a browser (no server, no build). WCAG values are hardcoded (computed from
+     the real engine's formula) so nothing runs live. See ./NOTES.md + ../conceptual-thoughts.md. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PROTOTYPE — 2.0 Canvas</title>
+<style>
+  :root {
+    --paper:#fafaf9; --ink:#1a1a18; --muted:#5a5a55; --line:#e5e4e0;
+    --pass:#3D930F; --partial:#3392E9; --fail:#EE495B;
+    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; }
+  body { background:var(--paper); color:var(--ink); font-family:var(--sans); }
+  .wrap { padding:40px 48px 130px; max-width:1200px; }
+  .kick { font:700 11px/1 var(--sans); letter-spacing:.08em; color:var(--muted); }
+  h1 { font-size:30px; font-weight:700; margin:10px 0 4px; }
+  .sub { color:var(--muted); margin:0 0 22px; max-width:680px; }
+  .legend { display:flex; align-items:center; gap:18px; font-size:12px; color:var(--muted); margin-bottom:20px; border-bottom:1px solid var(--line); padding-bottom:14px; }
+  .legend .k { display:inline-flex; align-items:center; gap:6px; }
+  .legend .k i { width:9px; height:9px; border-radius:50%; }
+  .legend em { margin-left:auto; font-style:normal; opacity:.7; }
+
+  /* A — lanes */
+  .lane { display:grid; grid-template-columns:150px 1fr; align-items:start; gap:20px; padding:14px 0; border-bottom:1px solid #efeeea; }
+  .lane-label { display:flex; align-items:center; gap:8px; padding-top:8px; }
+  .rname { font-weight:600; }
+  .rclass { font:700 10px/1 var(--sans); text-transform:uppercase; padding:3px 6px; border-radius:4px; }
+  .rclass.bg { background:#e7f2fc; color:#1c6cb0; }
+  .rclass.fg { background:#e8f2e2; color:#3d6b17; }
+  .lane-items { display:flex; flex-wrap:wrap; gap:12px; }
+  .swatch { cursor:pointer; display:flex; align-items:center; gap:10px; padding:8px 12px 8px 8px; background:#fff; border:1px solid var(--line); border-radius:10px; transition:box-shadow .12s,border-color .12s; }
+  .swatch:hover { border-color:#cfcdc7; }
+  .swatch.sel { border-color:#00a3ff; box-shadow:0 0 0 2px #00a3ff33; }
+  .chip { width:34px; height:34px; border-radius:7px; border:1px solid #0000001a; flex:none; }
+  .meta { display:flex; flex-direction:column; gap:2px; }
+  .sname { font-weight:600; font-size:13px; }
+  .shex { font:500 11px/1 var(--mono); color:var(--muted); }
+  .dots { display:inline-flex; gap:3px; margin-left:6px; align-self:center; }
+  .dots i { width:8px; height:8px; border-radius:50%; }
+
+  /* B — stages */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:24px; }
+  .stage { border-radius:16px; padding:20px 22px; border:1px solid #00000012; box-shadow:0 1px 0 #00000010; }
+  .stage-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+  .stage-name { font-weight:700; font-size:16px; }
+  .stage-hex { font:500 11px/1 var(--mono); opacity:.7; }
+  .srow { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 0; border-top:1px solid #00000010; }
+  .applied { display:flex; align-items:center; gap:14px; min-width:0; }
+  .big { font-size:25px; font-weight:700; line-height:1; }
+  .body { font-size:14px; white-space:nowrap; }
+  .pill { font-size:11px; font-weight:600; border:1.5px solid; border-radius:9999px; padding:3px 10px; }
+  .verdict { display:flex; align-items:center; gap:10px; flex:none; }
+  .badge { color:#fff; font:700 10px/1 var(--sans); text-transform:uppercase; letter-spacing:.04em; padding:4px 8px; border-radius:5px; }
+  .ratio { font:500 12px/1 var(--mono); min-width:52px; text-align:right; }
+
+  /* C — graph */
+  svg.canvas { width:100%; height:auto; max-width:1120px; display:block; }
+  .col-label { font:700 12px/1 var(--sans); letter-spacing:.08em; fill:#9a9a94; text-anchor:middle; }
+  .node { cursor:pointer; }
+  .nname { font:600 13px/1 var(--sans); fill:var(--ink); }
+  .nrole { font:500 10px/1 var(--mono); fill:#9a9a94; }
+
+  /* shared overlay + result */
+  svg.overlay { position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:50; }
+  .result { position:fixed; top:24px; right:28px; display:flex; align-items:center; gap:12px; background:#fff; border:2px solid; border-radius:12px; padding:12px 16px; box-shadow:0 10px 30px rgba(0,0,0,.12); z-index:60; }
+  .result .rchip { width:28px; height:28px; border-radius:7px; border:1px solid #0000001a; flex:none; display:grid; place-items:center; font:700 13px/1 var(--sans); }
+  .result strong { display:block; font-size:15px; }
+  .result small { color:var(--muted); }
+  .result b { font-weight:700; color:var(--ink); }
+
+  /* switcher */
+  .switch { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:10px; padding:8px 12px; background:#111; color:#fff; border-radius:9999px; box-shadow:0 8px 30px rgba(0,0,0,.35); font:500 13px/1 var(--sans); z-index:9999; }
+  .switch button { all:unset; cursor:pointer; }
+  .switch .arrow { font-size:20px; padding:0 6px; opacity:.8; }
+  .switch .arrow:hover { opacity:1; }
+  .switch .lbl { display:flex; align-items:baseline; gap:6px; min-width:170px; justify-content:center; }
+  .switch .key { font-weight:700; background:#00a3ff; color:#001; border-radius:5px; padding:2px 6px; }
+  .switch .nm { opacity:.85; }
+  .switch .dot { width:20px; height:20px; display:grid; place-items:center; border-radius:50%; font-size:11px; font-weight:700; background:#333; color:#aaa; }
+  .switch .dot.on { background:#fff; color:#111; }
+  .switch .tag { font-size:10px; letter-spacing:.05em; text-transform:uppercase; opacity:.5; margin-left:4px; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<svg class="overlay" id="overlay"></svg>
+<div class="switch" id="switch"></div>
+
+<script>
+const SWATCHES = [{"id":"paper","name":"Paper","hex":"#fafaf9","role":"background"},{"id":"canvas","name":"Canvas","hex":"#f2f2f2","role":"background"},{"id":"white","name":"White","hex":"#ffffff","role":"surface"},{"id":"warm","name":"Warm","hex":"#efeeea","role":"surface"},{"id":"ink","name":"Ink","hex":"#1a1a18","role":"text"},{"id":"muted","name":"Muted","hex":"#5a5a55","role":"text"},{"id":"slate","name":"Slate","hex":"#45454b","role":"icon"},{"id":"hair","name":"Hairline","hex":"#e5e4e0","role":"border"},{"id":"sky","name":"Sky","hex":"#00a3ff","role":"accent"},{"id":"indigo","name":"Indigo","hex":"#3a5cff","role":"brand"}];
+const RATIO = {"canvas|paper":1.07,"paper|white":1.04,"paper|warm":1.11,"ink|paper":16.69,"muted|paper":6.64,"paper|slate":9.12,"hair|paper":1.22,"paper|sky":2.62,"indigo|paper":4.84,"canvas|white":1.12,"canvas|warm":1.04,"canvas|ink":15.57,"canvas|muted":6.19,"canvas|slate":8.5,"canvas|hair":1.14,"canvas|sky":2.44,"canvas|indigo":4.51,"warm|white":1.16,"ink|white":17.43,"muted|white":6.93,"slate|white":9.52,"hair|white":1.27,"sky|white":2.73,"indigo|white":5.05,"ink|warm":15.01,"muted|warm":5.97,"slate|warm":8.2,"hair|warm":1.1,"sky|warm":2.35,"indigo|warm":4.35,"ink|muted":2.51,"ink|slate":1.83,"hair|ink":13.7,"ink|sky":6.38,"indigo|ink":3.45,"muted|slate":1.37,"hair|muted":5.45,"muted|sky":2.54,"indigo|muted":1.37,"hair|slate":7.48,"sky|slate":3.48,"indigo|slate":1.88,"hair|sky":2.15,"hair|indigo":3.97,"indigo|sky":1.85};
+
+const ROLES = [
+  {id:"background",label:"Background",cls:"bg"},
+  {id:"surface",label:"Surface",cls:"bg"},
+  {id:"text",label:"Text",cls:"fg"},
+  {id:"icon",label:"Icon",cls:"fg"},
+  {id:"border",label:"Border",cls:"fg"},
+  {id:"accent",label:"Accent",cls:"fg"},
+  {id:"brand",label:"Brand",cls:"fg"},
+];
+const clsOf = id => ROLES.find(r=>r.id===id)?.cls;
+const isBg = id => clsOf(id)==="bg";
+const isFg = id => clsOf(id)==="fg";
+const byId = id => SWATCHES.find(s=>s.id===id);
+const SC = { pass:"#3D930F", partial:"#3392E9", fail:"#EE495B" };
+const SL = { pass:"Pass", partial:"Partial", fail:"Fail" };
+const ratio = (a,b) => a===b ? 21 : (RATIO[[a,b].sort().join("|")] ?? 1);
+const statusOf = s => s>=4.5 ? "pass" : s>=3 ? "partial" : "fail";
+const fmt = s => s.toFixed(2)+":1";
+function grade(fgId,bgId){ const s=ratio(fgId,bgId); return {score:s,status:statusOf(s)}; }
+
+const backgrounds = SWATCHES.filter(s=>isBg(s.role));
+const foregrounds = SWATCHES.filter(s=>isFg(s.role));
+
+const VARIANTS = [
+  {key:"A", name:"Role Lanes", render:renderLanes},
+  {key:"B", name:"Background Stages", render:renderStages},
+  {key:"C", name:"Relationship Graph", render:renderGraph},
+];
+const state = {
+  variant: new URLSearchParams(location.search).get("variant") || "A",
+  sel: [],
+  hover: null,
+};
+
+const esc = s => s;
+const header = (v, sub) => `
+  <div class="kick">GOOD · 2.0 CANVAS · VARIANT ${v.key}</div>
+  <h1>${v.name}</h1>
+  <p class="sub">${sub}</p>`;
+const legend = extra => `
+  <div class="legend">
+    <span class="k"><i style="background:${SC.pass}"></i>Pass</span>
+    <span class="k"><i style="background:${SC.partial}"></i>Partial</span>
+    <span class="k"><i style="background:${SC.fail}"></i>Fail</span>
+    <em>${extra}</em>
+  </div>`;
+
+function pairFromSel(){
+  if(state.sel.length!==2) return null;
+  let [a,b] = state.sel.map(byId);
+  let fg=a, bg=b;
+  if(isBg(a.role) && !isBg(b.role)){ fg=b; bg=a; }
+  return { fg, bg, ...grade(fg.id,bg.id) };
+}
+
+/* ---------- A: Role Lanes ---------- */
+function renderLanes(){
+  const v = VARIANTS[0];
+  const lanes = ROLES.map(r=>({r, items:SWATCHES.filter(s=>s.role===r.id)})).filter(l=>l.items.length);
+  const laneHtml = lanes.map(l=>`
+    <div class="lane">
+      <div class="lane-label">
+        <span class="rname">${l.r.label}</span>
+        <span class="rclass ${l.r.cls}">${l.r.cls}</span>
+      </div>
+      <div class="lane-items">
+        ${l.items.map(s=>{
+          const dots = isFg(s.role) ? `<span class="dots">${backgrounds.map(b=>{
+            const g=grade(s.id,b.id);
+            return `<i style="background:${SC[g.status]}" title="${s.name} on ${b.name}: ${fmt(g.score)} ${SL[g.status]}"></i>`;
+          }).join("")}</span>` : "";
+          return `<div class="swatch ${state.sel.includes(s.id)?"sel":""}" data-id="${s.id}">
+            <span class="chip" style="background:${s.hex}"></span>
+            <span class="meta"><span class="sname">${s.name}</span><span class="shex">${s.hex}</span></span>
+            ${dots}
+          </div>`;
+        }).join("")}
+      </div>
+    </div>`).join("");
+  return header(v,"Each foreground swatch shows its result against every background inline. Click any two swatches to inspect the pair.")
+    + legend(`vs backgrounds: ${backgrounds.map(b=>b.name).join(" · ")} · WCAG AA`)
+    + laneHtml;
+}
+
+/* ---------- B: Background Stages ---------- */
+function renderStages(){
+  const v = VARIANTS[1];
+  const stagesHtml = backgrounds.map(stage=>{
+    const headDark = grade("ink",stage.id).status==="fail";
+    const headColor = headDark ? "#fff" : "#1a1a18";
+    const rows = foregrounds.map(fg=>{
+      const g = grade(fg.id,stage.id);
+      return `<div class="srow">
+        <div class="applied">
+          <span class="big" style="color:${fg.hex}">Aa</span>
+          <span class="body" style="color:${fg.hex}">${fg.name} body text</span>
+          <span class="pill" style="border-color:${fg.hex};color:${fg.hex}">button</span>
+        </div>
+        <div class="verdict">
+          <span class="badge" style="background:${SC[g.status]}">${SL[g.status]}</span>
+          <span class="ratio" style="color:${headDark?"#fff":"#5a5a55"}">${fmt(g.score)}</span>
+        </div>
+      </div>`;
+    }).join("");
+    return `<article class="stage" style="background:${stage.hex}">
+      <div class="stage-head" style="color:${headColor}">
+        <span class="stage-name">${stage.name}</span>
+        <span class="stage-hex">${stage.hex} · ${stage.role}</span>
+      </div>${rows}</article>`;
+  }).join("");
+  return header(v,"Foreground colours are applied as real text and UI on each background — you read the contrast, not just a number. WCAG AA.")
+    + `<div class="grid">${stagesHtml}</div>`;
+}
+
+/* ---------- C: Relationship Graph ---------- */
+const G = { W:1000, LEFT:210, RIGHT:790, SP:92, R:20 };
+function graphNodes(){
+  const H = Math.max(backgrounds.length,foregrounds.length)*G.SP + 100;
+  const col = (list,x)=>{ const start=H/2-((list.length-1)*G.SP)/2; return list.map((s,i)=>({...s,x,y:start+i*G.SP})); };
+  return { H, bg:col(backgrounds,G.LEFT), fg:col(foregrounds,G.RIGHT) };
+}
+function renderGraph(){
+  const v = VARIANTS[2];
+  const {H,bg,fg} = graphNodes();
+  const STROKE={pass:2.6,partial:2,fail:1}, OP={pass:.9,partial:.65,fail:.22};
+  const path = (a,b)=>`M ${a.x+G.R} ${a.y} C ${(a.x+b.x)/2} ${a.y}, ${(a.x+b.x)/2} ${b.y}, ${b.x-G.R} ${b.y}`;
+  const edges = bg.flatMap(b=>fg.map(f=>{
+    const g=grade(f.id,b.id);
+    const dim = state.hover && b.id!==state.hover && f.id!==state.hover;
+    const op = dim ? OP[g.status]*0.08 : OP[g.status];
+    return `<path d="${path(b,f)}" fill="none" stroke="${SC[g.status]}" stroke-width="${STROKE[g.status]}" opacity="${op}"></path>`;
+  })).join("");
+  const nodes = [...bg,...fg].map(n=>{
+    const left = isBg(n.role);
+    const lx = left ? n.x-G.R-12 : n.x+G.R+12;
+    const anchor = left ? "end" : "start";
+    const ring = state.sel.includes(n.id) ? `<circle cx="${n.x}" cy="${n.y}" r="${G.R+5}" fill="none" stroke="#00a3ff" stroke-width="2.5"></circle>` : "";
+    return `<g class="node" data-id="${n.id}">
+      <circle cx="${n.x}" cy="${n.y}" r="${G.R}" fill="${n.hex}" stroke="#00000022"></circle>${ring}
+      <text x="${lx}" y="${n.y-2}" text-anchor="${anchor}" class="nname">${n.name}</text>
+      <text x="${lx}" y="${n.y+12}" text-anchor="${anchor}" class="nrole">${n.role}</text>
+    </g>`;
+  }).join("");
+  return header(v,"Backgrounds ↔ foregrounds. Every line is a contrast result; failing pairs fade back. Hover a colour to isolate it, click two to inspect. WCAG AA.")
+    + legend(`Backgrounds (${backgrounds.length}) · Foregrounds (${foregrounds.length}) · ${bg.length*fg.length} relationships`)
+    + `<svg class="canvas" viewBox="0 0 ${G.W} ${H}">
+        <text class="col-label" x="${G.LEFT}" y="30">BACKGROUNDS</text>
+        <text class="col-label" x="${G.RIGHT}" y="30">FOREGROUNDS</text>
+        ${edges}${nodes}
+      </svg>`;
+}
+
+/* ---------- result card + glance line ---------- */
+function renderResult(){
+  const p = pairFromSel();
+  const old = document.querySelector(".result");
+  if(old) old.remove();
+  if(!p) return;
+  const el = document.createElement("div");
+  el.className = "result";
+  el.style.borderColor = SC[p.status];
+  el.innerHTML = `
+    <span class="rchip" style="background:${p.bg.hex}"><span style="color:${p.fg.hex}">Aa</span></span>
+    <div><strong style="color:${SC[p.status]}">${SL[p.status]} · ${fmt(p.score)}</strong>
+    <small>${p.fg.name} <b>on</b> ${p.bg.name}</small></div>`;
+  document.body.appendChild(el);
+}
+function drawLine(){
+  const ov = document.getElementById("overlay");
+  ov.innerHTML = "";
+  if(state.variant!=="A" || state.sel.length!==2) return;
+  const els = state.sel.map(id=>document.querySelector(`.swatch[data-id="${id}"]`));
+  if(els.some(e=>!e)) return;
+  const [a,b] = els.map(e=>e.getBoundingClientRect());
+  const p = pairFromSel();
+  const c = p ? SC[p.status] : "#888";
+  ov.innerHTML = `<line x1="${a.left+a.width/2}" y1="${a.top+a.height/2}" x2="${b.left+b.width/2}" y2="${b.top+b.height/2}" stroke="${c}" stroke-width="2.5" stroke-dasharray="5 4"></line>`;
+}
+
+/* ---------- switcher ---------- */
+function renderSwitch(){
+  const cur = state.variant;
+  document.getElementById("switch").innerHTML = `
+    <button class="arrow" data-cyc="-1">‹</button>
+    <div class="lbl"><span class="key">${cur}</span><span class="nm">${VARIANTS.find(v=>v.key===cur).name}</span></div>
+    <button class="arrow" data-cyc="1">›</button>
+    ${VARIANTS.map(v=>`<button class="dot ${v.key===cur?"on":""}" data-set="${v.key}" title="${v.name}">${v.key}</button>`).join("")}
+    <span class="tag">PROTOTYPE · ← → to switch</span>`;
+}
+
+/* ---------- render + wiring ---------- */
+function render(){
+  const v = VARIANTS.find(x=>x.key===state.variant) || VARIANTS[0];
+  document.getElementById("stage").innerHTML = `<div class="wrap">${v.render()}</div>`;
+  renderResult();
+  drawLine();
+  renderSwitch();
+}
+function setVariant(k){
+  state.variant = k; state.sel = []; state.hover = null;
+  const u = new URL(location.href); u.searchParams.set("variant",k); history.replaceState({},"",u);
+  render();
+}
+function cycle(d){
+  const i = VARIANTS.findIndex(v=>v.key===state.variant);
+  setVariant(VARIANTS[(i+d+VARIANTS.length)%VARIANTS.length].key);
+}
+function toggleSel(id){
+  const i = state.sel.indexOf(id);
+  if(i>=0) state.sel.splice(i,1);
+  else { state.sel.push(id); if(state.sel.length>2) state.sel.shift(); }
+  render();
+}
+
+document.addEventListener("click", e=>{
+  const cyc = e.target.closest("[data-cyc]"); if(cyc){ cycle(+cyc.dataset.cyc); return; }
+  const set = e.target.closest("[data-set]"); if(set){ setVariant(set.dataset.set); return; }
+  const node = e.target.closest("[data-id]"); if(node){ toggleSel(node.dataset.id); return; }
+});
+document.addEventListener("mouseover", e=>{
+  if(state.variant!=="C") return;
+  const node = e.target.closest(".node[data-id]");
+  const id = node ? node.dataset.id : null;
+  if(id!==state.hover){ state.hover=id; render(); }
+});
+document.addEventListener("keydown", e=>{
+  const t=e.target; if(t && /INPUT|TEXTAREA/.test(t.tagName)) return;
+  if(e.key==="ArrowLeft") cycle(-1);
+  if(e.key==="ArrowRight") cycle(1);
+});
+window.addEventListener("scroll", drawLine, true);
+window.addEventListener("resize", drawLine);
+
+render();
+</script>
+</body>
+</html>
