@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] — 2026-07-15 · 2.0 example landing pages (issue #20)
+
+### Added
+- **Two example landing-page frames** in the `Colour-Contrast-2.0-UI-Design` file demonstrating the token system across modes: `53:2` "Landing — Light" and `56:2` "Landing — Dark". Basic marketing layout — nav bar, hero banner (kicker chip + heading + subtitle + primary/secondary buttons), a 3-up feature card row (each with a pass/partial/fail badge), a controls strip (primary/secondary/ghost buttons + segmented control + badges), and a footer. Every fill is bound to the Colour variables; the Dark frame is a structural clone of Light with only the collection mode switched (Light `47:0` → Dark `47:1`), proving the palette flexes across modes. Flat variable-bound frames (not yet componentised).
+
+## [Unreleased] — 2026-07-15 · 2.0 Figma variable tokens (issue #20)
+
+### Added
+- **Figma variable tokens** promoted from the hybrid styleguide (`25:2`) in the `Colour-Contrast-2.0-UI-Design` file. Two collections: **Colour** (36 vars — `base/*` surfaces/ink/accent, `pass`/`partial`/`fail` triads with light·border·rail, `severity/*`, `role/*/base·tint`; **Light + Dark** modes) and **Dimension** (12 vars — `radius/default·pill`, `space/4…48`, `layout/sidebar·content-max·line-height`; single Value mode). Flat single-layer semantic naming (no primitive→alias split — aliasing deferred per ADR 0003/0006); every var carries explicit scopes and WEB `var(--…)` code syntax. Static `25:2` swatches left unbound as a visual reference; variables are the source of truth.
+- **Dark mode = warm charcoal.** Authored real Dark-mode values for all 36 Colour vars (not placeholders): inverted warm-neutral surface ramp (sidebar `#1a1917` → bg `#201f1d` → surface `#2a2926` → border `#3a3833`), warm off-white ink `#f5f4f1`/muted `#a8a49c`, accent lifted `#38b0ff`; semantic/severity/role base hues lifted for legibility, pale washes recast as dark hue-tinted surfaces. Added rendered preview frame `52:2` "2.0 Dark — Warm Charcoal" (variable-bound swatches forced to Dark mode).
+
 ## [Unreleased] — 2026-07-15 · Remove unused vite-plugin-markdown
 
 ### Removed

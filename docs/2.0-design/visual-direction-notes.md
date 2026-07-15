@@ -42,8 +42,27 @@ ADRs still own decisions.
   - **Known tension:** accent `#00A3FF` and partial `#3392E9` are near-neighbour blues; the blue
     partial also weakens the rail-track's traffic-light read — owner chose token-consistency
     (green/blue/red rail) over the severity gradient. Revisit if it reads muddy in context.
-  **Not yet promoted to Figma variables/tokens** — swatches are static; binding the palette to a
-  variable collection (Light/Dark modes) is the next design step.
+  **Promoted to Figma variables (2026-07-15).** Two collections created from `25:2`: **Colour**
+  (36 vars — `base/*`, `pass·partial·fail/*` triads, `severity/*`, `role/*/base·tint`; **Light +
+  Dark** modes) + **Dimension** (12 vars — `radius/*`, `space/*` 4→48, `layout/*`; single Value
+  mode). Flat single-layer semantic naming (no primitive→alias split — aliasing deferred per ADR
+  0003/0006). Every var has explicit scopes + WEB `var(--…)` code syntax. The static `25:2`
+  swatches were **not** rebound — they stay a visual reference; the variables are the source of
+  truth.
+  **Dark = warm charcoal (2026-07-15).** Real Dark values authored (not placeholders): inverted
+  warm-neutral surface ramp (sidebar `#1a1917` darkest → bg `#201f1d` → surface `#2a2926` → border
+  `#3a3833`), warm off-white ink `#f5f4f1` / muted `#a8a49c`, accent lifted `#38b0ff`; semantic +
+  severity + role *base* hues lifted for legibility on charcoal, pale washes recast as dark
+  hue-tinted surfaces (`*/light`, `role/*/tint`). Rendered preview frame **`52:2`** "2.0 Dark —
+  Warm Charcoal" (right of `25:2`, x=4740) — variable-bound swatches forced to Dark mode.
+  Follow-ups: optionally add typography/text-styles + effect styles; tune the subtle surface-ramp
+  layering if it reads too flat in context.
+  **Example landing pages (2026-07-15).** Two frames exercising the tokens: `53:2` "Landing —
+  Light" + `56:2` "Landing — Dark" (right of the dark swatch preview, y=1400). Basic marketing
+  layout — nav, hero banner, 3-up feature cards w/ pass·partial·fail badges, controls strip
+  (buttons + segmented + badges), footer. All fills variable-bound; Dark is a structural clone of
+  Light with only the collection mode flipped. Flat frames (not yet componentised) — componentising
+  Button/Card and promoting typography to text-styles are open follow-ups.
   Figma is a **scratchpad we build into**, not a source of truth we sync from — the Wattage
   artifact remains the reference foundation.
   Access note: write path is the **remote** `plugin:figma:figma` server (`mcp.figma.com`, tool
@@ -110,5 +129,7 @@ see domain-model.md. Affects how the segmented controls get labelled in the shel
 - Is Figma the **source of truth** we sync to, or a **scratchpad** we harvest from?
 
 ## Next action
-Restart Claude Code → read Figma `node-id=2-2` (frames + variables) via local Dev Mode server →
-reconcile Figma layout ideas with the Wattage foundation → propose token set + primitive plan.
+Foundation styleguide + variable tokens are done (`25:2` → Colour + Dimension collections). Owner
+now doing **manual design** of the primary app layout (canvas prototypes A/B/C reviewed, none won —
+see `prototypes/NOTES.md`). Open follow-ups: design real **Dark** mode values; optionally promote
+typography (Inter/Roboto Mono type scale) to text-styles + font variables.
