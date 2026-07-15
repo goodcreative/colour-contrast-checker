@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased] — 2026-07-15 · Remove unused vite-plugin-markdown
+
+### Removed
+- **`vite-plugin-markdown` devDependency** — declared but imported nowhere (not in `vite.config.js` or `src`). Removal clears 3 no-fix-available vulnerabilities (`markdown-it` / `linkify-it` quadratic-complexity DoS). Build verified clean. Remaining audit findings are the vite/vitest chain tracked under issue #31.
+
 ## [Unreleased] — 2026-07-14 · 2.0 canvas prototype review (issue #20)
 
 ### Changed
